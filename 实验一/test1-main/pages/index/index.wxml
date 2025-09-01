@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 <view class='container'>
   <image src='{{src}}' mode='widthFix'></image>
   <text>{{name}}</text>
@@ -5,3 +6,12 @@
     点击获取头像和昵称
   </button>
 </view>
+=======
+<view class = 'container'>
+  <image src='{{src}}' mode='widthFix'></image>
+  <text>{{name}}</text>
+  <button bindtap="getMyInfo">
+        点击获取头像和昵称
+  </button>
+</view>
+>>>>>>> 4c273b32551c6b110e01e7450cb7a474b44c68c3

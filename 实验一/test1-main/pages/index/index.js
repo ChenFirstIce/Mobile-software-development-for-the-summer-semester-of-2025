@@ -1,5 +1,6 @@
 //index.js
 Page({
+<<<<<<< HEAD
   data: {
     src: '/images/logo.jpg',
     name: 'Hello world'
@@ -18,6 +19,34 @@ Page({
       fail: () => {
         console.log('用户拒绝授权')
       }
+=======
+  /**
+   * 页面的初始数据
+   */
+  data: {
+    src: '/images/logo.jpg',
+    name: 'Hello world',
+    hasUserInfo: false,
+    canIUseGetUserProfile: wx.canIUse('getUserProfile'),
+    canIUseNicknameComp: wx.canIUse('input.type.nickname'),
+  },
+  //获取用户信息
+  getMyInfo: function(e) {
+    wx.getUserProfile({
+      desc: '展示用户信息',
+      success: (res) => {
+        console.log('用户信息获取成功', res)
+        this.setData({
+          name: res.userInfo.nickName, // 修正：从 userInfo 中获取昵称
+          src: res.userInfo.avatarUrl,     // 修正：从 userInfo 中获取头像
+          hasUserInfo: true
+        })
+      },
+      fail: (res) => {
+        console.log('用户信息获取失败', res)
+      },
+      complete: (res) => {},
+>>>>>>> 4c273b32551c6b110e01e7450cb7a474b44c68c3
     })
   },
   /**

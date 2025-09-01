@@ -19,6 +19,10 @@
     "checkInvalidKey": true,
     "ignoreDevUnusedFiles": true
   },
+<<<<<<< HEAD
   "libVersion": "2.16.1",
+=======
+  "libVersion": "3.9.2",
+>>>>>>> 4c273b32551c6b110e01e7450cb7a474b44c68c3
   "condition": {}
 }

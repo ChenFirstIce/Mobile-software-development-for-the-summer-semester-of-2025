@@ -3,7 +3,11 @@
     "pages/index/index"
   ],
   "window": {
+<<<<<<< HEAD
     "navigationBarTitleText": "手动创建一个小程序",
+=======
+    "navigationBarTitleText": "手动创建一个小程序-陈怡冰",
+>>>>>>> 4c273b32551c6b110e01e7450cb7a474b44c68c3
     "navigationBarBackgroundColor": "#663399"
   },
   "style": "v2",
