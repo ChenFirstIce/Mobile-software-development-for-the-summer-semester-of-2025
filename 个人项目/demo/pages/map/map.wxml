@@ -1,0 +1,65 @@
+<!--pages/map/map.wxml-->
+<view class="container">
+  <!-- 地图类型切换 -->
+  <view class="map-type-switcher">
+    <view class="type-btn {{mapType === 'basic' ? 'active' : ''}}" bindtap="switchMapType" data-type="basic">
+      <text class="type-text">基础地图</text>
+    </view>
+    <view class="type-btn {{mapType === 'special' ? 'active' : ''}}" bindtap="switchMapType" data-type="special">
+      <text class="type-text">特殊地图</text>
+    </view>
+  </view>
+
+  <!-- 地图容器 -->
+  <view class="map-container">
+    <map 
+      id="map"
+      class="map"
+      longitude="{{longitude}}"
+      latitude="{{latitude}}"
+      scale="{{scale}}"
+      markers="{{markers}}"
+      polyline="{{polyline}}"
+      show-location="true"
+      bindmarkertap="onMarkerTap"
+      bindregionchange="onRegionChange"
+      bindtap="onMapTap">
+    </map>
+  </view>
+
+  <!-- 地图控制按钮 -->
+  <view class="map-controls">
+    <view class="control-btn" bindtap="moveToLocation">
+      <text class="control-icon">📍</text>
+    </view>
+    <view class="control-btn" bindtap="zoomIn">
+      <text class="control-icon">➕</text>
+    </view>
+    <view class="control-btn" bindtap="zoomOut">
+      <text class="control-icon">➖</text>
+    </view>
+  </view>
+
+  <!-- 功能按钮区域 -->
+  <view class="function-buttons">
+    <button class="func-btn checkin-btn" bindtap="showCheckinModal">
+      <text class="btn-icon">📍</text>
+      <text class="btn-text">打卡</text>
+    </button>
+    
+    <button class="func-btn route-btn" bindtap="showRouteModal">
+      <text class="btn-icon">🚋</text>
+      <text class="btn-text">路线</text>
+    </button>
+    
+    <button class="func-btn hotel-btn" bindtap="navigateToHotel">
+      <text class="btn-icon">🏨</text>
+      <text class="btn-text">酒店</text>
+    </button>
+    
+    <button class="func-btn stats-btn" bindtap="navigateToStats">
+      <text class="btn-icon">📊</text>
+      <text class="btn-text">统计</text>
+    </button>
+  </view>
+</view>

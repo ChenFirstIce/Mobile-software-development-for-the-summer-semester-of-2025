@@ -1,0 +1,166 @@
+<!--pages/entertainment/entertainment.wxml-->
+<view class="container">
+  <!-- 顶部标题 -->
+  <view class="page-header">
+    <text class="page-title">娱乐工具</text>
+    <text class="page-subtitle">为您的旅行增添更多乐趣</text>
+  </view>
+
+  <!-- 功能卡片区域 -->
+  <view class="feature-cards">
+    <!-- 轮盘功能 -->
+    <view class="feature-card" bindtap="navigateToWheel">
+      <view class="card-header">
+        <view class="card-icon">🎲</view>
+        <view class="card-title">随机轮盘</view>
+      </view>
+      <view class="card-content">
+        <text class="card-desc">创建轮盘，随机选择目的地或活动</text>
+        <view class="card-features">
+          <view class="feature-item">✨ 自定义选项</view>
+          <view class="feature-item">🎯 随机选择</view>
+          <view class="feature-item">👥 群组共享</view>
+        </view>
+      </view>
+      <view class="card-arrow">></view>
+    </view>
+
+    <!-- 投票功能 -->
+    <view class="feature-card" bindtap="navigateToVote">
+      <view class="card-header">
+        <view class="card-icon">📊</view>
+        <view class="card-title">价格投票</view>
+      </view>
+      <view class="card-content">
+        <text class="card-desc">匿名投票，预测酒店、门票等价格</text>
+        <view class="card-features">
+          <view class="feature-item">💰 价格预测</view>
+          <view class="feature-item">🔒 匿名投票</view>
+          <view class="feature-item">📈 统计分析</view>
+        </view>
+      </view>
+      <view class="card-arrow">></view>
+    </view>
+
+    <!-- 小游戏功能 -->
+    <view class="feature-card" bindtap="navigateToGame">
+      <view class="card-header">
+        <view class="card-icon">🎮</view>
+        <view class="card-title">旅行小游戏</view>
+      </view>
+      <view class="card-content">
+        <text class="card-desc">有趣的旅行主题小游戏</text>
+        <view class="card-features">
+          <view class="feature-item">🎯 知识问答</view>
+          <view class="feature-item">🧩 拼图游戏</view>
+          <view class="feature-item">🏆 排行榜</view>
+        </view>
+      </view>
+      <view class="card-arrow">></view>
+    </view>
+
+    <!-- 分享功能 -->
+    <view class="feature-card" bindtap="navigateToShare">
+      <view class="card-header">
+        <view class="card-icon">📤</view>
+        <view class="card-title">结果分享</view>
+      </view>
+      <view class="card-content">
+        <text class="card-desc">分享轮盘结果和投票统计</text>
+        <view class="card-features">
+          <view class="feature-item">📱 微信分享</view>
+          <view class="feature-item">🖼️ 生成图片</view>
+          <view class="feature-item">💬 群组分享</view>
+        </view>
+      </view>
+      <view class="card-arrow">></view>
+    </view>
+  </view>
+
+  <!-- 最近活动 -->
+  <view class="recent-activities" wx:if="{{recentActivities.length > 0}}">
+    <view class="section-title">
+      <text class="title-text">最近活动</text>
+      <text class="title-desc">查看您最近的娱乐记录</text>
+    </view>
+    
+    <view class="activity-list">
+      <view class="activity-item" wx:for="{{recentActivities}}" wx:key="id" bindtap="viewActivity" data-id="{{item.id}}">
+        <view class="activity-icon">{{item.icon}}</view>
+        <view class="activity-content">
+          <text class="activity-title">{{item.title}}</text>
+          <text class="activity-desc">{{item.description}}</text>
+          <text class="activity-time">{{item.time}}</text>
+        </view>
+        <view class="activity-arrow">></view>
+      </view>
+    </view>
+  </view>
+
+  <!-- 快速创建区域 -->
+  <view class="quick-create">
+    <view class="section-title">
+      <text class="title-text">快速创建</text>
+      <text class="title-desc">快速开始您的娱乐活动</text>
+    </view>
+    
+    <view class="quick-buttons">
+      <button class="quick-btn wheel-btn" bindtap="quickCreateWheel">
+        <text class="btn-icon">🎲</text>
+        <text class="btn-text">创建轮盘</text>
+      </button>
+      
+      <button class="quick-btn vote-btn" bindtap="quickCreateVote">
+        <text class="btn-icon">📊</text>
+        <text class="btn-text">发起投票</text>
+      </button>
+      
+      <button class="quick-btn game-btn" bindtap="quickStartGame">
+        <text class="btn-icon">🎮</text>
+        <text class="btn-text">开始游戏</text>
+      </button>
+    </view>
+  </view>
+
+  <!-- 使用说明 -->
+  <view class="usage-guide">
+    <view class="section-title">
+      <text class="title-text">使用说明</text>
+      <text class="title-desc">了解如何使用娱乐功能</text>
+    </view>
+    
+    <view class="guide-list">
+      <view class="guide-item">
+        <view class="guide-number">1</view>
+        <view class="guide-content">
+          <text class="guide-title">选择功能</text>
+          <text class="guide-desc">选择您想要使用的娱乐功能</text>
+        </view>
+      </view>
+      
+      <view class="guide-item">
+        <view class="guide-number">2</view>
+        <view class="guide-content">
+          <text class="guide-title">设置参数</text>
+          <text class="guide-desc">根据提示设置相关参数和选项</text>
+        </view>
+      </view>
+      
+      <view class="guide-item">
+        <view class="guide-number">3</view>
+        <view class="guide-content">
+          <text class="guide-title">开始使用</text>
+          <text class="guide-desc">点击开始按钮，享受娱乐功能</text>
+        </view>
+      </view>
+      
+      <view class="guide-item">
+        <view class="guide-number">4</view>
+        <view class="guide-content">
+          <text class="guide-title">分享结果</text>
+          <text class="guide-desc">将结果分享给朋友或群组</text>
+        </view>
+      </view>
+    </view>
+  </view>
+</view>

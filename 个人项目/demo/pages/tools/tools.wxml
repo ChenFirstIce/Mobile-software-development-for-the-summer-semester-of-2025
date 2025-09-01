@@ -1,0 +1,72 @@
+<!--pages/tools/tools.wxml-->
+<view class="container">
+  <!-- 页面标题 -->
+  <view class="page-header">
+    <text class="page-title">小工具</text>
+  </view>
+
+  <!-- 工具列表 -->
+  <view class="tools-section">
+    <view class="tools-grid">
+      <view class="tool-card" wx:for="{{tools}}" wx:key="id" bindtap="selectTool" data-id="{{item.id}}">
+        <view class="tool-icon">{{item.icon}}</view>
+        <view class="tool-content">
+          <text class="tool-name">{{item.name}}</text>
+        </view>
+        <view class="tool-arrow">></view>
+      </view>
+    </view>
+  </view>
+
+  <!-- 最近使用的工具 -->
+  <view class="recent-section" wx:if="{{wheels.length > 0 || votes.length > 0}}">
+    <view class="section-title">最近使用</view>
+    
+    <!-- 最近轮盘 -->
+    <view class="recent-wheels" wx:if="{{wheels.length > 0}}">
+      <view class="subsection-title">轮盘</view>
+      <view class="recent-list">
+        <view class="recent-item" wx:for="{{wheels.slice(0, 3)}}" wx:key="id" bindtap="showWheel" data-wheel="{{item}}">
+          <view class="item-icon">🎯</view>
+          <view class="item-content">
+            <text class="item-title">{{item.name}}</text>
+            <text class="item-info">选项：{{item.options.length}}个</text>
+          </view>
+          <view class="item-arrow">></view>
+        </view>
+      </view>
+    </view>
+
+    <!-- 最近投票 -->
+    <view class="recent-votes" wx:if="{{votes.length > 0}}">
+      <view class="subsection-title">投票</view>
+      <view class="recent-list">
+        <view class="recent-item" wx:for="{{votes.slice(0, 3)}}" wx:key="id" bindtap="showVote" data-vote="{{item}}">
+          <view class="item-icon">💰</view>
+          <view class="item-content">
+            <text class="item-title">{{item.name}}</text>
+            <text class="item-info">参与：{{item.participants.length}}人</text>
+          </view>
+          <view class="item-arrow">></view>
+        </view>
+      </view>
+    </view>
+  </view>
+
+  <!-- 使用说明 -->
+  <view class="help-section">
+    <view class="section-title">使用说明</view>
+    
+    <view class="help-content">
+      <view class="help-item">
+        <text class="help-title">🎯 随机轮盘</text>
+        <text class="help-text">创建轮盘，添加多个选项，随机选择结果。适合决定去哪里玩、吃什么等选择困难的情况。</text>
+      </view>
+      
+      <view class="help-item">
+        <text class="help-title">💰 价格投票</text>
+        <text class="help-text">匿名投票，了解大家对某个项目的心理价位。支持最低价和最高价投票，自动计算统计结果。</text>
+      </view>
+    </view>
+  </view>
+</view>

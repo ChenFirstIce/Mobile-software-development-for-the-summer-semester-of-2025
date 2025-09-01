@@ -1,0 +1,100 @@
+<!--pages/album/album.wxml-->
+<view class="container">
+  <!-- 顶部操作栏 -->
+  <view class="top-bar">
+    <view class="search-box">
+      <input class="search-input" placeholder="搜索相册..." bindinput="onSearchInput" value="{{searchKeyword}}" />
+      <view class="search-icon">🔍</view>
+    </view>
+    <button class="btn-primary" bindtap="createAlbum">创建相册</button>
+  </view>
+
+  <!-- 相册类型切换 -->
+  <view class="type-tabs">
+    <view class="tab-item {{currentType === 'all' ? 'active' : ''}}" bindtap="switchType" data-type="all">
+      <text class="tab-text">全部</text>
+    </view>
+    <view class="tab-item {{currentType === 'personal' ? 'active' : ''}}" bindtap="switchType" data-type="personal">
+      <text class="tab-text">个人</text>
+    </view>
+    <view class="tab-item {{currentType === 'shared' ? 'active' : ''}}" bindtap="switchType" data-type="shared">
+      <text class="tab-text">共有</text>
+    </view>
+  </view>
+
+  <!-- 相册列表 -->
+  <view class="album-list" wx:if="{{filteredAlbums.length > 0}}">
+    <view class="album-item" wx:for="{{filteredAlbums}}" wx:key="id" bindtap="openAlbum" data-id="{{item.id}}">
+      <view class="album-cover">
+        <image wx:if="{{item.coverImage}}" src="{{item.coverImage}}" mode="aspectFill" class="cover-image"></image>
+        <view wx:else class="cover-placeholder">
+          <text class="placeholder-icon">📷</text>
+        </view>
+        <view class="album-type-badge {{item.type === 'shared' ? 'shared' : 'personal'}}">
+          {{item.type === 'shared' ? '共有' : '个人'}}
+        </view>
+      </view>
+      
+      <view class="album-info">
+        <view class="album-header">
+          <text class="album-name">{{item.name}}</text>
+          <view class="album-actions">
+            <view class="action-btn" catchtap="editAlbum" data-id="{{item.id}}">
+              <text class="action-icon">✏️</text>
+            </view>
+            <view class="action-btn" catchtap="deleteAlbum" data-id="{{item.id}}">
+              <text class="action-icon">🗑️</text>
+            </view>
+          </view>
+        </view>
+        
+        <text class="album-desc">{{item.description || '暂无描述'}}</text>
+        
+        <view class="album-stats">
+          <view class="stat-item">
+            <text class="stat-icon">📸</text>
+            <text class="stat-text">{{item.photoCount || 0}}张照片</text>
+          </view>
+          <view class="stat-item">
+            <text class="stat-icon">👥</text>
+            <text class="stat-text">{{item.memberCount || 1}}人</text>
+          </view>
+          <view class="stat-item">
+            <text class="stat-icon">📅</text>
+            <text class="stat-text">{{item.createTime}}</text>
+          </view>
+        </view>
+      </view>
+    </view>
+  </view>
+
+  <!-- 空状态 -->
+  <view class="empty-state" wx:else>
+    <view class="empty-icon">📷</view>
+    <text class="empty-title">暂无相册</text>
+    <text class="empty-desc">创建您的第一个相册，开始记录美好时光</text>
+    <button class="btn-primary" bindtap="createAlbum">创建相册</button>
+  </view>
+
+  <!-- 批量操作模式 -->
+  <view class="batch-mode" wx:if="{{isBatchMode}}">
+    <view class="batch-header">
+      <text class="batch-title">批量操作模式</text>
+      <button class="btn-secondary" bindtap="exitBatchMode">退出</button>
+    </view>
+    
+    <view class="batch-actions">
+      <button class="btn-danger" bindtap="batchDelete" disabled="{{selectedAlbums.length === 0}}">
+        删除选中 ({{selectedAlbums.length}})
+      </button>
+      <button class="btn-secondary" bindtap="selectAll">
+        {{isAllSelected ? '取消全选' : '全选'}}
+      </button>
+    </view>
+  </view>
+
+  <!-- 浮动操作按钮 -->
+  <view class="fab" bindtap="toggleBatchMode">
+    <text class="fab-icon">{{isBatchMode ? '✕' : '⚙️'}}</text>
+  </view>
+</view>

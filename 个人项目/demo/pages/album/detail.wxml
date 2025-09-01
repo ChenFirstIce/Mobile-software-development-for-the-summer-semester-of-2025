@@ -1,0 +1,173 @@
+<!--pages/album/detail.wxml-->
+<view class="container">
+  <!-- 相册头部信息 -->
+  <view class="album-header">
+    <view class="album-cover">
+      <image wx:if="{{album.coverImage}}" src="{{album.coverImage}}" mode="aspectFill" class="cover-image"></image>
+      <view wx:else class="cover-placeholder">
+        <text class="placeholder-icon">📷</text>
+      </view>
+      <view class="album-type-badge {{album.type === 'shared' ? 'shared' : 'personal'}}">
+        {{album.type === 'shared' ? '共有' : '个人'}}
+      </view>
+    </view>
+    
+    <view class="album-info">
+      <text class="album-name">{{album.name}}</text>
+      <text class="album-desc">{{album.description || '暂无描述'}}</text>
+      
+      <view class="album-meta">
+        <view class="meta-item">
+          <text class="meta-icon">📸</text>
+          <text class="meta-text">{{album.photoCount || 0}}张照片</text>
+        </view>
+        <view class="meta-item">
+          <text class="meta-icon">👥</text>
+          <text class="meta-text">{{album.memberCount || 1}}人</text>
+        </view>
+        <view class="meta-item">
+          <text class="meta-icon">📅</text>
+          <text class="meta-text">{{album.createTime}}</text>
+        </view>
+      </view>
+      
+      <view class="album-tags" wx:if="{{album.tags && album.tags.length > 0}}">
+        <view class="tag-item" wx:for="{{album.tags}}" wx:key="index">
+          {{item}}
+        </view>
+      </view>
+    </view>
+  </view>
+
+  <!-- 操作按钮 -->
+  <view class="action-bar">
+    <button class="action-btn primary" bindtap="addPhotos">
+      <text class="btn-icon">📷</text>
+      <text class="btn-text">添加照片</text>
+    </button>
+    
+    <button class="action-btn" bindtap="editAlbum" wx:if="{{canEdit}}">
+      <text class="btn-icon">✏️</text>
+      <text class="btn-text">编辑相册</text>
+    </button>
+    
+    <button class="action-btn" bindtap="shareAlbum">
+      <text class="btn-icon">📤</text>
+      <text class="btn-text">分享</text>
+    </button>
+  </view>
+
+  <!-- 照片网格 -->
+  <view class="photos-section">
+    <view class="section-header">
+      <text class="section-title">照片 ({{album.photoCount || 0}})</text>
+      <view class="view-mode">
+        <view class="mode-btn {{viewMode === 'grid' ? 'active' : ''}}" bindtap="switchViewMode" data-mode="grid">
+          <text class="mode-icon">⊞</text>
+        </view>
+        <view class="mode-btn {{viewMode === 'list' ? 'active' : ''}}" bindtap="switchViewMode" data-mode="list">
+          <text class="mode-icon">☰</text>
+        </view>
+      </view>
+    </view>
+    
+    <!-- 网格视图 -->
+    <view class="photos-grid" wx:if="{{viewMode === 'grid' && photos.length > 0}}">
+      <view class="photo-item" wx:for="{{photos}}" wx:key="id" bindtap="viewPhoto" data-id="{{item.id}}">
+        <image src="{{item.url}}" mode="aspectFill" class="photo-image"></image>
+        <view class="photo-overlay">
+          <view class="photo-actions">
+            <view class="action-icon" catchtap="deletePhoto" data-id="{{item.id}}">🗑️</view>
+            <view class="action-icon" catchtap="downloadPhoto" data-id="{{item.id}}">⬇️</view>
+          </view>
+        </view>
+        <view class="photo-info">
+          <text class="photo-time">{{item.uploadTime}}</text>
+        </view>
+      </view>
+    </view>
+    
+    <!-- 列表视图 -->
+    <view class="photos-list" wx:if="{{viewMode === 'list' && photos.length > 0}}">
+      <view class="photo-list-item" wx:for="{{photos}}" wx:key="id" bindtap="viewPhoto" data-id="{{item.id}}">
+        <image src="{{item.url}}" mode="aspectFill" class="list-photo"></image>
+        <view class="list-photo-info">
+          <text class="list-photo-name">{{item.name || '未命名照片'}}</text>
+          <text class="list-photo-time">{{item.uploadTime}}</text>
+          <text class="list-photo-desc">{{item.description || '暂无描述'}}</text>
+        </view>
+        <view class="list-photo-actions">
+          <view class="action-icon" catchtap="deletePhoto" data-id="{{item.id}}">🗑️</view>
+          <view class="action-icon" catchtap="downloadPhoto" data-id="{{item.id}}">⬇️</view>
+        </view>
+      </view>
+    </view>
+    
+    <!-- 空状态 -->
+    <view class="empty-photos" wx:if="{{photos.length === 0}}">
+      <view class="empty-icon">📷</view>
+      <text class="empty-title">暂无照片</text>
+      <text class="empty-desc">点击上方按钮添加第一张照片</text>
+    </view>
+  </view>
+
+  <!-- 批量操作模式 -->
+  <view class="batch-mode" wx:if="{{isBatchMode}}">
+    <view class="batch-header">
+      <text class="batch-title">批量操作模式</text>
+      <button class="btn-secondary" bindtap="exitBatchMode">退出</button>
+    </view>
+    
+    <view class="batch-actions">
+      <button class="btn-danger" bindtap="batchDelete" disabled="{{selectedPhotos.length === 0}}">
+        删除选中 ({{selectedPhotos.length}})
+      </button>
+      <button class="btn-secondary" bindtap="selectAll">
+        {{isAllSelected ? '取消全选' : '全选'}}
+      </button>
+    </view>
+  </view>
+
+  <!-- 浮动操作按钮 -->
+  <view class="fab" bindtap="toggleBatchMode">
+    <text class="fab-icon">{{isBatchMode ? '✕' : '⚙️'}}</text>
+  </view>
+
+  <!-- 照片详情弹窗 -->
+  <view class="modal-overlay" wx:if="{{showPhotoModal}}" bindtap="hidePhotoModal">
+    <view class="modal-content photo-modal" catchtap="stopPropagation">
+      <view class="modal-header">
+        <text class="modal-title">照片详情</text>
+        <view class="close-btn" bindtap="hidePhotoModal">✕</view>
+      </view>
+      
+      <view class="modal-body">
+        <image src="{{selectedPhoto.url}}" mode="aspectFit" class="modal-photo"></image>
+        
+        <view class="photo-details">
+          <view class="detail-item">
+            <text class="detail-label">名称：</text>
+            <text class="detail-value">{{selectedPhoto.name || '未命名'}}</text>
+          </view>
+          <view class="detail-item">
+            <text class="detail-label">上传时间：</text>
+            <text class="detail-value">{{selectedPhoto.uploadTime}}</text>
+          </view>
+          <view class="detail-item" wx:if="{{selectedPhoto.description}}">
+            <text class="detail-label">描述：</text>
+            <text class="detail-value">{{selectedPhoto.description}}</text>
+          </view>
+          <view class="detail-item" wx:if="{{selectedPhoto.location}}">
+            <text class="detail-label">位置：</text>
+            <text class="detail-value">{{selectedPhoto.location}}</text>
+          </view>
+        </view>
+      </view>
+      
+      <view class="modal-footer">
+        <button class="btn-secondary" bindtap="hidePhotoModal">关闭</button>
+        <button class="btn-primary" bindtap="editPhoto">编辑</button>
+      </view>
+    </view>
+  </view>
+</view>

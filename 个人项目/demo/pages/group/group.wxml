@@ -1,0 +1,261 @@
+<!--pages/group/group.wxml-->
+<view class="container">
+  <!-- 顶部操作栏 -->
+  <view class="top-bar">
+    <view class="search-box">
+      <input class="search-input" placeholder="搜索旅游群..." bindinput="onSearchInput" value="{{searchKeyword}}" />
+      <view class="search-icon">🔍</view>
+    </view>
+    <button class="btn-primary" bindtap="createGroup">创建群组</button>
+  </view>
+
+  <!-- 群组类型切换 -->
+  <view class="group-tabs">
+    <view class="tab-item {{currentType === 'all' ? 'active' : ''}}" bindtap="switchType" data-type="all">
+      <text class="tab-text">全部</text>
+    </view>
+    <view class="tab-item {{currentType === 'my' ? 'active' : ''}}" bindtap="switchType" data-type="my">
+      <text class="tab-text">我的群组</text>
+    </view>
+    <view class="tab-item {{currentType === 'joined' ? 'active' : ''}}" bindtap="switchType" data-type="joined">
+      <text class="tab-text">已加入</text>
+    </view>
+  </view>
+
+  <!-- 群组分组列表 -->
+  <view class="group-sections" wx:if="{{filteredGroups.length > 0}}">
+    <!-- 我的群组分组 -->
+    <view class="group-section" wx:if="{{myGroups.length > 0}}">
+      <view class="section-header" bindtap="toggleSection" data-section="my">
+        <view class="section-title">
+          <text class="section-icon">👑</text>
+          <text>我创建的群组</text>
+          <view class="section-count">{{myGroups.length}}</view>
+        </view>
+        <view class="section-toggle">{{expandedSections.my ? '收起' : '展开'}}</view>
+      </view>
+      <view class="group-list" wx:if="{{expandedSections.my}}">
+        <view class="group-item" wx:for="{{myGroups}}" wx:key="id" bindtap="openGroup" data-id="{{item.id}}">
+          <view class="group-avatar">
+            <image wx:if="{{item.avatar}}" src="{{item.avatar}}" mode="aspectFill" class="avatar-image"></image>
+            <view wx:else class="avatar-placeholder">
+              <text class="placeholder-icon">👥</text>
+            </view>
+            <view class="group-status {{item.status}}">
+              {{item.status === 'active' ? '活跃' : '待审核'}}
+            </view>
+          </view>
+          
+          <view class="group-info">
+            <view class="group-header">
+              <text class="group-name">{{item.name}}</text>
+              <view class="group-actions">
+                <view class="action-btn" catchtap="editGroup" data-id="{{item.id}}">
+                  <text class="action-icon">✏️</text>
+                </view>
+                <view class="action-btn" catchtap="deleteGroup" data-id="{{item.id}}">
+                  <text class="action-icon">🗑️</text>
+                </view>
+              </view>
+            </view>
+            
+            <text class="group-desc">{{item.description || '暂无描述'}}</text>
+            
+            <view class="group-stats">
+              <view class="stat-item">
+                <text class="stat-icon">👥</text>
+                <text class="stat-text">{{item.memberCount}}/{{item.maxMembers}}人</text>
+              </view>
+              <view class="stat-item">
+                <text class="stat-icon">📅</text>
+                <text class="stat-text">{{item.createTime}}</text>
+              </view>
+              <view class="stat-item">
+                <text class="stat-icon">🔑</text>
+                <text class="stat-text">房间号: {{item.roomCode}}</text>
+              </view>
+            </view>
+            
+            <view class="group-features">
+              <view class="feature-tag" wx:if="{{item.hasAlbum}}">📷 相册</view>
+              <view class="feature-tag" wx:if="{{item.hasWheel}}">🎲 轮盘</view>
+              <view class="feature-tag" wx:if="{{item.hasVote}}">📊 投票</view>
+            </view>
+          </view>
+        </view>
+      </view>
+    </view>
+
+    <!-- 已加入的群组分组 -->
+    <view class="group-section" wx:if="{{joinedGroups.length > 0}}">
+      <view class="section-header" bindtap="toggleSection" data-section="joined">
+        <view class="section-title">
+          <text class="section-icon">🤝</text>
+          <text>我加入的群组</text>
+          <view class="section-count">{{joinedGroups.length}}</view>
+        </view>
+        <view class="section-toggle">{{expandedSections.joined ? '收起' : '展开'}}</view>
+      </view>
+      <view class="group-list" wx:if="{{expandedSections.joined}}">
+        <view class="group-item" wx:for="{{joinedGroups}}" wx:key="id" bindtap="openGroup" data-id="{{item.id}}">
+          <view class="group-avatar">
+            <image wx:if="{{item.avatar}}" src="{{item.avatar}}" mode="aspectFill" class="avatar-image"></image>
+            <view wx:else class="avatar-placeholder">
+              <text class="placeholder-icon">👥</text>
+            </view>
+            <view class="group-status {{item.status}}">
+              {{item.status === 'active' ? '活跃' : '待审核'}}
+            </view>
+          </view>
+          
+          <view class="group-info">
+            <view class="group-header">
+              <text class="group-name">{{item.name}}</text>
+              <view class="group-actions">
+                <view class="action-btn" catchtap="editGroup" data-id="{{item.id}}">
+                  <text class="action-icon">✏️</text>
+                </view>
+                <view class="action-btn" catchtap="deleteGroup" data-id="{{item.id}}">
+                  <text class="action-icon">🗑️</text>
+                </view>
+              </view>
+            </view>
+            
+            <text class="group-desc">{{item.description || '暂无描述'}}</text>
+            
+            <view class="group-stats">
+              <view class="stat-item">
+                <text class="stat-icon">👥</text>
+                <text class="stat-text">{{item.memberCount}}/{{item.maxMembers}}人</text>
+              </view>
+              <view class="stat-item">
+                <text class="stat-icon">📅</text>
+                <text class="stat-text">{{item.createTime}}</text>
+              </view>
+              <view class="stat-item">
+                <text class="stat-icon">🔑</text>
+                <text class="stat-text">房间号: {{item.roomCode}}</text>
+              </view>
+            </view>
+            
+            <view class="group-features">
+              <view class="feature-tag" wx:if="{{item.hasAlbum}}">📷 相册</view>
+              <view class="feature-tag" wx:if="{{item.hasWheel}}">🎲 轮盘</view>
+              <view class="feature-tag" wx:if="{{item.hasVote}}">📊 投票</view>
+            </view>
+          </view>
+        </view>
+      </view>
+    </view>
+
+    <!-- 其他群组分组 -->
+    <view class="group-section" wx:if="{{otherGroups.length > 0}}">
+      <view class="section-header" bindtap="toggleSection" data-section="other">
+        <view class="section-title">
+          <text class="section-icon">🌍</text>
+          <text>发现更多群组</text>
+          <view class="section-count">{{otherGroups.length}}</view>
+        </view>
+        <view class="section-toggle">{{expandedSections.other ? '收起' : '展开'}}</view>
+      </view>
+      <view class="group-list" wx:if="{{expandedSections.other}}">
+        <view class="group-item" wx:for="{{otherGroups}}" wx:key="id" bindtap="openGroup" data-id="{{item.id}}">
+          <view class="group-avatar">
+            <image wx:if="{{item.avatar}}" src="{{item.avatar}}" mode="aspectFill" class="avatar-image"></image>
+            <view wx:else class="avatar-placeholder">
+              <text class="placeholder-icon">👥</text>
+            </view>
+            <view class="group-status {{item.status}}">
+              {{item.status === 'active' ? '活跃' : '待审核'}}
+            </view>
+          </view>
+          
+          <view class="group-info">
+            <view class="group-header">
+              <text class="group-name">{{item.name}}</text>
+              <view class="group-actions">
+                <view class="action-btn" catchtap="editGroup" data-id="{{item.id}}">
+                  <text class="action-icon">✏️</text>
+                </view>
+                <view class="action-btn" catchtap="deleteGroup" data-id="{{item.id}}">
+                  <text class="action-icon">🗑️</text>
+                </view>
+              </view>
+            </view>
+            
+            <text class="group-desc">{{item.description || '暂无描述'}}</text>
+            
+            <view class="group-stats">
+              <view class="stat-item">
+                <text class="stat-icon">👥</text>
+                <text class="stat-text">{{item.memberCount}}/{{item.maxMembers}}人</text>
+              </view>
+              <view class="stat-item">
+                <text class="stat-icon">📅</text>
+                <text class="stat-text">{{item.createTime}}</text>
+              </view>
+              <view class="stat-item">
+                <text class="stat-icon">🔑</text>
+                <text class="stat-text">房间号: {{item.roomCode}}</text>
+              </view>
+            </view>
+            
+            <view class="group-features">
+              <view class="feature-tag" wx:if="{{item.hasAlbum}}">📷 相册</view>
+              <view class="feature-tag" wx:if="{{item.hasWheel}}">🎲 轮盘</view>
+              <view class="feature-tag" wx:if="{{item.hasVote}}">📊 投票</view>
+            </view>
+          </view>
+        </view>
+      </view>
+    </view>
+  </view>
+
+  <!-- 空状态 -->
+  <view class="empty-state" wx:else>
+    <view class="empty-icon">👥</view>
+    <text class="empty-title">暂无旅游群</text>
+    <text class="empty-desc">创建您的第一个旅游群，邀请朋友一起出行</text>
+    <button class="btn-primary" bindtap="createGroup">创建群组</button>
+  </view>
+
+  <!-- 加入群组弹窗 -->
+  <view class="modal-overlay" wx:if="{{showJoinModal}}" bindtap="hideJoinModal">
+    <view class="modal-content" catchtap="stopPropagation">
+      <view class="modal-header">
+        <text class="modal-title">加入旅游群</text>
+        <view class="close-btn" bindtap="hideJoinModal">✕</view>
+      </view>
+      
+      <view class="modal-body">
+        <view class="input-group">
+          <text class="input-label">房间号</text>
+          <input class="input-field" placeholder="请输入6位房间号" bindinput="onRoomCodeInput" value="{{roomCode}}" maxlength="6" />
+        </view>
+        
+        <view class="input-group">
+          <text class="input-label">验证码（可选）</text>
+          <input class="input-field" placeholder="请输入验证码" bindinput="onVerifyCodeInput" value="{{verifyCode}}" />
+        </view>
+      </view>
+      
+      <view class="modal-footer">
+        <button class="btn-secondary" bindtap="hideJoinModal">取消</button>
+        <button class="btn-primary" bindtap="joinGroup">加入群组</button>
+      </view>
+    </view>
+  </view>
+
+  <!-- 浮动操作按钮 -->
+  <view class="fab-container">
+    <view class="fab tools-fab" bindtap="navigateToTools">
+      <text class="fab-icon">🎯</text>
+    </view>
+    <view class="fab join-fab" bindtap="showJoinModal">
+      <text class="fab-icon">➕</text>
+    </view>
+    <view class="fab create-fab" bindtap="createGroup">
+      <text class="fab-icon">👥</text>
+    </view>
+  </view>
+</view>

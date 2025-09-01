@@ -1,0 +1,62 @@
+<!--pages/profile/profile.wxml-->
+<view class="container">
+  <!-- 用户信息头部 -->
+  <view class="user-header">
+    <view class="avatar-section" bindtap="changeAvatar">
+      <image src="{{userInfo.avatarUrl || '/images/default-avatar.png'}}" class="user-avatar"></image>
+      <view class="avatar-edit-hint">点击更换</view>
+    </view>
+    
+    <view class="user-info">
+      <view class="nickname-section" bindtap="editNickname">
+        <text class="nickname">{{userInfo.nickName || '未设置昵称'}}</text>
+        <text class="edit-hint">点击编辑</text>
+      </view>
+      <text class="user-id">用户ID: {{userInfo.userId || '未知'}}</text>
+    </view>
+  </view>
+
+  <!-- 功能菜单 -->
+  <view class="menu-section">
+    <view class="menu-list">
+      <view class="menu-item" bindtap="contactService">
+        <view class="menu-content">
+          <text class="menu-text">联系不靠谱开发“熵”</text>
+          <text class="menu-desc">获取帮助和支持</text>
+        </view>
+        <view class="menu-arrow">></view>
+      </view>
+
+      <view class="menu-item" bindtap="aboutUs">
+        <view class="menu-content">
+          <text class="menu-text">关于我</text>
+          <text class="menu-desc">了解应用信息</text>
+        </view>
+        <view class="menu-arrow">></view>
+      </view>
+    </view>
+  </view>
+
+  <!-- 更新日志 -->
+  <view class="update-section">
+    <view class="section-title">更新日志</view>
+    
+    <view class="update-list">
+      <view class="update-item" wx:for="{{updateLogs}}" wx:key="version" bindtap="viewUpdateLog" data-index="{{index}}">
+        <view class="update-header">
+          <text class="update-version">{{item.version}}</text>
+          <text class="update-date">{{item.date}}</text>
+        </view>
+        <view class="update-preview">
+          <text class="update-preview-text">{{item.changes[0]}}</text>
+          <text class="update-preview-hint">点击查看详情</text>
+        </view>
+      </view>
+    </view>
+  </view>
+
+  <!-- 退出登录按钮 -->
+  <view class="logout-section">
+    <button class="logout-btn" bindtap="logout">退出登录</button>
+  </view>
+</view>

@@ -1,0 +1,225 @@
+<!--pages/statistics/statistics.wxml-->
+<view class="container">
+  <!-- 页面标题 -->
+  <view class="page-header">
+    <text class="page-title">旅游统计</text>
+    <text class="page-subtitle">查看您的旅行足迹数据</text>
+  </view>
+
+  <!-- 统计概览 -->
+  <view class="overview-section">
+    <view class="overview-title">📊 统计概览</view>
+    <view class="overview-cards">
+      <view class="overview-card">
+        <view class="card-icon">📍</view>
+        <view class="card-content">
+          <text class="card-value">{{totalCheckins}}</text>
+          <text class="card-label">总打卡次数</text>
+        </view>
+      </view>
+      
+      <view class="overview-card">
+        <view class="card-icon">📷</view>
+        <view class="card-content">
+          <text class="card-value">{{totalPhotos}}</text>
+          <text class="card-label">总照片数</text>
+        </view>
+      </view>
+      
+      <view class="overview-card">
+        <view class="card-icon">🗺️</view>
+        <view class="card-content">
+          <text class="card-value">{{totalAlbums}}</text>
+          <text class="card-label">总相册数</text>
+        </view>
+      </view>
+      
+      <view class="overview-card">
+        <view class="card-icon">👥</view>
+        <view class="card-content">
+          <text class="card-value">{{totalGroups}}</text>
+          <text class="card-label">总群组数</text>
+        </view>
+      </view>
+    </view>
+  </view>
+
+  <!-- 时间筛选 -->
+  <view class="filter-section">
+    <view class="filter-title">时间范围</view>
+    <view class="time-filters">
+      <view class="filter-btn {{timeRange === 'week' ? 'active' : ''}}" bindtap="setTimeRange" data-range="week">
+        本周
+      </view>
+      <view class="filter-btn {{timeRange === 'month' ? 'active' : ''}}" bindtap="setTimeRange" data-range="month">
+        本月
+      </view>
+      <view class="filter-btn {{timeRange === 'year' ? 'active' : ''}}" bindtap="setTimeRange" data-range="year">
+        本年
+      </view>
+      <view class="filter-btn {{timeRange === 'all' ? 'active' : ''}}" bindtap="setTimeRange" data-range="all">
+        全部
+      </view>
+    </view>
+  </view>
+
+  <!-- 打卡统计 -->
+  <view class="stats-section">
+    <view class="section-title">📍 打卡统计</view>
+    
+    <view class="stats-content">
+      <view class="chart-container">
+        <view class="chart-title">打卡趋势</view>
+        <view class="trend-chart">
+          <view class="chart-bar" wx:for="{{checkinTrend}}" wx:key="date" style="height: {{item.height}}%">
+            <view class="bar-tooltip">{{item.count}}次</view>
+          </view>
+        </view>
+        <view class="chart-labels">
+          <text wx:for="{{checkinTrend}}" wx:key="date">{{item.label}}</text>
+        </view>
+      </view>
+      
+      <view class="stats-grid">
+        <view class="stat-item">
+          <text class="stat-label">最常打卡时间</text>
+          <text class="stat-value">{{mostCheckinTime}}</text>
+        </view>
+        <view class="stat-item">
+          <text class="stat-label">最常打卡类型</text>
+          <text class="stat-value">{{mostCheckinType}}</text>
+        </view>
+        <view class="stat-item">
+          <text class="stat-label">平均打卡间隔</text>
+          <text class="stat-value">{{avgCheckinInterval}}</text>
+        </view>
+        <view class="stat-item">
+          <text class="stat-label">最长打卡间隔</text>
+          <text class="stat-value">{{maxCheckinInterval}}</text>
+        </view>
+      </view>
+    </view>
+  </view>
+
+  <!-- 照片统计 -->
+  <view class="stats-section">
+    <view class="section-title">📷 照片统计</view>
+    
+    <view class="stats-content">
+      <view class="photo-stats">
+        <view class="stat-row">
+          <text class="stat-label">照片总数</text>
+          <text class="stat-value">{{photoStats.total}}</text>
+        </view>
+        <view class="stat-row">
+          <text class="stat-label">本月新增</text>
+          <text class="stat-value">{{photoStats.thisMonth}}</text>
+        </view>
+        <view class="stat-row">
+          <text class="stat-label">本周新增</text>
+          <text class="stat-value">{{photoStats.thisWeek}}</text>
+        </view>
+        <view class="stat-row">
+          <text class="stat-label">平均每天</text>
+          <text class="stat-value">{{photoStats.avgPerDay}}</text>
+        </view>
+      </view>
+      
+      <view class="album-stats">
+        <view class="album-chart">
+          <view class="chart-title">相册分布</view>
+          <view class="pie-chart">
+            <view class="pie-segment" wx:for="{{albumDistribution}}" wx:key="name" 
+                  style="transform: rotate({{item.rotation}}deg); background: {{item.color}};">
+              <view class="segment-label">{{item.name}}</view>
+            </view>
+          </view>
+        </view>
+      </view>
+    </view>
+  </view>
+
+  <!-- 地点统计 -->
+  <view class="stats-section">
+    <view class="section-title">🗺️ 地点统计</view>
+    
+    <view class="stats-content">
+      <view class="location-stats">
+        <view class="top-locations">
+          <view class="location-item" wx:for="{{topLocations}}" wx:key="name">
+            <view class="location-rank">{{index + 1}}</view>
+            <view class="location-info">
+              <text class="location-name">{{item.name}}</text>
+              <text class="location-count">{{item.count}}次打卡</text>
+            </view>
+            <view class="location-percentage">{{item.percentage}}%</view>
+          </view>
+        </view>
+        
+        <view class="location-map">
+          <view class="map-title">打卡热力图</view>
+          <view class="heatmap-container">
+            <view class="heatmap-point" wx:for="{{heatmapPoints}}" wx:key="id"
+                  style="left: {{item.x}}%; top: {{item.y}}%; opacity: {{item.intensity}};">
+            </view>
+          </view>
+        </view>
+      </view>
+    </view>
+  </view>
+
+  <!-- 标签统计 -->
+  <view class="stats-section">
+    <view class="section-title">🏷️ 标签统计</view>
+    
+    <view class="stats-content">
+      <view class="tag-cloud">
+        <view class="tag-item" wx:for="{{tagStats}}" wx:key="name" 
+              style="font-size: {{item.size}}rpx; opacity: {{item.opacity}};">
+          {{item.name}} ({{item.count}})
+        </view>
+      </view>
+    </view>
+  </view>
+
+  <!-- 分享统计 -->
+  <view class="stats-section">
+    <view class="section-title">📤 分享统计</view>
+    
+    <view class="stats-content">
+      <view class="share-stats">
+        <view class="share-item">
+          <text class="share-label">分享到微信</text>
+          <text class="share-value">{{shareStats.wechat}}次</text>
+        </view>
+        <view class="share-item">
+          <text class="share-label">分享到朋友圈</text>
+          <text class="share-value">{{shareStats.moments}}次</text>
+        </view>
+        <view class="share-item">
+          <text class="share-label">群组分享</text>
+          <text class="share-value">{{shareStats.group}}次</text>
+        </view>
+      </view>
+    </view>
+  </view>
+
+  <!-- 导出功能 -->
+  <view class="export-section">
+    <view class="section-title">📋 数据导出</view>
+    <view class="export-buttons">
+      <button class="export-btn" bindtap="exportToImage">
+        <text class="btn-icon">🖼️</text>
+        <text class="btn-text">导出为图片</text>
+      </button>
+      <button class="export-btn" bindtap="exportToPDF">
+        <text class="btn-icon">📄</text>
+        <text class="btn-text">导出为PDF</text>
+      </button>
+      <button class="export-btn" bindtap="shareStats">
+        <text class="btn-icon">📤</text>
+        <text class="btn-text">分享统计</text>
+      </button>
+    </view>
+  </view>
+</view>

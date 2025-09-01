@@ -1,0 +1,96 @@
+<!--pages/index/index.wxml-->
+<view class="container">
+  <!-- 顶部用户头像区域 -->
+  <view class="user-avatar-section" bindtap="navigateToProfile">
+    <image src="{{userInfo.avatarUrl || '/images/default-avatar.png'}}" class="user-avatar-small"></image>
+    <text class="avatar-hint">点击进入个人设置</text>
+  </view>
+
+  <!-- 顶部欢迎区域 -->
+  <view class="welcome-section">
+    <view class="welcome-text">
+      <text class="welcome-title">欢迎使用旅冰GO</text>
+      <text class="welcome-subtitle">记录美好时光，探索精彩世界</text>
+    </view>
+  </view>
+
+  <!-- 功能导航区域 -->
+  <view class="feature-grid">
+    <!-- 旅游板块 -->
+    <view class="feature-section">
+      <view class="section-title">
+        <text class="title-text">旅游板块</text>
+        <text class="title-desc">记录旅行足迹</text>
+      </view>
+      
+      <view class="feature-cards">
+        <view class="feature-card" bindtap="navigateToAlbum">
+          <view class="card-content">
+            <text class="card-title">相册管理</text>
+            <text class="card-desc">创建相册，记录美好瞬间</text>
+          </view>
+          <view class="card-arrow">></view>
+        </view>
+
+        <view class="feature-card" bindtap="navigateToMap">
+          <view class="card-content">
+            <text class="card-title">地图导航</text>
+            <text class="card-desc">地图打卡，路线规划</text>
+          </view>
+          <view class="card-arrow">></view>
+        </view>
+
+        <view class="feature-card" bindtap="navigateToHotel">
+          <view class="card-content">
+            <text class="card-title">酒店比价</text>
+            <text class="card-desc">多平台价格对比</text>
+          </view>
+          <view class="card-arrow">></view>
+        </view>
+
+        <view class="feature-card" bindtap="navigateToGroup">
+          <view class="card-content">
+            <text class="card-title">旅游小群</text>
+            <text class="card-desc">团队出行，共同记录</text>
+          </view>
+          <view class="card-arrow">></view>
+        </view>
+      </view>
+    </view>
+  </view>
+
+  <!-- 快速操作区域 -->
+  <view class="quick-actions">
+    <view class="action-title">快速操作</view>
+    <view class="action-buttons">
+      <button class="action-btn" bindtap="quickCheckin">
+        <text class="btn-text">快速打卡</text>
+      </button>
+      <button class="action-btn" bindtap="quickPhoto">
+        <text class="btn-text">拍照记录</text>
+      </button>
+      <button class="action-btn" bindtap="quickRoute">
+        <text class="btn-text">路线规划</text>
+      </button>
+    </view>
+  </view>
+
+  <!-- 最近活动 -->
+  <view class="recent-activities" wx:if="{{recentActivities.length > 0}}">
+    <view class="section-title">
+      <text class="title-text">最近活动</text>
+      <text class="title-desc">查看您的最近记录</text>
+    </view>
+    
+    <view class="activity-list">
+      <view class="activity-item" wx:for="{{recentActivities}}" wx:key="id" bindtap="viewActivity" data-id="{{item.id}}">
+        <view class="activity-icon">{{item.icon}}</view>
+        <view class="activity-content">
+          <text class="activity-title">{{item.title}}</text>
+          <text class="activity-time">{{item.time}}</text>
+        </view>
+        <view class="activity-arrow">></view>
+      </view>
+    </view>
+  </view>
+</view>

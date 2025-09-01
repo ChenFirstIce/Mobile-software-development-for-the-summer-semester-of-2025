@@ -1,0 +1,178 @@
+/* pages/map/map.wxss */
+
+.map-type-switcher {
+  display: flex;
+  background: white;
+  border-radius: 12rpx;
+  padding: 8rpx;
+  margin-bottom: 20rpx;
+  box-shadow: 0 2rpx 8rpx rgba(0, 0, 0, 0.1);
+}
+
+.type-btn {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 20rpx;
+  border-radius: 8rpx;
+  transition: all 0.3s ease;
+}
+
+.type-btn.active {
+  background: #4CAF50;
+  color: white;
+}
+
+.type-icon {
+  font-size: 32rpx;
+  margin-bottom: 8rpx;
+}
+
+.type-text {
+  font-size: 24rpx;
+  font-weight: 500;
+}
+
+.map-container {
+  width: 100%;
+  height: 600rpx;
+  border-radius: 16rpx;
+  overflow: hidden;
+  margin-bottom: 20rpx;
+  box-shadow: 0 4rpx 20rpx rgba(0, 0, 0, 0.15);
+}
+
+.map {
+  width: 100%;
+  height: 100%;
+}
+
+.map-controls {
+  position: absolute;
+  right: 40rpx;
+  top: 200rpx;
+  display: flex;
+  flex-direction: column;
+  gap: 16rpx;
+  z-index: 100;
+}
+
+.control-btn {
+  width: 80rpx;
+  height: 80rpx;
+  background: white;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 2rpx 12rpx rgba(0, 0, 0, 0.15);
+  transition: all 0.3s ease;
+}
+
+.control-btn:active {
+  transform: scale(0.9);
+  box-shadow: 0 1rpx 6rpx rgba(0, 0, 0, 0.2);
+}
+
+.control-icon {
+  font-size: 32rpx;
+  color: #333;
+}
+
+.function-buttons {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 20rpx;
+  margin-bottom: 30rpx;
+}
+
+.func-btn {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background: white;
+  border: none;
+  border-radius: 16rpx;
+  padding: 40rpx 20rpx;
+  box-shadow: 0 2rpx 12rpx rgba(0, 0, 0, 0.1);
+  transition: all 0.3s ease;
+}
+
+.func-btn:active {
+  transform: scale(0.95);
+  box-shadow: 0 1rpx 6rpx rgba(0, 0, 0, 0.15);
+}
+
+.btn-icon {
+  font-size: 48rpx;
+  margin-bottom: 16rpx;
+}
+
+.btn-text {
+  font-size: 28rpx;
+  color: #333;
+  font-weight: 500;
+}
+
+.checkin-btn {
+  background: linear-gradient(135deg, #4CAF50, #45a049);
+  color: white;
+}
+
+.checkin-btn .btn-text {
+  color: white;
+}
+
+.route-btn {
+  background: linear-gradient(135deg, #2196F3, #1976D2);
+  color: white;
+}
+
+.route-btn .btn-text {
+  color: white;
+}
+
+.hotel-btn {
+  background: linear-gradient(135deg, #FF9800, #F57C00);
+  color: white;
+}
+
+.hotel-btn .btn-text {
+  color: white;
+}
+
+.stats-btn {
+  background: linear-gradient(135deg, #9C27B0, #7B1FA2);
+  color: white;
+}
+
+.stats-btn .btn-text {
+  color: white;
+}
+
+/* 响应式设计 */
+@media (max-width: 750rpx) {
+  .map-container {
+    height: 500rpx;
+  }
+  
+  .function-buttons {
+    grid-template-columns: 1fr;
+  }
+  
+  .map-controls {
+    right: 20rpx;
+    top: 150rpx;
+  }
+  
+  .control-btn {
+    width: 60rpx;
+    height: 60rpx;
+  }
+  
+  .control-icon {
+    font-size: 24rpx;
+  }
+}

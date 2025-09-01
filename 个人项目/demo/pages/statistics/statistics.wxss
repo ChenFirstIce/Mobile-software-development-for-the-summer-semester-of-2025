@@ -1,0 +1,506 @@
+/* pages/statistics/statistics.wxss */
+
+.page-header {
+  text-align: center;
+  margin-bottom: 30rpx;
+}
+
+.page-title {
+  display: block;
+  font-size: 36rpx;
+  font-weight: bold;
+  color: #333;
+  margin-bottom: 10rpx;
+}
+
+.page-subtitle {
+  display: block;
+  font-size: 26rpx;
+  color: #666;
+}
+
+/* 统计概览 */
+.overview-section {
+  background: white;
+  border-radius: 16rpx;
+  padding: 30rpx;
+  margin-bottom: 20rpx;
+  box-shadow: 0 2rpx 12rpx rgba(0, 0, 0, 0.1);
+}
+
+.overview-title {
+  font-size: 30rpx;
+  font-weight: bold;
+  color: #333;
+  margin-bottom: 20rpx;
+}
+
+.overview-cards {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 20rpx;
+}
+
+.overview-card {
+  display: flex;
+  align-items: center;
+  gap: 20rpx;
+  padding: 20rpx;
+  background: #f8f9fa;
+  border-radius: 12rpx;
+  border-left: 4rpx solid #4CAF50;
+}
+
+.card-icon {
+  font-size: 48rpx;
+}
+
+.card-content {
+  display: flex;
+  flex-direction: column;
+  gap: 8rpx;
+}
+
+.card-value {
+  font-size: 32rpx;
+  font-weight: bold;
+  color: #333;
+}
+
+.card-label {
+  font-size: 24rpx;
+  color: #666;
+}
+
+/* 时间筛选 */
+.filter-section {
+  background: white;
+  border-radius: 16rpx;
+  padding: 30rpx;
+  margin-bottom: 20rpx;
+  box-shadow: 0 2rpx 12rpx rgba(0, 0, 0, 0.1);
+}
+
+.filter-title {
+  font-size: 30rpx;
+  font-weight: bold;
+  color: #333;
+  margin-bottom: 20rpx;
+}
+
+.time-filters {
+  display: flex;
+  gap: 16rpx;
+}
+
+.filter-btn {
+  flex: 1;
+  padding: 20rpx;
+  text-align: center;
+  background: #f5f5f5;
+  border-radius: 8rpx;
+  font-size: 26rpx;
+  color: #666;
+  transition: all 0.3s ease;
+}
+
+.filter-btn.active {
+  background: #4CAF50;
+  color: white;
+}
+
+/* 统计区域 */
+.stats-section {
+  background: white;
+  border-radius: 16rpx;
+  padding: 30rpx;
+  margin-bottom: 20rpx;
+  box-shadow: 0 2rpx 12rpx rgba(0, 0, 0, 0.1);
+}
+
+.section-title {
+  font-size: 30rpx;
+  font-weight: bold;
+  color: #333;
+  margin-bottom: 20rpx;
+}
+
+.stats-content {
+  display: flex;
+  flex-direction: column;
+  gap: 30rpx;
+}
+
+/* 图表容器 */
+.chart-container {
+  text-align: center;
+}
+
+.chart-title {
+  font-size: 26rpx;
+  font-weight: bold;
+  color: #333;
+  margin-bottom: 20rpx;
+}
+
+/* 趋势图表 */
+.trend-chart {
+  display: flex;
+  align-items: end;
+  justify-content: space-around;
+  height: 200rpx;
+  margin-bottom: 20rpx;
+  padding: 0 20rpx;
+}
+
+.chart-bar {
+  position: relative;
+  width: 40rpx;
+  background: linear-gradient(to top, #4CAF50, #81C784);
+  border-radius: 4rpx 4rpx 0 0;
+  transition: all 0.3s ease;
+}
+
+.chart-bar:active {
+  transform: scale(1.1);
+}
+
+.bar-tooltip {
+  position: absolute;
+  top: -40rpx;
+  left: 50%;
+  transform: translateX(-50%);
+  background: rgba(0, 0, 0, 0.8);
+  color: white;
+  padding: 8rpx 12rpx;
+  border-radius: 6rpx;
+  font-size: 20rpx;
+  white-space: nowrap;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.chart-bar:active .bar-tooltip {
+  opacity: 1;
+}
+
+.chart-labels {
+  display: flex;
+  justify-content: space-around;
+  font-size: 22rpx;
+  color: #666;
+}
+
+/* 统计网格 */
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 20rpx;
+}
+
+.stat-item {
+  display: flex;
+  flex-direction: column;
+  gap: 8rpx;
+  padding: 20rpx;
+  background: #f8f9fa;
+  border-radius: 8rpx;
+}
+
+.stat-label {
+  font-size: 24rpx;
+  color: #666;
+}
+
+.stat-value {
+  font-size: 28rpx;
+  font-weight: bold;
+  color: #333;
+}
+
+/* 照片统计 */
+.photo-stats {
+  display: flex;
+  flex-direction: column;
+  gap: 16rpx;
+}
+
+.stat-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 16rpx 0;
+  border-bottom: 1rpx solid #f0f0f0;
+}
+
+.stat-row:last-child {
+  border-bottom: none;
+}
+
+.stat-label {
+  font-size: 26rpx;
+  color: #333;
+}
+
+.stat-value {
+  font-size: 26rpx;
+  font-weight: bold;
+  color: #4CAF50;
+}
+
+/* 相册分布图表 */
+.album-stats {
+  text-align: center;
+}
+
+.album-chart {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 20rpx;
+}
+
+.pie-chart {
+  position: relative;
+  width: 200rpx;
+  height: 200rpx;
+  border-radius: 50%;
+  background: conic-gradient(
+    #4CAF50 0deg 90deg,
+    #2196F3 90deg 180deg,
+    #FF9800 180deg 270deg,
+    #9C27B0 270deg 360deg
+  );
+}
+
+.pie-segment {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  clip-path: polygon(50% 50%, 100% 50%, 100% 0, 50% 0);
+}
+
+.segment-label {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  font-size: 20rpx;
+  color: white;
+  font-weight: bold;
+  text-shadow: 1rpx 1rpx 2rpx rgba(0, 0, 0, 0.8);
+}
+
+/* 地点统计 */
+.location-stats {
+  display: flex;
+  flex-direction: column;
+  gap: 30rpx;
+}
+
+.top-locations {
+  display: flex;
+  flex-direction: column;
+  gap: 16rpx;
+}
+
+.location-item {
+  display: flex;
+  align-items: center;
+  gap: 20rpx;
+  padding: 20rpx;
+  background: #f8f9fa;
+  border-radius: 8rpx;
+}
+
+.location-rank {
+  width: 40rpx;
+  height: 40rpx;
+  background: #4CAF50;
+  color: white;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 24rpx;
+  font-weight: bold;
+}
+
+.location-info {
+  flex: 1;
+}
+
+.location-name {
+  display: block;
+  font-size: 26rpx;
+  font-weight: bold;
+  color: #333;
+  margin-bottom: 4rpx;
+}
+
+.location-count {
+  font-size: 22rpx;
+  color: #666;
+}
+
+.location-percentage {
+  font-size: 24rpx;
+  font-weight: bold;
+  color: #4CAF50;
+}
+
+/* 热力图 */
+.location-map {
+  text-align: center;
+}
+
+.map-title {
+  font-size: 26rpx;
+  font-weight: bold;
+  color: #333;
+  margin-bottom: 20rpx;
+}
+
+.heatmap-container {
+  position: relative;
+  width: 100%;
+  height: 300rpx;
+  background: #f5f5f5;
+  border-radius: 8rpx;
+  overflow: hidden;
+}
+
+.heatmap-point {
+  position: absolute;
+  width: 20rpx;
+  height: 20rpx;
+  background: #f44336;
+  border-radius: 50%;
+  transform: translate(-50%, -50%);
+}
+
+/* 标签云 */
+.tag-cloud {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 20rpx;
+  padding: 20rpx;
+  background: #f8f9fa;
+  border-radius: 8rpx;
+}
+
+.tag-item {
+  padding: 12rpx 20rpx;
+  background: #4CAF50;
+  color: white;
+  border-radius: 20rpx;
+  font-weight: 500;
+  transition: all 0.3s ease;
+}
+
+.tag-item:active {
+  transform: scale(1.1);
+}
+
+/* 分享统计 */
+.share-stats {
+  display: flex;
+  flex-direction: column;
+  gap: 16rpx;
+}
+
+.share-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 20rpx;
+  background: #f8f9fa;
+  border-radius: 8rpx;
+}
+
+.share-label {
+  font-size: 26rpx;
+  color: #333;
+}
+
+.share-value {
+  font-size: 26rpx;
+  font-weight: bold;
+  color: #4CAF50;
+}
+
+/* 导出功能 */
+.export-section {
+  background: white;
+  border-radius: 16rpx;
+  padding: 30rpx;
+  margin-bottom: 30rpx;
+  box-shadow: 0 2rpx 12rpx rgba(0, 0, 0, 0.1);
+}
+
+.export-buttons {
+  display: flex;
+  gap: 20rpx;
+}
+
+.export-btn {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 30rpx 20rpx;
+  background: #f8f9fa;
+  border: 2rpx solid #e0e0e0;
+  border-radius: 12rpx;
+  transition: all 0.3s ease;
+}
+
+.export-btn:active {
+  background: #e0e0e0;
+  transform: scale(0.95);
+}
+
+.btn-icon {
+  font-size: 48rpx;
+  margin-bottom: 16rpx;
+}
+
+.btn-text {
+  font-size: 26rpx;
+  color: #333;
+  font-weight: 500;
+}
+
+/* 响应式设计 */
+@media (max-width: 750rpx) {
+  .overview-cards {
+    grid-template-columns: 1fr;
+  }
+  
+  .time-filters {
+    flex-wrap: wrap;
+  }
+  
+  .filter-btn {
+    min-width: 120rpx;
+  }
+  
+  .stats-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .export-buttons {
+    flex-direction: column;
+  }
+  
+  .trend-chart {
+    height: 150rpx;
+  }
+  
+  .chart-bar {
+    width: 30rpx;
+  }
+}
