@@ -1,0 +1,46 @@
+video{
+  width: 100%;
+}
+
+.videoList{
+  width: 100%;
+  min-height: 400rpx;
+}
+
+.videoBar{
+  width: 95%;
+  display: flex;
+  flex-direction: row;
+  border-bottom: 1rpx solid #987838;
+  margin: 10rpx;
+}
+
+text{
+  font-size: 45rpx;
+  color:  #987838;
+  margin: 20rpx;
+  flex-grow: 1;
+}
+
+image{
+  width: 70rpx;
+  height: 70rpx;
+  margin: 20rpx;
+}
+
+.danmuArea{
+  display: flex;
+  flex-direction: row;
+}
+
+input{
+  border: 1rpx solid #987838;
+  flex-grow: 1;
+  height: 100rpx;
+  font-size: 40rpx;
+}
+
+button{
+  color: white;
+  background-color: #987838;
+}

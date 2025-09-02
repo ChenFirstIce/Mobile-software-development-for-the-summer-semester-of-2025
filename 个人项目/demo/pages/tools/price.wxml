@@ -1,0 +1,211 @@
+<!--pages/tools/price.wxml-->
+<view class="container">
+  <!-- 导航栏 -->
+  <view class="nav-bar">
+    <view class="nav-left" bindtap="goBack">
+      <text class="nav-arrow">←</text>
+    </view>
+    <view class="nav-title">心选价格</view>
+    <view class="nav-right">
+      <!-- 历史功能已移除 -->
+    </view>
+  </view>
+
+  <!-- 群组信息 -->
+  <view class="group-info" wx:if="{{groupInfo}}">
+    <text class="group-name">{{groupInfo.name}}</text>
+    <text class="group-desc">{{groupInfo.description || '暂无描述'}}</text>
+  </view>
+
+  <!-- 匿名模式切换 -->
+  <view class="anonymous-section">
+    <view class="switch-container">
+      <text class="switch-label">匿名模式</text>
+      <switch class="switch" checked="{{isAnonymous}}" bindchange="toggleAnonymous" color="#667eea"></switch>
+    </view>
+    <text class="switch-desc">{{isAnonymous ? '用户昵称将被隐藏' : '显示用户昵称'}}</text>
+  </view>
+
+  <!-- 未完成成员头像 -->
+  <view class="members-section">
+    <view class="section-header">
+      <text class="section-title">未完成输入</text>
+      <text class="member-count">{{priceItems.length}}/{{members.length}}</text>
+    </view>
+    
+    <view class="members-row">
+      <view class="member-avatar" wx:for="{{members}}" wx:key="id" wx:if="{{!isMemberCompleted[item.id]}}">
+        <image class="avatar-img" src="{{item.avatarUrl || '/images/default-avatar.png'}}" mode="aspectFill"></image>
+        <view class="avatar-status incomplete"></view>
+      </view>
+      
+      <!-- 省略号按钮 -->
+      <view class="more-btn" wx:if="{{members.length > 5}}" bindtap="showIncompleteMembers">
+        <text class="more-text">...</text>
+      </view>
+    </view>
+  </view>
+
+  <!-- 折线图区域 -->
+  <view class="chart-section">
+    <view class="chart-container">
+      <view class="chart-title">价格分布图</view>
+      
+      <!-- 图表区域 -->
+      <view class="chart-area" wx:if="{{priceItems.length > 0}}">
+        <view class="chart-y-axis">
+          <text class="y-label">价格</text>
+        </view>
+        
+                 <view class="chart-content">
+           <view class="chart-line min-line" wx:for="{{chartMinPrices}}" wx:key="index">
+             <view class="line-point" style="height: {{item / maxMinPrice * 200}}rpx;"></view>
+             <text class="point-value">{{item}}</text>
+           </view>
+           
+           <view class="chart-line max-line" wx:for="{{chartMaxPrices}}" wx:key="index">
+             <view class="line-point" style="height: {{item / maxMaxPrice * 200}}rpx;"></view>
+             <text class="point-value">{{item}}</text>
+           </view>
+         </view>
+        
+        <view class="chart-x-axis">
+          <text class="x-label" wx:for="{{chartLabels}}" wx:key="index">{{item}}</text>
+        </view>
+      </view>
+      
+      <!-- 空状态 -->
+      <view class="chart-empty" wx:if="{{priceItems.length === 0}}">
+        <text class="empty-text">暂无价格数据</text>
+        <text class="empty-desc">请先输入价格信息</text>
+      </view>
+    </view>
+  </view>
+
+  <!-- 操作按钮 -->
+  <view class="action-buttons">
+    <button class="btn btn-input" bindtap="showInputModal">
+      <text class="btn-text">输入价格</text>
+    </button>
+    
+    <button class="btn btn-result" bindtap="showResults" disabled="{{priceItems.length === 0}}">
+      <text class="btn-text">查看结果</text>
+    </button>
+  </view>
+
+  <!-- 重置按钮 -->
+  <view class="reset-section">
+    <button class="btn btn-reset" bindtap="resetPriceVote">
+      <text class="btn-text">重置投票</text>
+    </button>
+  </view>
+
+  <!-- 输入弹窗 -->
+  <view class="modal-overlay" wx:if="{{showInputModal}}" bindtap="hideInputModal">
+    <view class="modal-content" catchtap="stopPropagation">
+      <view class="modal-header">
+        <text class="modal-title">输入价格</text>
+        <text class="modal-close" bindtap="hideInputModal">×</text>
+      </view>
+      
+      <view class="modal-body">
+        <view class="price-input-group">
+          <view class="input-item">
+            <text class="input-label">最低价</text>
+            <input class="price-input" 
+                   type="number" 
+                   placeholder="请输入最低价"
+                   value="{{inputMinPrice}}"
+                   bindinput="onMinPriceInput"></input>
+          </view>
+          
+          <view class="input-item">
+            <text class="input-label">最高价</text>
+            <input class="price-input" 
+                   type="number" 
+                   placeholder="请输入最高价"
+                   value="{{inputMaxPrice}}"
+                   bindinput="onMaxPriceInput"></input>
+          </view>
+        </view>
+      </view>
+      
+      <view class="modal-footer">
+        <button class="btn btn-cancel" bindtap="hideInputModal">取消</button>
+        <button class="btn btn-confirm" bindtap="confirmInput">确认</button>
+      </view>
+    </view>
+  </view>
+
+  <!-- 结果弹窗 -->
+  <view class="modal-overlay" wx:if="{{showResultModal}}" bindtap="hideResultModal">
+    <view class="modal-content result-modal" catchtap="stopPropagation">
+      <view class="modal-header">
+        <text class="modal-title">💰 价格统计</text>
+      </view>
+      
+      <view class="modal-body">
+        <view class="result-content">
+          <view class="stats-section">
+            <text class="stats-title">最低价统计</text>
+            <view class="stats-item">
+              <text class="stats-label">最高：</text>
+              <text class="stats-value">{{minStats.highest}}</text>
+            </view>
+            <view class="stats-item">
+              <text class="stats-label">最低：</text>
+              <text class="stats-value">{{minStats.lowest}}</text>
+            </view>
+            <view class="stats-item">
+              <text class="stats-label">平均：</text>
+              <text class="stats-value">{{minStats.average}}</text>
+            </view>
+          </view>
+          
+          <view class="stats-section">
+            <text class="stats-title">最高价统计</text>
+            <view class="stats-item">
+              <text class="stats-label">最高：</text>
+              <text class="stats-value">{{maxStats.highest}}</text>
+            </view>
+            <view class="stats-item">
+              <text class="stats-label">最低：</text>
+              <text class="stats-value">{{maxStats.lowest}}</text>
+            </view>
+            <view class="stats-item">
+              <text class="stats-label">平均：</text>
+              <text class="stats-value">{{maxStats.average}}</text>
+            </view>
+          </view>
+        </view>
+      </view>
+      
+      <view class="modal-footer">
+        <button class="btn btn-confirm" bindtap="hideResultModal">知道了</button>
+      </view>
+    </view>
+  </view>
+
+  <!-- 成员列表弹窗 -->
+  <view class="modal-overlay" wx:if="{{showMembersModal}}" bindtap="hideMembersModal">
+    <view class="modal-content members-modal" catchtap="stopPropagation">
+      <view class="modal-header">
+        <text class="modal-title">未完成成员</text>
+        <text class="modal-close" bindtap="hideMembersModal">×</text>
+      </view>
+      
+      <view class="modal-body">
+        <view class="members-list">
+          <view class="member-item" wx:for="{{incompleteMembers}}" wx:key="id">
+            <image class="member-avatar-large" src="{{item.avatarUrl || '/images/default-avatar.png'}}" mode="aspectFill"></image>
+            <text class="member-name">{{item.nickName}}</text>
+          </view>
+        </view>
+      </view>
+      
+      <view class="modal-footer">
+        <button class="btn btn-confirm" bindtap="hideMembersModal">知道了</button>
+      </view>
+    </view>
+  </view>
+</view>

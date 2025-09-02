@@ -8,6 +8,27 @@ Page({
   },
 
   onLoad: function (options) {
+    this.checkLoginAndRedirect()
+  },
+
+  onShow: function () {
+    // 页面显示时检查登录状态
+    this.checkLoginAndRedirect()
+  },
+
+  // 检查登录状态并重定向
+  checkLoginAndRedirect: function () {
+    const isLoggedIn = wx.getStorageSync('userToken') ? true : false
+    
+    if (!isLoggedIn) {
+      // 未登录，跳转到登录页面
+      wx.redirectTo({
+        url: '/pages/profile/profile'
+      })
+      return
+    }
+    
+    // 已登录，加载数据
     this.getUserInfo()
     this.loadRecentActivities()
   },
@@ -70,12 +91,6 @@ Page({
     })
   },
 
-  // 导航到娱乐页面
-  navigateToEntertainment: function () {
-    wx.switchTab({
-      url: '/pages/entertainment/entertainment'
-    })
-  },
 
   // 导航到个人设置页面
   navigateToProfile: function () {

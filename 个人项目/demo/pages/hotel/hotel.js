@@ -173,16 +173,207 @@ Page({
 
   // 执行搜索
   performSearch: function () {
-    // 模拟酒店数据
-    const mockHotels = this.generateMockHotels()
+    // 尝试调用真实API，如果失败则使用模拟数据
+    this.searchRealHotels()
+      .then(hotels => {
+        this.setData({
+          hotels: hotels,
+          filteredHotels: hotels,
+          isLoading: false
+        })
+        this.filterHotels()
+      })
+      .catch(error => {
+        console.log('API调用失败，使用模拟数据:', error)
+        const mockHotels = this.generateMockHotels()
+        this.setData({
+          hotels: mockHotels,
+          filteredHotels: mockHotels,
+          isLoading: false
+        })
+        this.filterHotels()
+      })
+  },
+
+  // 搜索真实酒店数据
+  searchRealHotels: function () {
+    return new Promise((resolve, reject) => {
+      // 这里应该调用真实的酒店API
+      // 由于需要API密钥和配置，这里提供接口示例
+      
+      const searchParams = {
+        destination: this.data.destination,
+        checkIn: this.data.checkInDate,
+        checkOut: this.data.checkOutDate,
+        rooms: this.data.roomIndex + 1,
+        guests: this.data.guestIndex + 1
+      }
+      
+      // 飞猪API调用示例
+      this.callFliggyAPI(searchParams)
+        .then(fliggyHotels => {
+          // 携程API调用示例
+          return this.callCtripAPI(searchParams)
+            .then(ctripHotels => {
+              // 合并两个平台的数据
+              const mergedHotels = this.mergeHotelData(fliggyHotels, ctripHotels)
+              resolve(mergedHotels)
+            })
+        })
+        .catch(reject)
+    })
+  },
+
+  // 调用飞猪API
+  callFliggyAPI: function (params) {
+    return new Promise((resolve, reject) => {
+      // 飞猪API调用示例
+      // 实际使用时需要配置API密钥和签名
+      wx.request({
+        url: 'https://api.fliggy.com/hotel/search',
+        method: 'POST',
+        header: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer YOUR_FLIGGY_API_KEY'
+        },
+        data: {
+          city: params.destination,
+          checkIn: params.checkIn,
+          checkOut: params.checkOut,
+          rooms: params.rooms,
+          guests: params.guests
+        },
+        success: (res) => {
+          if (res.statusCode === 200 && res.data.success) {
+            resolve(this.formatFliggyData(res.data.hotels))
+          } else {
+            reject(new Error('飞猪API调用失败'))
+          }
+        },
+        fail: reject
+      })
+    })
+  },
+
+  // 调用携程API
+  callCtripAPI: function (params) {
+    return new Promise((resolve, reject) => {
+      // 携程API调用示例
+      // 实际使用时需要配置API密钥和签名
+      wx.request({
+        url: 'https://api.ctrip.com/hotel/search',
+        method: 'POST',
+        header: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer YOUR_CTRIP_API_KEY'
+        },
+        data: {
+          city: params.destination,
+          checkIn: params.checkIn,
+          checkOut: params.checkOut,
+          rooms: params.rooms,
+          guests: params.guests
+        },
+        success: (res) => {
+          if (res.statusCode === 200 && res.data.success) {
+            resolve(this.formatCtripData(res.data.hotels))
+          } else {
+            reject(new Error('携程API调用失败'))
+          }
+        },
+        fail: reject
+      })
+    })
+  },
+
+  // 格式化飞猪数据
+  formatFliggyData: function (hotels) {
+    return hotels.map(hotel => ({
+      id: `fliggy_${hotel.hotelId}`,
+      name: hotel.hotelName,
+      address: hotel.address,
+      image: hotel.imageUrl,
+      rating: hotel.rating,
+      stars: hotel.starLevel,
+      features: hotel.amenities || [],
+      prices: [{
+        platform: '飞猪',
+        platformName: '飞猪',
+        platformIcon: '/images/fliggy.png',
+        price: hotel.price,
+        description: hotel.roomType,
+        note: hotel.promotion || '',
+        url: hotel.bookingUrl
+      }]
+    }))
+  },
+
+  // 格式化携程数据
+  formatCtripData: function (hotels) {
+    return hotels.map(hotel => ({
+      id: `ctrip_${hotel.hotelId}`,
+      name: hotel.hotelName,
+      address: hotel.address,
+      image: hotel.imageUrl,
+      rating: hotel.rating,
+      stars: hotel.starLevel,
+      features: hotel.amenities || [],
+      prices: [{
+        platform: '携程',
+        platformName: '携程',
+        platformIcon: '/images/ctrip.png',
+        price: hotel.price,
+        description: hotel.roomType,
+        note: hotel.promotion || '',
+        url: hotel.bookingUrl
+      }]
+    }))
+  },
+
+  // 合并酒店数据
+  mergeHotelData: function (fliggyHotels, ctripHotels) {
+    const mergedMap = new Map()
     
-    this.setData({
-      hotels: mockHotels,
-      filteredHotels: mockHotels,
-      isLoading: false
+    // 处理飞猪数据
+    fliggyHotels.forEach(hotel => {
+      const key = hotel.name.toLowerCase()
+      if (mergedMap.has(key)) {
+        // 如果已存在，添加价格信息
+        const existing = mergedMap.get(key)
+        existing.prices.push(...hotel.prices)
+      } else {
+        mergedMap.set(key, hotel)
+      }
     })
     
-    this.filterHotels()
+    // 处理携程数据
+    ctripHotels.forEach(hotel => {
+      const key = hotel.name.toLowerCase()
+      if (mergedMap.has(key)) {
+        // 如果已存在，添加价格信息
+        const existing = mergedMap.get(key)
+        existing.prices.push(...hotel.prices)
+      } else {
+        mergedMap.set(key, hotel)
+      }
+    })
+    
+    // 转换为数组并计算最低价格
+    const mergedHotels = Array.from(mergedMap.values()).map(hotel => {
+      const prices = hotel.prices.map(p => p.price)
+      const minPrice = Math.min(...prices)
+      const lowestPricePlatform = hotel.prices.find(p => p.price === minPrice)
+      
+      hotel.lowestPrice = {
+        price: minPrice,
+        platform: lowestPricePlatform.platform,
+        platformName: lowestPricePlatform.platformName
+      }
+      
+      return hotel
+    })
+    
+    return mergedHotels
   },
 
   // 生成模拟酒店数据

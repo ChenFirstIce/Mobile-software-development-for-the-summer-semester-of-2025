@@ -2,34 +2,60 @@
 <view class="container">
   <!-- 用户信息头部 -->
   <view class="user-header">
-    <view class="avatar-section" bindtap="changeAvatar">
+    <view class="avatar-section" wx:if="{{isLoggedIn}}" bindtap="editProfile">
       <image src="{{userInfo.avatarUrl || '/images/default-avatar.png'}}" class="user-avatar"></image>
-      <view class="avatar-edit-hint">点击更换</view>
+      <view class="avatar-edit-hint">点击编辑</view>
+    </view>
+    
+    <view class="avatar-section" wx:else bindtap="showLoginModal">
+      <image src="/images/default-avatar.png" class="user-avatar"></image>
+      <view class="avatar-edit-hint">点击登录</view>
     </view>
     
     <view class="user-info">
-      <view class="nickname-section" bindtap="editNickname">
+      <view class="nickname-section" wx:if="{{isLoggedIn}}" bindtap="editProfile">
         <text class="nickname">{{userInfo.nickName || '未设置昵称'}}</text>
         <text class="edit-hint">点击编辑</text>
       </view>
-      <text class="user-id">用户ID: {{userInfo.userId || '未知'}}</text>
+      <view class="nickname-section" wx:else bindtap="showLoginModal">
+        <text class="nickname">未登录</text>
+        <text class="edit-hint">点击登录</text>
+      </view>
+      <text class="user-id" wx:if="{{isLoggedIn}}">用户ID: {{userInfo.id || '未知'}}</text>
+      <text class="user-id" wx:else>请先登录使用完整功能</text>
     </view>
   </view>
 
   <!-- 功能菜单 -->
   <view class="menu-section">
     <view class="menu-list">
-      <view class="menu-item" bindtap="contactService">
+      <view class="menu-item" bindtap="goToSettings">
         <view class="menu-content">
-          <text class="menu-text">联系不靠谱开发“熵”</text>
-          <text class="menu-desc">获取帮助和支持</text>
+          <text class="menu-text">设置</text>
+          <text class="menu-desc">应用设置和偏好</text>
         </view>
         <view class="menu-arrow">></view>
       </view>
 
-      <view class="menu-item" bindtap="aboutUs">
+      <view class="menu-item" bindtap="goToHelp">
         <view class="menu-content">
-          <text class="menu-text">关于我</text>
+          <text class="menu-text">帮助中心</text>
+          <text class="menu-desc">使用指南和常见问题</text>
+        </view>
+        <view class="menu-arrow">></view>
+      </view>
+
+      <view class="menu-item" bindtap="goToFeedback">
+        <view class="menu-content">
+          <text class="menu-text">意见反馈</text>
+          <text class="menu-desc">告诉我们您的建议</text>
+        </view>
+        <view class="menu-arrow">></view>
+      </view>
+
+      <view class="menu-item" bindtap="goToAbout">
+        <view class="menu-content">
+          <text class="menu-text">关于我们</text>
           <text class="menu-desc">了解应用信息</text>
         </view>
         <view class="menu-arrow">></view>
@@ -37,26 +63,38 @@
     </view>
   </view>
 
-  <!-- 更新日志 -->
-  <view class="update-section">
-    <view class="section-title">更新日志</view>
-    
-    <view class="update-list">
-      <view class="update-item" wx:for="{{updateLogs}}" wx:key="version" bindtap="viewUpdateLog" data-index="{{index}}">
-        <view class="update-header">
-          <text class="update-version">{{item.version}}</text>
-          <text class="update-date">{{item.date}}</text>
-        </view>
-        <view class="update-preview">
-          <text class="update-preview-text">{{item.changes[0]}}</text>
-          <text class="update-preview-hint">点击查看详情</text>
-        </view>
-      </view>
-    </view>
+  <!-- 登录/退出按钮 -->
+  <view class="action-section">
+    <button wx:if="{{isLoggedIn}}" class="logout-btn" bindtap="logout">退出登录</button>
+    <button wx:else class="login-btn" bindtap="showLoginModal">微信登录</button>
   </view>
 
-  <!-- 退出登录按钮 -->
-  <view class="logout-section">
-    <button class="logout-btn" bindtap="logout">退出登录</button>
+  <!-- 登录弹窗 -->
+  <view class="modal-overlay" wx:if="{{showLoginModal}}" bindtap="hideLoginModal">
+    <view class="modal-content" catchtap="stopPropagation">
+      <view class="modal-header">
+        <text class="modal-title">微信授权登录</text>
+        <text class="modal-close" bindtap="hideLoginModal">×</text>
+      </view>
+      
+      <view class="modal-body">
+        <view class="login-content">
+          <image class="login-avatar" src="/images/default-avatar.png"></image>
+          <text class="login-title">欢迎使用旅冰GO</text>
+          <text class="login-desc">登录后可以使用完整功能，包括：</text>
+          <view class="login-features">
+            <text class="feature-item">• 创建和管理群组</text>
+            <text class="feature-item">• 使用小工具功能</text>
+            <text class="feature-item">• 同步数据到云端</text>
+            <text class="feature-item">• 多设备数据同步</text>
+          </view>
+        </view>
+      </view>
+      
+      <view class="modal-footer">
+        <button class="btn btn-cancel" bindtap="hideLoginModal">取消</button>
+        <button class="btn btn-confirm" bindtap="wxLogin">微信登录</button>
+      </view>
+    </view>
   </view>
 </view>

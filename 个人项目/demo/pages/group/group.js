@@ -42,10 +42,12 @@ Page({
     let filtered = this.data.groups
 
     // 按类型过滤
+    const currentUserId = app.globalData.userInfo ? app.globalData.userInfo.id : null
+    
     if (this.data.currentType === 'my') {
-      filtered = filtered.filter(group => group.creatorId === app.globalData.userInfo.id)
+      filtered = filtered.filter(group => group.creatorId === currentUserId)
     } else if (this.data.currentType === 'joined') {
-      filtered = filtered.filter(group => group.members && group.members.includes(app.globalData.userInfo.id))
+      filtered = filtered.filter(group => group.members && group.members.includes(currentUserId))
     }
 
     // 按关键词搜索
@@ -58,15 +60,15 @@ Page({
     }
 
     // 分组群组
-    const myGroups = filtered.filter(group => group.creatorId === app.globalData.userInfo.id)
+    const myGroups = filtered.filter(group => group.creatorId === currentUserId)
     const joinedGroups = filtered.filter(group => 
-      group.creatorId !== app.globalData.userInfo.id && 
+      group.creatorId !== currentUserId && 
       group.members && 
-      group.members.includes(app.globalData.userInfo.id)
+      group.members.includes(currentUserId)
     )
     const otherGroups = filtered.filter(group => 
-      group.creatorId !== app.globalData.userInfo.id && 
-      (!group.members || !group.members.includes(app.globalData.userInfo.id))
+      group.creatorId !== currentUserId && 
+      (!group.members || !group.members.includes(currentUserId))
     )
 
     this.setData({
@@ -223,7 +225,13 @@ Page({
     }
 
     // 检查是否已加入
-    if (group.members && group.members.includes(app.globalData.userInfo.id)) {
+    const currentUserId = app.globalData.userInfo ? app.globalData.userInfo.id : null
+    if (!currentUserId) {
+      app.showToast('请先登录')
+      return
+    }
+    
+    if (group.members && group.members.includes(currentUserId)) {
       app.showToast('您已经是该群组成员')
       return
     }
@@ -245,10 +253,16 @@ Page({
     
     if (groupIndex > -1) {
       // 添加成员
+      const currentUserId = app.globalData.userInfo ? app.globalData.userInfo.id : null
+      if (!currentUserId) {
+        app.showToast('请先登录')
+        return
+      }
+      
       if (!groups[groupIndex].members) {
         groups[groupIndex].members = []
       }
-      groups[groupIndex].members.push(app.globalData.userInfo.id)
+      groups[groupIndex].members.push(currentUserId)
       groups[groupIndex].memberCount = groups[groupIndex].members.length
       
       // 更新本地存储

@@ -3,93 +3,72 @@ const app = getApp()
 
 Page({
   data: {
-    userInfo: {},
-    updateLogs: []
+    userInfo: null,
+    isLoggedIn: false,
+    showLoginModal: false
   },
 
   onLoad: function (options) {
-    this.getUserInfo()
+    this.checkLoginStatus()
   },
 
   onShow: function () {
-    this.getUserInfo()
+    this.checkLoginStatus()
   },
 
-  // 获取用户信息
-  getUserInfo: function () {
-    if (app.globalData.userInfo) {
-      this.setData({
-        userInfo: app.globalData.userInfo
-      })
-    } else {
-      // 如果没有用户信息，尝试获取
-      this.getWechatUserInfo()
-    }
+  // 检查登录状态
+  checkLoginStatus: function () {
+    const userInfo = wx.getStorageSync('userInfo')
+    const isLoggedIn = wx.getStorageSync('userToken') ? true : false
+    
+    this.setData({
+      userInfo: userInfo,
+      isLoggedIn: isLoggedIn
+    })
   },
 
-  // 获取微信用户信息
-  getWechatUserInfo: function () {
-    wx.getUserProfile({
-      desc: '用于完善用户资料',
-      success: (res) => {
-        const userInfo = res.userInfo
-        app.globalData.userInfo = userInfo
+  // 显示登录弹窗
+  showLoginModal: function () {
+    this.setData({
+      showLoginModal: true
+    })
+  },
+
+  // 隐藏登录弹窗
+  hideLoginModal: function () {
+    this.setData({
+      showLoginModal: false
+    })
+  },
+
+  // 微信授权登录
+  wxLogin: function () {
+    wx.showLoading({
+      title: '登录中...'
+    })
+
+    app.wxLogin()
+      .then((userInfo) => {
+        wx.hideLoading()
         this.setData({
-          userInfo: userInfo
+          userInfo: userInfo,
+          isLoggedIn: true,
+          showLoginModal: false
         })
-        // 保存到本地存储
-        wx.setStorageSync('userInfo', userInfo)
-      },
-      fail: (err) => {
-        console.error('获取用户信息失败:', err)
-        app.showToast('获取用户信息失败')
-      }
-    })
-  },
-
-  // 编辑昵称
-  editNickname: function () {
-    wx.showModal({
-      title: '编辑昵称',
-      content: '请输入新的昵称',
-      editable: true,
-      placeholderText: this.data.userInfo.nickName || '请输入昵称',
-      success: (res) => {
-        if (res.confirm && res.content) {
-          const newNickname = res.content.trim()
-          if (newNickname) {
-            const userInfo = { ...this.data.userInfo, nickName: newNickname }
-            this.setData({ userInfo })
-            app.globalData.userInfo = userInfo
-            wx.setStorageSync('userInfo', userInfo)
-            app.showToast('昵称更新成功')
-          }
-        }
-      }
-    })
-  },
-
-  // 更换头像
-  changeAvatar: function () {
-    wx.chooseImage({
-      count: 1,
-      sizeType: ['compressed'],
-      sourceType: ['album', 'camera'],
-      success: (res) => {
-        const tempFilePath = res.tempFilePaths[0]
-        // 这里可以调用云函数上传头像
-        // 暂时直接更新本地显示
-        const userInfo = { ...this.data.userInfo, avatarUrl: tempFilePath }
-        this.setData({ userInfo })
-        app.globalData.userInfo = userInfo
-        wx.setStorageSync('userInfo', userInfo)
-        app.showToast('头像更新成功')
-      },
-      fail: (err) => {
-        console.error('选择图片失败:', err)
-        app.showToast('选择图片失败')
-      }
-    })
+        app.showToast('登录成功')
+        
+        // 登录成功后跳转到首页
+        setTimeout(() => {
+          wx.switchTab({
+            url: '/pages/index/index'
+          })
+        }, 1500)
+      })
+      .catch((error) => {
+        wx.hideLoading()
+        console.error('登录失败:', error)
+        app.showToast('登录失败，请重试')
+      })
   },
 
   // 退出登录
@@ -99,14 +78,18 @@ Page({
       content: '确定要退出登录吗？',
       success: (res) => {
         if (res.confirm) {
-          // 清除用户信息
-          app.globalData.userInfo = null
+          // 清除本地存储
+          wx.removeStorageSync('userToken')
           wx.removeStorageSync('userInfo')
-          wx.removeStorageSync('recentActivities')
           
-          // 返回首页
-          wx.switchTab({
-            url: '/pages/index/index'
+          // 更新全局数据
+          app.globalData.userInfo = null
+          app.globalData.isLoggedIn = false
+          
+          // 更新页面数据
+          this.setData({
+            userInfo: null,
+            isLoggedIn: false
           })
           
           app.showToast('已退出登录')
@@ -115,36 +98,48 @@ Page({
     })
   },
 
-  // 查看更新日志详情
-  viewUpdateLog: function (e) {
-    const index = e.currentTarget.dataset.index
-    const log = this.data.updateLogs[index]
+  // 编辑个人信息
+  editProfile: function () {
+    if (!this.data.isLoggedIn) {
+      this.showLoginModal()
+      return
+    }
     
-    wx.showModal({
-      title: `${log.version} - ${log.date}`,
-      content: log.changes.join('\n'),
-      showCancel: false,
-      confirmText: '知道了'
+    wx.navigateTo({
+      url: '/pages/profile/edit'
     })
   },
 
-  // 联系客服
-  contactService: function () {
-    wx.showModal({
-      title: '联系客服',
-      content: '如有问题请联系客服微信：travel_assistant',
-      showCancel: false,
-      confirmText: '知道了'
+  // 查看设置
+  goToSettings: function () {
+    wx.navigateTo({
+      url: '/pages/profile/settings'
     })
   },
 
   // 关于我们
-  aboutUs: function () {
-    wx.showModal({
-      title: '关于我们',
-      content: '旅冰GO v1.0.0\n\n让每一次旅行都充满乐趣！',
-      showCancel: false,
-      confirmText: '知道了'
+  goToAbout: function () {
+    wx.navigateTo({
+      url: '/pages/profile/about'
     })
+  },
+
+  // 帮助中心
+  goToHelp: function () {
+    wx.navigateTo({
+      url: '/pages/profile/help'
+    })
+  },
+
+  // 意见反馈
+  goToFeedback: function () {
+    wx.navigateTo({
+      url: '/pages/profile/feedback'
+    })
+  },
+
+  // 阻止事件冒泡
+  stopPropagation: function () {
+    // 空函数，用于阻止事件冒泡
   }
 })

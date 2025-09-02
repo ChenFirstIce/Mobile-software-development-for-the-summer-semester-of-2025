@@ -11,9 +11,10 @@
     "pages/group/group",
     "pages/group/create",
     "pages/group/detail",
-    "pages/entertainment/entertainment",
     "pages/profile/profile",
-    "pages/tools/tools"
+    "pages/tools/tools",
+    "pages/tools/wheel",
+    "pages/tools/price"
   ],
   "window": {
     "backgroundTextStyle": "light",
@@ -51,12 +52,6 @@
         "text": "旅游群",
         "iconPath": "images/group.png",
         "selectedIconPath": "images/group-active.png"
-      },
-      {
-        "pagePath": "pages/entertainment/entertainment",
-        "text": "娱乐",
-        "iconPath": "images/entertainment.png",
-        "selectedIconPath": "images/entertainment-active.png"
       }
     ]
   },

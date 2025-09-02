@@ -10,6 +10,7 @@ Page({
     
     // 群组设置
     maxMembers: 10,
+    maxMembersOptions: [5, 10, 15, 20],
     verificationType: 'none', // none, code, approval
     inviteCode: '',
     
@@ -276,8 +277,12 @@ Page({
 
   // 执行创建群组
   performCreateGroup: function () {
+    // 生成6位随机房间号
+    const roomCode = this.generateRoomCode()
+    
     const groupData = {
       id: Date.now().toString(),
+      roomCode: roomCode, // 添加房间号
       name: this.data.groupName,
       description: this.data.groupDesc,
       type: this.data.groupType,
@@ -306,6 +311,9 @@ Page({
     app.hideLoading()
     app.showToast('群组创建成功！', 'success')
     
+    // 自动加入群组
+    this.autoJoinGroup(groupData)
+    
     // 延迟跳转，让用户看到成功提示
     setTimeout(() => {
       wx.navigateBack()
@@ -322,6 +330,53 @@ Page({
     if (app.globalData.groups) {
       app.globalData.groups.unshift(groupData)
     }
+  },
+
+  // 自动加入群组
+  autoJoinGroup: function (groupData) {
+    const currentUser = app.globalData.userInfo
+    if (currentUser) {
+      // 将创建者添加到群组成员列表
+      const memberInfo = {
+        id: currentUser.id,
+        nickName: currentUser.nickName,
+        avatarUrl: currentUser.avatarUrl,
+        joinTime: new Date().toISOString(),
+        role: 'creator'
+      }
+      
+      // 更新群组成员信息
+      let groups = wx.getStorageSync('groups') || []
+      const groupIndex = groups.findIndex(g => g.id === groupData.id)
+      if (groupIndex !== -1) {
+        if (!groups[groupIndex].members) {
+          groups[groupIndex].members = []
+        }
+        groups[groupIndex].members.push(memberInfo)
+        groups[groupIndex].memberCount = groups[groupIndex].members.length
+        wx.setStorageSync('groups', groups)
+      }
+    }
+  },
+
+  // 生成6位随机房间号
+  generateRoomCode: function () {
+    const chars = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ'
+    let result = ''
+    for (let i = 0; i < 6; i++) {
+      result += chars.charAt(Math.floor(Math.random() * chars.length))
+    }
+    
+    // 检查是否重复
+    const groups = wx.getStorageSync('groups') || []
+    const isDuplicate = groups.some(group => group.roomCode === result)
+    
+    if (isDuplicate) {
+      // 如果重复，递归生成新的
+      return this.generateRoomCode()
+    }
+    
+    return result
   },
 
   // 取消创建

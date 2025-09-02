@@ -75,8 +75,7 @@ demo/
 │   ├── checkin/          # 打卡功能
 │   ├── statistics/       # 统计功能
 │   ├── hotel/            # 酒店比价
-│   ├── group/            # 旅游群组
-│   └── entertainment/    # 娱乐功能
+│   └── group/            # 旅游群组
 └── images/               # 图片资源文件夹
 ```
 

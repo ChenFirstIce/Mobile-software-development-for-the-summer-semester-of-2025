@@ -13,8 +13,6 @@
 - `map-active.png` - 地图激活图标 (48x48px)
 - `group.png` - 旅游群图标 (48x48px)
 - `group-active.png` - 旅游群激活图标 (48x48px)
-- `entertainment.png` - 娱乐图标 (48x48px)
-- `entertainment-active.png` - 娱乐激活图标 (48x48px)
 
 ### 功能图标
 - `marker.png` - 地图标记图标 (30x30px)
