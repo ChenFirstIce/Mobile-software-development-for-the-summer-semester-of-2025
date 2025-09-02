@@ -1,5 +1,5 @@
 <!--视频播放器-->
-<video id="myVideo" src="{{src}}" controls enable-danmu danmu-btn></video><!--controles属性用于显示/播放-->
+<video id="myVideo" src="{{src}}" controls enable-danmu danmu-btn></video><!--controles属性用于显示暂停/播放-->
 
 <!--弹幕控制-->
 <view class='danmuArea'>
@@ -9,6 +9,7 @@
 
 <!--视频列表-->
 <view class='videoList'>
+  <view class='videoListTitle'>视频列表 ({{list.length}} 个)</view>
   <view class='videoBar' wx:for="{{list}}" wx:key="video{{index}}" data-url="{{item.videourl}}" bindtap='playVideo'>
     <image src='/images/play.png'></image>
     <text>{{item.title}}</text>

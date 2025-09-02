@@ -1,10 +1,22 @@
+/* 视频播放器样式 */
 video{
   width: 100%;
 }
 
+/* 视频列表样式 */
 .videoList{
   width: 100%;
   min-height: 400rpx;
+}
+
+.videoListTitle {
+  font-size: 36rpx;
+  font-weight: bold;
+  color: #987838;
+  text-align: center;
+  padding: 20rpx;
+  background-color: #f0f0f0;
+  border-bottom: 2rpx solid #987838;
 }
 
 .videoBar{
@@ -13,6 +25,13 @@ video{
   flex-direction: row;
   border-bottom: 1rpx solid #987838;
   margin: 10rpx;
+  background-color: #ffffff;
+  border-radius: 8rpx;
+  box-shadow: 0 2rpx 4rpx rgba(0,0,0,0.1);
+}
+
+.videoBar:active {
+  background-color: #f0f0f0;
 }
 
 text{
@@ -28,6 +47,7 @@ image{
   margin: 20rpx;
 }
 
+/* 弹幕控制区域样式 */
 .danmuArea{
   display: flex;
   flex-direction: row;
@@ -43,4 +63,5 @@ input{
 button{
   color: white;
   background-color: #987838;
+  border-radius: 8rpx;
 }

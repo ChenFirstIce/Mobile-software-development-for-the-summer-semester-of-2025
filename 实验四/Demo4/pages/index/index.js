@@ -5,157 +5,16 @@ Page({
    */
   data: {
     danmuTxt: '',
-    list:[
-      {
-        "id": 1,
-        "title": "杨国宜先生口述校史实录",
-        "videourl": [
-          "https://arch.ahnu.edu.cn/__local/6/CB/D1/C2DF3FC847F4CE2ABB67034C595_025F0082_ABD7AE2.mp4?e=.mp4"
-        ]
-      },
-      {
-        "id": 2,
-        "title": "舒华山先生口述校史实录",
-        "videourl": [
-          "https://arch.ahnu.edu.cn/__local/E/2F/3B/9F772666C25304984D615C18374_143C6C4F_747458A.mp4?e=.mp4"
-        ]
-      },
-      {
-        "id": 3,
-        "title": "唐成伦先生口述校史实录",
-        "videourl": [
-          "https://arch.ahnu.edu.cn/__local/E/31/EB/2F368A265E6C842BB6A63EE5F97_425ABEDD_7167F22.mp4?e=.mp4"
-        ]
-      },
-      {
-        "id": 4,
-        "title": "任兴田先生口述校史实录",
-        "videourl": [
-          "https://arch.ahnu.edu.cn/__local/4/E1/C6/3CD65724F5868782B1519CEAF86_5F7F0F43_6D89DE2.mp4?e=.mp4"
-        ]
-      },
-      {
-        "id": 5,
-        "title": "汪令词先生口述校史实录",
-        "videourl": [
-          "https://arch.ahnu.edu.cn/__local/3/58/36/72A8AFB8645E1AF1CC27673EC94_BA6881EA_98E0F51.mp4?e=.mp4"
-        ]
-      },
-      {
-        "id": 6,
-        "title": "倪光明先生口述校史实录",
-        "videourl": [
-          "https://arch.ahnu.edu.cn/__local/9/DC/3B/35687573BA2145023FDAEBAFE67_AAD8D222_925F3FF.mp4?e=.mp4"
-        ]
-      },
-      {
-        "id": 7,
-        "title": "杨炜先生口述校史实录",
-        "videourl": [
-          "https://arch.ahnu.edu.cn/__local/0/F9/F7/29DBE55313F977E36799B06FF93_F96EDE58_88D1EE3.mp4?e=.mp4"
-        ]
-      },
-      {
-        "id": 8,
-        "title": "吴怡兴先生口述校史实录",
-        "videourl": [
-          "https://arch.ahnu.edu.cn/__local/5/DA/BD/7A27865731CF2B096E90B522005_A29CB142_6525BCF.mp4?e=.mp4"
-        ]
-      },
-      {
-        "id": 9,
-        "title": "杨克贵先生口述校史实录",
-        "videourl": [
-          "https://arch.ahnu.edu.cn/__local/8/55/61/DD5E2844FA10F58B5AAC6B76D5F_27256825_79DBAF3.mp4?e=.mp4"
-        ]
-      },
-      {
-        "id": 10,
-        "title": "臧宏先生口述校史实录",
-        "videourl": [
-          "https://arch.ahnu.edu.cn/__local/7/51/8D/D878079B4BAC556DA5FDFA1AA92_39D31E41_3E20150.mp4?e=.mp4"
-        ]
-      },
-      {
-        "id": 11,
-        "title": "辛志玉先生口述校史实录",
-        "videourl": [
-          "https://arch.ahnu.edu.cn/__local/9/85/25/5889EFFA4992ECC5B9A4EB4367D_1E1378B2_46AF7F5.mp4?e=.mp4"
-        ]
-      },
-      {
-        "id": 12,
-        "title": "周厚勋先生口述校史实录",
-        "videourl": [
-          "https://arch.ahnu.edu.cn/__local/9/6A/63/01CCF3577EF4F12BE3C98B82A41_4C277AF3_80507DC.mp4?e=.mp4"
-        ]
-      },
-      {
-        "id": 13,
-        "title": "翟大炳先生口述校史实录",
-        "videourl": [
-          "https://arch.ahnu.edu.cn/__local/2/0F/4E/97F6E991DF6E67E62D99FE207F3_F2CB36AA_59D3489.mp4?e=.mp4"
-        ]
-      },
-      {
-        "id": 14,
-        "title": "赵太意先生口述校史实录",
-        "videourl": [
-          "https://arch.ahnu.edu.cn/__local/F/46/7B/0B4E5076368C1104ED480EADCE7_0A691A3F_A8990A5.mp4?e=.mp4"
-        ]
-      },
-      {
-        "id": 15,
-        "title": "袁起河先生口述校史实录",
-        "videourl": [
-          "https://arch.ahnu.edu.cn/__local/2/40/89/61BAC340060D04591FAE909148B_A4BFB5E5_64CA3EE.mp4?e=.mp4"
-        ]
-      },
-      {
-        "id": 16,
-        "title": "郑鸣玉先生口述校史实录",
-        "videourl": [
-          "https://arch.ahnu.edu.cn/__local/D/4C/17/CFE24876A6593791AA200294F3E_32BDB716_49635A7.mp4?e=.mp4"
-        ]
-      },
-      {
-        "id": 17,
-        "title": "周承昭先生口述校史实录",
-        "videourl": [
-          "https://arch.ahnu.edu.cn/__local/8/77/66/4DFA9CE90A76D042A255FE86157_715BBECD_901F0FC.mp4?e=.mp4"
-        ]
-      },
-      {
-        "id": 18,
-        "title": "陆同兴先生口述校史实录",
-        "videourl": [
-          "https://arch.ahnu.edu.cn/__local/9/4A/42/E7DA5E0F64C14512E2C6811328E_D42D2D15_925A208.mp4?e=.mp4"
-        ]
-      },
-      {
-        "id": 19,
-        "title": "廖家骅先生口述校史实录",
-        "videourl": [
-          "https://arch.ahnu.edu.cn/__local/D/CE/4F/0ED9615A33D6CD34697778EB279_568A93DA_71C07FA.mp4?e=.mp4"
-        ]
-      },
-      {
-        "id": 20,
-        "title": "李先芬先生口述校史实录",
-        "videourl": [
-          "https://arch.ahnu.edu.cn/__local/B/59/3D/2492BCFB7FDE77373E7D436A524_674B98C2_6BC8395.mp4?e=.mp4"
-        ]
-      }
-    ]
+    isLoading: false,
+    crawlStatus: '',
+    list:[]
   },
 
-  /**
-   * 生命周期函数--监听页面加载
-   */
 
    /*创建视频上下文，控制视频的播放和停止 */
   onLoad: function (options) {
     this.videoCtx = wx.createVideoContext('myVideo')
+    this.startCrawling()
   },
 
   /*播放视频 */
@@ -188,6 +47,199 @@ Page({
       text:text,
       color: getRandColor()
     })
+  },
+
+
+  startCrawling: function() {
+    this.setData({
+      isLoading: true,
+      crawlStatus: '开始爬取视频数据...'
+    })
+
+    this.crawlVideoData()
+  },
+
+  crawlVideoData: function() {
+    const baseUrl = "https://arch.ahnu.edu.cn/ksxs/ksxsdyq.htm"
+    
+    console.log('开始请求主页面:', baseUrl)
+    
+    wx.request({
+      url: baseUrl,
+      method: 'GET',
+      header: {
+        'Content-Type': 'text/html; charset=utf-8'
+      },
+      success: (res) => {
+        console.log('主页面请求成功，状态码:', res.statusCode)
+        if (res.statusCode === 200) {
+          console.log('HTML内容长度:', res.data.length)
+          this.parseMainPage(res.data)
+        } else {
+          this.setData({
+            isLoading: false,
+            crawlStatus: `网络请求失败，状态码: ${res.statusCode}`
+          })
+        }
+      },
+      fail: (err) => {
+        console.error('请求失败:', err)
+        this.setData({
+          isLoading: false,
+          crawlStatus: '网络请求失败: ' + err.errMsg
+        })
+      }
+    })
+  },
+
+  parseMainPage: function(html) {
+    try {
+      const simpleLinkRegex = /<a[^>]*href="([^"]*)"[^>]*>/g
+      const allLinks = []
+      let match
+      
+      while ((match = simpleLinkRegex.exec(html)) !== null) {
+        allLinks.push(match[1])
+      }
+      
+      console.log('找到的所有链接:', allLinks.slice(0, 10)) // 只显示前10个
+    
+      const textDivRegex = /<div[^>]*class="text"[^>]*>(.*?)<\/div>/gs
+      const linkRegex = /<a[^>]*href="([^"]*)"[^>]*>(.*?)<\/a>/g
+      const titleRegex = /<span[^>]*class=""[^>]*>(.*?)<\/span>/g
+      
+      const videoLinks = []
+      let textDivMatch
+      
+      while ((textDivMatch = textDivRegex.exec(html)) !== null) {
+        const divContent = textDivMatch[1]
+        console.log('找到text div:', divContent.substring(0, 200))
+        
+        let linkMatch
+        
+        // 在每个div中查找链接
+        while ((linkMatch = linkRegex.exec(divContent)) !== null) {
+          const url = linkMatch[1]
+          const linkText = linkMatch[2]
+          
+          console.log('找到链接:', url, '文本:', linkText)
+          
+          // 提取标题
+          const titleMatch = titleRegex.exec(linkText)
+          if (titleMatch) {
+            const title = titleMatch[1].trim()
+            let fullUrl = url
+            
+            // 处理URL
+            if (url.startsWith('../')) {
+              fullUrl = 'https://arch.ahnu.edu.cn/' + url.substring(3)
+            } else if (!url.startsWith('http')) {
+              fullUrl = 'https://arch.ahnu.edu.cn/ksxs/' + url
+            }
+            
+            console.log(`找到视频链接: ${title} -> ${fullUrl}`)
+            
+            videoLinks.push({
+              title: title,
+              url: fullUrl
+            })
+          }
+        }
+      }
+      
+      console.log(`总共找到 ${videoLinks.length} 个视频页面`)
+      
+      this.setData({
+        crawlStatus: `找到 ${videoLinks.length} 个视频页面，开始获取视频链接...`
+      })
+      
+      // 逐个获取视频详情
+      this.crawlVideoDetails(videoLinks, 0)
+      
+    } catch (error) {
+      console.error('解析主页面失败:', error)
+      this.setData({
+        isLoading: false,
+        crawlStatus: '解析页面失败: ' + error.message
+      })
+    }
+  },
+
+  // 爬取视频详情页面
+  crawlVideoDetails: function(videoLinks, index) {
+    if (index >= videoLinks.length) {
+      // 所有视频都爬取完成
+      this.setData({
+        isLoading: false,
+        crawlStatus: '爬取完成'
+      })
+      return
+    }
+
+    const videoLink = videoLinks[index]
+    
+    wx.request({
+      url: videoLink.url,
+      method: 'GET',
+      header: {
+        'Content-Type': 'text/html; charset=utf-8'
+      },
+      success: (res) => {
+        if (res.statusCode === 200) {
+          const videoUrls = this.extractVideoUrls(res.data, videoLink.url)
+          
+          if (videoUrls.length > 0) {
+            const newVideo = {
+              id: this.data.list.length + 1,
+              title: videoLink.title,
+              videourl: videoUrls
+            }
+            
+            this.setData({
+              list: [...this.data.list, newVideo],
+              crawlStatus: `正在爬取: ${videoLink.title} (${index + 1}/${videoLinks.length})`
+            })
+          }
+        }
+        
+        setTimeout(() => {
+          this.crawlVideoDetails(videoLinks, index + 1)
+        }, 1000)//timespeed(1)
+      },
+      fail: (err) => {
+        console.error(`爬取 ${videoLink.title} 失败:`, err)
+        console.error(`失败的URL: ${videoLink.url}`)
+        // 即使失败也继续下一个
+        setTimeout(() => {
+          this.crawlVideoDetails(videoLinks, index + 1)
+        }, 1000)
+      }
+    })
+  },
+
+  // 从页面中提取视频URL
+  extractVideoUrls: function(html, baseUrl) {
+    const videoUrls = []
+    
+    // 查找 vurl="..." 格式的视频链接
+    const vurlRegex = /vurl="([^"]*)"/g
+    let match
+    
+    while ((match = vurlRegex.exec(html)) !== null) {
+      let videoUrl = match[1]
+      
+      // 处理URL
+      if (videoUrl.startsWith('/')) {
+        videoUrl = 'https://arch.ahnu.edu.cn' + videoUrl
+      } else if (!videoUrl.startsWith('http')) {
+        videoUrl = baseUrl + videoUrl
+      }
+      
+      videoUrls.push(videoUrl)
+    }
+    
+    // 去重
+    return [...new Set(videoUrls)]
   },
 
   /**
