@@ -189,7 +189,6 @@ Page({
 
   // 删除照片
   deletePhoto: function (e) {
-    e.stopPropagation()
     const photoId = e.currentTarget.dataset.id
     
     wx.showModal({
@@ -225,7 +224,6 @@ Page({
 
   // 下载照片
   downloadPhoto: function (e) {
-    e.stopPropagation()
     const photoId = e.currentTarget.dataset.id
     const photo = this.data.photos.find(p => p.id === photoId)
     

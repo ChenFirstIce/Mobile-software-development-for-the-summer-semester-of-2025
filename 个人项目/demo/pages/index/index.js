@@ -126,7 +126,7 @@ Page({
 
   // 保存快速拍照
   saveQuickPhoto: function (filePath) {
-    // 这里可以调用云函数保存图片
+    // 保存到本地存储
     app.showToast('照片已保存')
     
     // 添加到最近活动

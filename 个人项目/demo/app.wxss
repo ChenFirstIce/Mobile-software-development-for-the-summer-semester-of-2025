@@ -65,6 +65,7 @@ page {
   border-radius: 8rpx;
   font-size: 28rpx;
   box-sizing: border-box;
+  height: 100rpx;
 }
 
 .text-center {

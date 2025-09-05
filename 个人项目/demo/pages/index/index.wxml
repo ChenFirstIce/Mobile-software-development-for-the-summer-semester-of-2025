@@ -1,11 +1,5 @@
 <!--pages/index/index.wxml-->
-<view class="container">
-  <!-- 顶部用户头像区域 -->
-  <view class="user-avatar-section" bindtap="navigateToProfile">
-    <image src="{{userInfo.avatarUrl || '/images/default-avatar.png'}}" class="user-avatar-small"></image>
-    <text class="avatar-hint">点击进入个人设置</text>
-  </view>
-
+<view class="container" style="position: relative; left: 0rpx; top: -68rpx">
   <!-- 顶部欢迎区域 -->
   <view class="welcome-section">
     <view class="welcome-text">

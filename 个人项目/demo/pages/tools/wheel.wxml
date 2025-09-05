@@ -2,13 +2,7 @@
 <view class="container">
   <!-- 导航栏 -->
   <view class="nav-bar">
-    <view class="nav-left" bindtap="goBack">
-      <text class="nav-arrow">←</text>
-    </view>
     <view class="nav-title">随机转盘</view>
-    <view class="nav-right">
-      <!-- 历史功能已移除 -->
-    </view>
   </view>
 
   <!-- 群组信息 -->
@@ -40,20 +34,22 @@
   <!-- 转盘区域 -->
   <view class="wheel-section">
     <view class="wheel-container">
-      <!-- 转盘背景 -->
-      <view class="wheel-bg" style="transform: rotate({{currentAngle}}deg);">
-        <view class="wheel-item" wx:for="{{wheelItems}}" wx:key="id" 
-              style="transform: rotate({{index * (360 / wheelItems.length)}}deg); background-color: {{wheelColors[index % wheelColors.length]}};">
-          <text class="wheel-text">{{item.content}}</text>
-        </view>
-      </view>
+      <!-- 使用lucky-canvas转盘组件 -->
+      <lucky-wheel
+        id="myLucky"
+        width="500rpx"
+        height="500rpx"
+        blocks="{{blocks}}"
+        prizes="{{prizes}}"
+        buttons="{{buttons}}"
+        bindstart="startSpin"
+        bindend="onSpinEnd"
+        wx:if="{{prizes.length > 0}}"
+      />
       
-      <!-- 指针 -->
-      <view class="wheel-pointer"></view>
-      
-      <!-- 中心按钮 -->
-      <view class="wheel-center" wx:if="{{wheelItems.length === 0}}">
-        <text class="center-text">暂无内容</text>
+      <!-- 空状态显示 -->
+      <view class="empty-wheel" wx:if="{{prizes.length === 0}}">
+        <text class="empty-text">暂无内容，请先输入</text>
       </view>
     </view>
   </view>
@@ -103,7 +99,7 @@
   <view class="modal-overlay" wx:if="{{showResultModal}}" bindtap="hideResultModal">
     <view class="modal-content result-modal" catchtap="stopPropagation">
       <view class="modal-header">
-        <text class="modal-title">🎉 结果揭晓</text>
+        <text class="modal-title">转盘结果</text>
       </view>
       
       <view class="modal-body">

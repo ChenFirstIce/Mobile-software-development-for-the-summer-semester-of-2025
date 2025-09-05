@@ -2,9 +2,6 @@
 <view class="container">
   <!-- 导航栏 -->
   <view class="nav-bar">
-    <view class="nav-left" bindtap="goBack">
-      <text class="nav-arrow">←</text>
-    </view>
     <view class="nav-title">心选价格</view>
     <view class="nav-right">
       <!-- 历史功能已移除 -->

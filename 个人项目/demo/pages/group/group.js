@@ -7,7 +7,6 @@ Page({
     filteredGroups: [],
     myGroups: [],
     joinedGroups: [],
-    otherGroups: [],
     currentType: 'all',
     searchKeyword: '',
     showJoinModal: false,
@@ -15,8 +14,7 @@ Page({
     verifyCode: '',
     expandedSections: {
       my: true,
-      joined: true,
-      other: true
+      joined: true
     }
   },
 
@@ -41,13 +39,21 @@ Page({
   filterGroups: function () {
     let filtered = this.data.groups
 
-    // 按类型过滤
-    const currentUserId = app.globalData.userInfo ? app.globalData.userInfo.id : null
+    // 按类型过滤 - 只显示用户创建或加入的群组
+    const currentUser = app.globalData.userInfo
+    const currentUserId = currentUser ? currentUser.id : null
+    const currentUserName = currentUser ? currentUser.nickName : ''
     
     if (this.data.currentType === 'my') {
       filtered = filtered.filter(group => group.creatorId === currentUserId)
-    } else if (this.data.currentType === 'joined') {
-      filtered = filtered.filter(group => group.members && group.members.includes(currentUserId))
+    }else {
+      // 全部：显示用户创建或加入的群组
+      filtered = filtered.filter(group => 
+        group.creatorId === currentUserId || 
+        (group.members && group.members.some(member => 
+          member.id === currentUserId || member.name === currentUserName
+        ))
+      )
     }
 
     // 按关键词搜索
@@ -62,20 +68,16 @@ Page({
     // 分组群组
     const myGroups = filtered.filter(group => group.creatorId === currentUserId)
     const joinedGroups = filtered.filter(group => 
-      group.creatorId !== currentUserId && 
       group.members && 
-      group.members.includes(currentUserId)
-    )
-    const otherGroups = filtered.filter(group => 
-      group.creatorId !== currentUserId && 
-      (!group.members || !group.members.includes(currentUserId))
+      group.members.some(member => 
+        member.id === currentUserId || member.name === currentUserName
+      )
     )
 
     this.setData({
       filteredGroups: filtered,
       myGroups: myGroups,
-      joinedGroups: joinedGroups,
-      otherGroups: otherGroups
+      joinedGroups: joinedGroups
     })
   },
 
@@ -124,7 +126,6 @@ Page({
 
   // 编辑群组
   editGroup: function (e) {
-    e.stopPropagation()
     const groupId = e.currentTarget.dataset.id
     wx.navigateTo({
       url: `/pages/group/create?id=${groupId}`
@@ -133,8 +134,6 @@ Page({
 
   // 删除群组
   deleteGroup: function (e) {
-    e.stopPropagation()
-    
     const groupId = e.currentTarget.dataset.id
     wx.showModal({
       title: '确认删除',
@@ -225,13 +224,18 @@ Page({
     }
 
     // 检查是否已加入
-    const currentUserId = app.globalData.userInfo ? app.globalData.userInfo.id : null
-    if (!currentUserId) {
+    const currentUser = app.globalData.userInfo
+    if (!currentUser) {
       app.showToast('请先登录')
       return
     }
     
-    if (group.members && group.members.includes(currentUserId)) {
+    // 检查用户是否已经是群组成员（通过ID或昵称检查）
+    const isAlreadyMember = group.members && group.members.some(member => 
+      member.id === currentUser.id || member.name === currentUser.nickName
+    )
+    
+    if (isAlreadyMember) {
       app.showToast('您已经是该群组成员')
       return
     }
@@ -253,8 +257,8 @@ Page({
     
     if (groupIndex > -1) {
       // 添加成员
-      const currentUserId = app.globalData.userInfo ? app.globalData.userInfo.id : null
-      if (!currentUserId) {
+      const currentUser = app.globalData.userInfo
+      if (!currentUser) {
         app.showToast('请先登录')
         return
       }
@@ -262,7 +266,17 @@ Page({
       if (!groups[groupIndex].members) {
         groups[groupIndex].members = []
       }
-      groups[groupIndex].members.push(currentUserId)
+      
+      // 创建成员对象
+      const memberInfo = {
+        id: currentUser.id,
+        name: currentUser.nickName,
+        avatar: currentUser.avatarUrl || '/images/default-avatar.png',
+        role: 'member',
+        joinTime: new Date().toISOString()
+      }
+      
+      groups[groupIndex].members.push(memberInfo)
       groups[groupIndex].memberCount = groups[groupIndex].members.length
       
       // 更新本地存储

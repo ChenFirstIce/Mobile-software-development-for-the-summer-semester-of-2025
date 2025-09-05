@@ -1,7 +1,7 @@
 /* pages/tools/price.wxss */
 .container {
   min-height: 100vh;
-  background: linear-gradient(135deg, #4CAF50 0%, #45a049 100%);
+  background: #f8f8f8;
   padding: 0;
 }
 
@@ -11,8 +11,8 @@
   align-items: center;
   justify-content: space-between;
   padding: 20rpx 30rpx;
-  background: rgba(255, 255, 255, 0.1);
-  backdrop-filter: blur(10px);
+  background: #4CAF50;
+  box-shadow: 0 2rpx 12rpx rgba(0, 0, 0, 0.1);
 }
 
 .nav-left, .nav-right {
@@ -30,6 +30,7 @@
   color: white;
   font-weight: bold;
   text-align: center;
+  
 }
 
 .nav-btn {
@@ -40,14 +41,18 @@
 
 /* 群组信息 */
 .group-info {
+  background: white;
+  margin: 20rpx;
+  border-radius: 16rpx;
   padding: 30rpx;
   text-align: center;
+  box-shadow: 0 2rpx 12rpx rgba(0, 0, 0, 0.1);
 }
 
 .group-name {
   display: block;
   font-size: 36rpx;
-  color: white;
+  color: #333;
   font-weight: bold;
   margin-bottom: 10rpx;
 }
@@ -55,19 +60,23 @@
 .group-desc {
   display: block;
   font-size: 28rpx;
-  color: rgba(255, 255, 255, 0.8);
+  color: #666;
 }
 
 /* 匿名模式切换 */
 .anonymous-section {
-  padding: 0 30rpx 30rpx;
+  background: white;
+  margin: 0 20rpx 20rpx;
+  border-radius: 16rpx;
+  padding: 30rpx;
+  box-shadow: 0 2rpx 12rpx rgba(0, 0, 0, 0.1);
 }
 
 .switch-container {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  background: rgba(255, 255, 255, 0.1);
+  background: #f8f9fa;
   padding: 20rpx;
   border-radius: 10rpx;
   margin-bottom: 10rpx;
@@ -75,7 +84,7 @@
 
 .switch-label {
   font-size: 28rpx;
-  color: white;
+  color: #333;
   font-weight: bold;
 }
 
@@ -85,14 +94,18 @@
 
 .switch-desc {
   font-size: 24rpx;
-  color: rgba(255, 255, 255, 0.7);
+  color: #666;
   text-align: center;
   display: block;
 }
 
 /* 成员区域 */
 .members-section {
-  padding: 0 30rpx 30rpx;
+  background: white;
+  margin: 0 20rpx 20rpx;
+  border-radius: 16rpx;
+  padding: 30rpx;
+  box-shadow: 0 2rpx 12rpx rgba(0, 0, 0, 0.1);
 }
 
 .section-header {
@@ -104,13 +117,13 @@
 
 .section-title {
   font-size: 28rpx;
-  color: white;
+  color: #333;
   font-weight: bold;
 }
 
 .member-count {
   font-size: 24rpx;
-  color: rgba(255, 255, 255, 0.8);
+  color: #666;
 }
 
 .members-row {
@@ -130,7 +143,7 @@
   width: 100%;
   height: 100%;
   border-radius: 50%;
-  border: 3rpx solid rgba(255, 255, 255, 0.3);
+  border: 3rpx solid #f0f0f0;
 }
 
 .avatar-status {
@@ -144,41 +157,44 @@
 }
 
 .avatar-status.incomplete {
-  background-color: #ff6b6b;
+  background-color: #f44336;
 }
 
 .more-btn {
   width: 80rpx;
   height: 80rpx;
-  background: rgba(255, 255, 255, 0.2);
+  background: #f5f5f5;
   border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
-  border: 3rpx solid rgba(255, 255, 255, 0.3);
+  border: 3rpx solid #e0e0e0;
 }
 
 .more-text {
   font-size: 32rpx;
-  color: white;
+  color: #666;
   font-weight: bold;
 }
 
 /* 图表区域 */
 .chart-section {
-  padding: 0 30rpx 30rpx;
+  background: white;
+  margin: 0 20rpx 20rpx;
+  border-radius: 16rpx;
+  padding: 30rpx;
+  box-shadow: 0 2rpx 12rpx rgba(0, 0, 0, 0.1);
 }
 
 .chart-container {
-  background: rgba(255, 255, 255, 0.1);
-  border-radius: 20rpx;
+  background: #f8f9fa;
+  border-radius: 12rpx;
   padding: 30rpx;
-  backdrop-filter: blur(10px);
 }
 
 .chart-title {
   font-size: 32rpx;
-  color: white;
+  color: #333;
   font-weight: bold;
   text-align: center;
   margin-bottom: 30rpx;
@@ -204,7 +220,7 @@
 
 .y-label {
   font-size: 24rpx;
-  color: rgba(255, 255, 255, 0.8);
+  color: #666;
   transform: rotate(-90deg);
 }
 
@@ -228,23 +244,23 @@
 
 .line-point {
   width: 20rpx;
-  background: linear-gradient(to top, #ff6b6b, #ff8e8e);
+  background: #4CAF50;
   border-radius: 10rpx;
   min-height: 20rpx;
   transition: all 0.3s ease;
 }
 
 .min-line .line-point {
-  background: linear-gradient(to top, #4ecdc4, #6ee7df);
+  background: #4CAF50;
 }
 
 .max-line .line-point {
-  background: linear-gradient(to top, #45b7d1, #67c9e1);
+  background: #2196F3;
 }
 
 .point-value {
   font-size: 20rpx;
-  color: white;
+  color: #333;
   font-weight: bold;
 }
 
@@ -257,7 +273,7 @@
 
 .x-label {
   font-size: 20rpx;
-  color: rgba(255, 255, 255, 0.8);
+  color: #666;
   text-align: center;
   flex: 1;
 }
@@ -273,20 +289,20 @@
 
 .empty-text {
   font-size: 28rpx;
-  color: rgba(255, 255, 255, 0.8);
+  color: #666;
   font-weight: bold;
 }
 
 .empty-desc {
   font-size: 24rpx;
-  color: rgba(255, 255, 255, 0.6);
+  color: #999;
 }
 
 /* 操作按钮 */
 .action-buttons {
   display: flex;
-  gap: 30rpx;
-  padding: 0 30rpx 30rpx;
+  gap: 20rpx;
+  padding: 0 20rpx 20rpx;
 }
 
 .btn {
@@ -303,15 +319,15 @@
 }
 
 .btn-input {
-  background: rgba(255, 255, 255, 0.2);
-  color: white;
-  border: 2rpx solid rgba(255, 255, 255, 0.3);
+  background: #f5f5f5;
+  color: #333;
+  border: 2rpx solid #ddd;
 }
 
 .btn-result {
-  background: linear-gradient(45deg, #4ecdc4, #44a08d);
+  background: #4CAF50;
   color: white;
-  box-shadow: 0 5rpx 15rpx rgba(78, 205, 196, 0.4);
+  box-shadow: 0 5rpx 15rpx rgba(76, 175, 80, 0.3);
 }
 
 .btn-result:disabled {
@@ -321,15 +337,15 @@
 
 /* 重置按钮 */
 .reset-section {
-  padding: 0 30rpx 30rpx;
+  padding: 0 20rpx 20rpx;
 }
 
 .btn-reset {
   width: 100%;
   height: 60rpx;
-  background: rgba(255, 255, 255, 0.1);
-  color: white;
-  border: 1rpx solid rgba(255, 255, 255, 0.3);
+  background: #f5f5f5;
+  color: #666;
+  border: 1rpx solid #ddd;
   border-radius: 30rpx;
   font-size: 24rpx;
 }
@@ -395,15 +411,17 @@
   color: #666;
   border-radius: 35rpx;
   font-size: 28rpx;
+  border: 1rpx solid #ddd;
 }
 
 .btn-confirm {
   flex: 1;
   height: 70rpx;
-  background: linear-gradient(45deg, #667eea, #764ba2);
+  background: #4CAF50;
   color: white;
   border-radius: 35rpx;
   font-size: 28rpx;
+  border: none;
 }
 
 /* 价格输入样式 */
@@ -473,7 +491,7 @@
 
 .stats-value {
   font-size: 32rpx;
-  color: #4ecdc4;
+  color: #4CAF50;
   font-weight: bold;
 }
 

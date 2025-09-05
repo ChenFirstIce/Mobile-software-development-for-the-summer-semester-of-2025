@@ -9,7 +9,6 @@
     ],
     "include": []
   },
-  "cloudfunctionRoot": "cloudfunctions/",
   "setting": {
     "urlCheck": true,
     "es6": true,
@@ -54,7 +53,7 @@
     "disableSWC": true
   },
   "compileType": "miniprogram",
-  "libVersion": "2.19.4",
+  "libVersion": "3.9.2",
   "appid": "wxe43eded1885beec6",
   "projectname": "旅冰GO",
   "isGameTourist": false,

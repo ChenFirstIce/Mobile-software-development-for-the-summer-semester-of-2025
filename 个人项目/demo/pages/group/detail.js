@@ -10,15 +10,14 @@ Page({
     isMember: false,
     isCreator: false,
     
-    // 最近活动
-    recentActivities: [],
+    // 相册状态
+    hasSharedAlbum: false,
     
     // 弹窗控制
     showJoinModal: false,
     showMemberModal: false,
     
     // 加入群组
-    inputInviteCode: '',
     canJoin: false,
     
     // 成员管理
@@ -37,6 +36,8 @@ Page({
     if (this.data.group) {
       this.loadGroupData(this.data.group.id)
     }
+    // 检查相册状态
+    this.checkSharedAlbumStatus()
   },
 
   // 加载群组数据
@@ -49,8 +50,8 @@ Page({
         group: group
       })
       this.checkUserStatus()
-      this.loadRecentActivities()
       this.loadFilteredMembers()
+      this.checkSharedAlbumStatus()
     } else {
       app.showToast('群组不存在', 'error')
       wx.navigateBack()
@@ -70,8 +71,11 @@ Page({
       return
     }
     
-    const isMember = group.members.some(member => member.id === userInfo.nickName)
-    const isCreator = group.creator === userInfo.nickName
+    // 检查用户是否已经是群组成员（通过ID或昵称检查）
+    const isMember = group.members.some(member => 
+      member.id === userInfo.id || member.name === userInfo.nickName
+    )
+    const isCreator = group.creator === userInfo.nickName || group.creatorId === userInfo.id
     
     this.setData({
       isMember: isMember,
@@ -79,37 +83,6 @@ Page({
     })
   },
 
-  // 加载最近活动
-  loadRecentActivities: function () {
-    // 模拟活动数据
-    const activities = [
-      {
-        id: 1,
-        type: 'join',
-        content: '加入了群组',
-        time: new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString(),
-        userName: '张三'
-      },
-      {
-        id: 2,
-        type: 'photo',
-        content: '上传了一张照片到共同相册',
-        time: new Date(Date.now() - 4 * 60 * 60 * 1000).toISOString(),
-        userName: '李四'
-      },
-      {
-        id: 3,
-        type: 'checkin',
-        content: '在地图上打卡了',
-        time: new Date(Date.now() - 6 * 60 * 60 * 1000).toISOString(),
-        userName: '王五'
-      }
-    ]
-    
-    this.setData({
-      recentActivities: activities
-    })
-  },
 
   // 加载筛选后的成员
   loadFilteredMembers: function () {
@@ -118,51 +91,34 @@ Page({
     })
   },
 
+  // 检查共享相册状态
+  checkSharedAlbumStatus: function () {
+    const albums = wx.getStorageSync('albums') || []
+    const hasSharedAlbum = albums.some(album => 
+      album.groupId === this.data.group.id && album.type === 'shared'
+    )
+    
+    this.setData({
+      hasSharedAlbum: hasSharedAlbum
+    })
+  },
+
   // 加入群组
   joinGroup: function () {
-    if (this.data.group.verificationType === 'code') {
-      this.setData({
-        showJoinModal: true
-      })
-    } else {
-      this.confirmJoin()
-    }
+    this.confirmJoin()
   },
 
   // 隐藏加入弹窗
   hideJoinModal: function () {
     this.setData({
       showJoinModal: false,
-      inputInviteCode: ''
     })
   },
 
-  // 邀请码输入
-  onInviteCodeInput: function (e) {
-    const code = e.detail.value
-    this.setData({
-      inputInviteCode: code,
-      canJoin: code.trim() !== ''
-    })
-  },
 
   // 确认加入
   confirmJoin: function () {
     const group = this.data.group
-    
-    if (group.verificationType === 'code') {
-      if (this.data.inputInviteCode !== group.inviteCode) {
-        app.showToast('邀请码错误', 'error')
-        return
-      }
-    }
-    
-    if (group.verificationType === 'approval') {
-      app.showToast('申请已发送，等待群主审批', 'success')
-      this.hideJoinModal()
-      return
-    }
-    
     // 执行加入
     this.performJoin()
   },
@@ -177,6 +133,16 @@ Page({
       return
     }
     
+    // 检查用户是否已经是群组成员
+    const isAlreadyMember = group.members.some(member => 
+      member.id === userInfo.id || member.name === userInfo.nickName
+    )
+    
+    if (isAlreadyMember) {
+      app.showToast('您已经是该群组成员', 'none')
+      return
+    }
+    
     if (group.memberCount >= group.maxMembers) {
       app.showToast('群组已满员', 'error')
       return
@@ -184,7 +150,7 @@ Page({
     
     // 添加新成员
     const newMember = {
-      id: userInfo.nickName,
+      id: userInfo.id,
       name: userInfo.nickName,
       avatar: userInfo.avatarUrl || '/images/default-avatar.png',
       role: 'member',
@@ -232,7 +198,9 @@ Page({
     if (!userInfo) return
     
     // 移除成员
-    const memberIndex = group.members.findIndex(m => m.id === userInfo.nickName)
+    const memberIndex = group.members.findIndex(m => 
+      m.id === userInfo.id || m.name === userInfo.nickName
+    )
     if (memberIndex > -1) {
       group.members.splice(memberIndex, 1)
       group.memberCount -= 1
@@ -271,17 +239,37 @@ Page({
 
   // 打开随机转盘
   openRandomWheel: function () {
-    app.showToast('随机转盘功能开发中', 'none')
+    wx.navigateTo({
+      url: `/pages/tools/wheel?groupId=${this.data.group.id}`
+    })
   },
 
   // 打开价格投票
   openPriceVote: function () {
-    app.showToast('价格投票功能开发中', 'none')
+    wx.navigateTo({
+      url: `/pages/tools/price?groupId=${this.data.group.id}`
+    })
   },
 
   // 打开共同相册
   openSharedAlbum: function () {
-    app.showToast('共同相册功能开发中', 'none')
+    // 检查是否已经存在该群组的共享相册
+    const albums = wx.getStorageSync('albums') || []
+    const existingAlbum = albums.find(album => 
+      album.groupId === this.data.group.id && album.type === 'shared'
+    )
+    
+    if (existingAlbum) {
+      // 如果存在共享相册，直接进入详情页面
+      wx.navigateTo({
+        url: `/pages/album/detail?id=${existingAlbum.id}`
+      })
+    } else {
+      // 如果不存在，进入创建页面
+      wx.navigateTo({
+        url: `/pages/album/create?groupId=${this.data.group.id}&groupName=${encodeURIComponent(this.data.group.name)}`
+      })
+    }
   },
 
   // 打开地图打卡
@@ -291,10 +279,6 @@ Page({
     })
   },
 
-  // 查看所有活动
-  viewAllActivities: function () {
-    app.showToast('活动历史功能开发中', 'none')
-  },
 
   // 编辑群组信息
   editGroupInfo: function () {
@@ -369,7 +353,9 @@ Page({
   // 执行移除成员
   performRemoveMember: function (member) {
     const group = this.data.group
-    const memberIndex = group.members.findIndex(m => m.id === member.id)
+    const memberIndex = group.members.findIndex(m => 
+      m.id === member.id || m.name === member.name
+    )
     
     if (memberIndex > -1) {
       group.members.splice(memberIndex, 1)
@@ -393,10 +379,6 @@ Page({
     }
   },
 
-  // 群组邀请设置
-  groupInvite: function () {
-    app.showToast('邀请设置功能开发中', 'none')
-  },
 
   // 解散群组
   deleteGroup: function () {

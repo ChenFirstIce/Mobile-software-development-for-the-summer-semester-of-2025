@@ -3,16 +3,17 @@ const app = getApp()
 
 Page({
   data: {
+    // 编辑模式
+    isEdit: false,
+    groupId: null,
+    
     // 基本信息
     groupName: '',
     groupDesc: '',
-    groupType: 'public', // public 或 private
     
     // 群组设置
     maxMembers: 10,
     maxMembersOptions: [5, 10, 15, 20],
-    verificationType: 'none', // none, code, approval
-    inviteCode: '',
     
     // 功能设置
     features: {
@@ -42,11 +43,41 @@ Page({
   },
 
   onLoad: function (options) {
+    if (options.id) {
+      this.setData({
+        isEdit: true,
+        groupId: options.id
+      })
+      this.loadGroupData(options.id)
+    }
     this.checkFormStatus()
   },
 
   onShow: function () {
     // 页面显示时的处理
+  },
+
+  // 加载群组数据（编辑模式）
+  loadGroupData: function (groupId) {
+    const groups = wx.getStorageSync('groups') || []
+    const group = groups.find(g => g.id === groupId)
+    
+    if (group) {
+      this.setData({
+        groupName: group.name,
+        groupDesc: group.description || '',
+        maxMembers: group.maxMembers || 10,
+        features: group.features || {
+          random: true,
+          priceVote: true,
+          sharedAlbum: true,
+          mapCheckin: true
+        },
+        coverImage: group.coverImage || '',
+        selectedTags: group.tags || []
+      })
+      this.checkFormStatus()
+    }
   },
 
   // 检查表单状态
@@ -72,13 +103,6 @@ Page({
     })
   },
 
-  // 选择群组类型
-  selectType: function (e) {
-    const type = e.currentTarget.dataset.type
-    this.setData({
-      groupType: type
-    })
-  },
 
   // 选择最大成员数
   selectMaxMembers: function (e) {
@@ -88,40 +112,6 @@ Page({
     })
   },
 
-  // 选择验证方式
-  selectVerification: function (e) {
-    const type = e.currentTarget.dataset.type
-    this.setData({
-      verificationType: type,
-      inviteCode: type === 'code' ? this.data.inviteCode : ''
-    })
-  },
-
-  // 邀请码输入
-  onInviteCodeInput: function (e) {
-    this.setData({
-      inviteCode: e.detail.value
-    })
-  },
-
-  // 生成邀请码
-  generateInviteCode: function () {
-    const code = this.generateRandomCode()
-    this.setData({
-      inviteCode: code
-    })
-    app.showToast('邀请码已生成', 'success')
-  },
-
-  // 生成随机邀请码
-  generateRandomCode: function () {
-    const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789'
-    let result = ''
-    for (let i = 0; i < 6; i++) {
-      result += chars.charAt(Math.floor(Math.random() * chars.length))
-    }
-    return result
-  },
 
   // 切换功能开关
   toggleFeature: function (e) {
@@ -255,23 +245,24 @@ Page({
     this.hideTagSelector()
   },
 
-  // 创建群组
+  // 创建/保存群组
   createGroup: function () {
     if (!this.data.canCreate) {
       app.showToast('请填写群组名称', 'none')
       return
     }
 
-    if (this.data.verificationType === 'code' && !this.data.inviteCode.trim()) {
-      app.showToast('请输入邀请码', 'none')
-      return
-    }
 
-    app.showLoading('正在创建群组...')
+    const loadingText = this.data.isEdit ? '正在保存群组...' : '正在创建群组...'
+    app.showLoading(loadingText)
 
-    // 模拟创建群组
+    // 模拟创建/保存群组
     setTimeout(() => {
-      this.performCreateGroup()
+      if (this.data.isEdit) {
+        this.performUpdateGroup()
+      } else {
+        this.performCreateGroup()
+      }
     }, 1500)
   },
 
@@ -285,23 +276,12 @@ Page({
       roomCode: roomCode, // 添加房间号
       name: this.data.groupName,
       description: this.data.groupDesc,
-      type: this.data.groupType,
       maxMembers: this.data.maxMembers,
-      verificationType: this.data.verificationType,
-      inviteCode: this.data.inviteCode,
       features: this.data.features,
       coverImage: this.data.coverImage,
       tags: this.data.selectedTags,
-      creator: app.globalData.userInfo ? app.globalData.userInfo.nickName : '未知用户',
+      creator: app.globalData.userInfo ? app.globalData.userInfo.nickName : app.globalData.userInfo.nickName,
       createTime: new Date().toISOString(),
-      members: [{
-        id: 'creator',
-        name: app.globalData.userInfo ? app.globalData.userInfo.nickName : '未知用户',
-        avatar: app.globalData.userInfo ? app.globalData.userInfo.avatarUrl : '/images/default-avatar.png',
-        role: 'creator',
-        joinTime: new Date().toISOString()
-      }],
-      memberCount: 1,
       status: 'active'
     }
 
@@ -318,6 +298,37 @@ Page({
     setTimeout(() => {
       wx.navigateBack()
     }, 1500)
+  },
+
+  // 执行更新群组
+  performUpdateGroup: function () {
+    const groups = wx.getStorageSync('groups') || []
+    const groupIndex = groups.findIndex(g => g.id === this.data.groupId)
+    
+    if (groupIndex > -1) {
+      // 更新群组信息
+      groups[groupIndex].name = this.data.groupName
+      groups[groupIndex].description = this.data.groupDesc
+      groups[groupIndex].maxMembers = this.data.maxMembers
+      groups[groupIndex].features = this.data.features
+      groups[groupIndex].coverImage = this.data.coverImage
+      groups[groupIndex].tags = this.data.selectedTags
+      groups[groupIndex].updateTime = new Date().toISOString()
+      
+      // 保存到本地存储
+      wx.setStorageSync('groups', groups)
+      
+      app.hideLoading()
+      app.showToast('群组信息已更新！', 'success')
+      
+      // 延迟跳转，让用户看到成功提示
+      setTimeout(() => {
+        wx.navigateBack()
+      }, 1500)
+    } else {
+      app.hideLoading()
+      app.showToast('群组不存在', 'error')
+    }
   },
 
   // 保存群组到本地存储
@@ -339,8 +350,8 @@ Page({
       // 将创建者添加到群组成员列表
       const memberInfo = {
         id: currentUser.id,
-        nickName: currentUser.nickName,
-        avatarUrl: currentUser.avatarUrl,
+        name: currentUser.nickName,
+        avatar: currentUser.avatarUrl || '/images/default-avatar.png',
         joinTime: new Date().toISOString(),
         role: 'creator'
       }
@@ -354,6 +365,7 @@ Page({
         }
         groups[groupIndex].members.push(memberInfo)
         groups[groupIndex].memberCount = groups[groupIndex].members.length
+        groups[groupIndex].creatorId = currentUser.id // 添加创建者ID
         wx.setStorageSync('groups', groups)
       }
     }

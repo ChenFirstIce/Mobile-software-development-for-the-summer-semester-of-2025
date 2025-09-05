@@ -23,7 +23,8 @@ Page({
   // 加载相册数据
   loadAlbums: function () {
     // 从本地存储或云数据库获取相册数据
-    const albums = wx.getStorageSync('albums') || []
+    let albums = wx.getStorageSync('albums') || []
+  
     this.setData({
       albums: albums
     })
@@ -55,8 +56,9 @@ Page({
 
   // 搜索输入
   onSearchInput: function (e) {
+    const keyword = e.detail.value
     this.setData({
-      searchKeyword: e.detail.value
+      searchKeyword: keyword
     })
     this.filterAlbums()
   },
@@ -92,8 +94,14 @@ Page({
 
   // 编辑相册
   editAlbum: function (e) {
-    e.stopPropagation()
     const albumId = e.currentTarget.dataset.id
+    console.log('编辑相册，ID:', albumId)
+    
+    if (!albumId) {
+      app.showToast('相册ID不存在')
+      return
+    }
+    
     wx.navigateTo({
       url: `/pages/album/create?id=${albumId}`
     })
@@ -101,8 +109,13 @@ Page({
 
   // 删除相册
   deleteAlbum: function (e) {
-    e.stopPropagation()
     const albumId = e.currentTarget.dataset.id
+    console.log('删除相册，ID:', albumId)
+    
+    if (!albumId) {
+      app.showToast('相册ID不存在')
+      return
+    }
     
     wx.showModal({
       title: '确认删除',

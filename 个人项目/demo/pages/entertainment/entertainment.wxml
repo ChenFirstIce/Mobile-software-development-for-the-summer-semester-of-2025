@@ -1,6 +1,0 @@
-<!--pages/entertainment/entertainment.wxml-->
-<view class="container">
-  <view class="content">
-    <text>娱乐功能已移除</text>
-  </view>
-</view>

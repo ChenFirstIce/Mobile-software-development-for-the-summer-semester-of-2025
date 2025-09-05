@@ -296,13 +296,6 @@ Page({
     })
   },
 
-  // 历史功能已移除
-
-  // 返回上一页
-  goBack: function () {
-    wx.navigateBack()
-  },
-
   // 更新成员完成状态
   updateMemberStatus: function () {
     const isMemberCompleted = {}

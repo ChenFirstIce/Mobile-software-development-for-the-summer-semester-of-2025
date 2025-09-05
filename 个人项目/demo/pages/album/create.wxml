@@ -10,7 +10,7 @@
   <view class="form-section">
     <view class="input-group">
       <text class="input-label">相册名称 *</text>
-      <input class="input-field" placeholder="请输入相册名称" bindinput="onNameInput" value="{{albumName}}" maxlength="50" />
+      <input style="height: 72rpx; display: block; box-sizing: border-box" class="input-field" placeholder="请输入相册名称" bindinput="onNameInput" value="{{albumName}}" maxlength="50" />
     </view>
 
     <view class="input-group">

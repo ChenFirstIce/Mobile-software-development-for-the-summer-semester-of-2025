@@ -2,8 +2,8 @@
 <view class="container">
   <!-- 页面标题 -->
   <view class="page-header">
-    <text class="page-title">创建旅游群</text>
-    <text class="page-subtitle">与朋友一起规划完美旅程</text>
+    <text class="page-title">{{isEdit ? '编辑群组' : '创建旅游群'}}</text>
+    <text class="page-subtitle">{{isEdit ? '修改群组信息' : '与朋友一起规划完美旅程'}}</text>
   </view>
 
   <!-- 创建表单 -->
@@ -16,7 +16,7 @@
       
       <view class="input-group">
         <text class="input-label">群组名称 *</text>
-        <input class="input-field" placeholder="请输入群组名称" bindinput="onNameInput" value="{{groupName}}" maxlength="20" />
+        <input style="display: block; box-sizing: border-box; height: 81rpx" class="input-field" placeholder="请输入群组名称" bindinput="onNameInput" value="{{groupName}}" maxlength="20" />
         <text class="char-count">{{groupName.length}}/20</text>
       </view>
       
@@ -26,19 +26,6 @@
         <text class="char-count">{{groupDesc.length}}/100</text>
       </view>
       
-      <view class="input-group">
-        <text class="input-label">群组类型</text>
-        <view class="type-selector">
-          <view class="type-option {{groupType === 'public' ? 'active' : ''}}" bindtap="selectType" data-type="public">
-            <text class="type-text">公开群组</text>
-            <text class="type-desc">任何人都可以搜索加入</text>
-          </view>
-          <view class="type-option {{groupType === 'private' ? 'active' : ''}}" bindtap="selectType" data-type="private">
-            <text class="type-text">私密群组</text>
-            <text class="type-desc">仅邀请码或二维码加入</text>
-          </view>
-        </view>
-      </view>
     </view>
 
     <!-- 群组设置 -->
@@ -66,31 +53,6 @@
         </view>
       </view>
       
-      <view class="input-group">
-        <text class="input-label">加入验证</text>
-        <view class="verification-options">
-          <view class="verification-option {{verificationType === 'none' ? 'active' : ''}}" bindtap="selectVerification" data-type="none">
-            <text class="option-icon">✅</text>
-            <text class="option-text">无需验证</text>
-          </view>
-          <view class="verification-option {{verificationType === 'code' ? 'active' : ''}}" bindtap="selectVerification" data-type="code">
-            <text class="option-icon">🔑</text>
-            <text class="option-text">邀请码</text>
-          </view>
-          <view class="verification-option {{verificationType === 'approval' ? 'active' : ''}}" bindtap="selectVerification" data-type="approval">
-            <text class="option-icon">👁️</text>
-            <text class="option-text">需要审批</text>
-          </view>
-        </view>
-      </view>
-      
-      <view class="input-group" wx:if="{{verificationType === 'code'}}">
-        <text class="input-label">邀请码</text>
-        <view class="invite-code-section">
-          <input class="code-input" placeholder="请输入4-8位邀请码" bindinput="onInviteCodeInput" value="{{inviteCode}}" maxlength="8" />
-          <button class="generate-btn" bindtap="generateInviteCode">生成</button>
-        </view>
-      </view>
     </view>
 
     <!-- 功能设置 -->
@@ -208,8 +170,7 @@
   <view class="action-buttons">
     <button class="btn-secondary" bindtap="cancelCreate">取消</button>
     <button class="btn-primary" bindtap="createGroup" disabled="{{!canCreate}}">
-      <text class="btn-icon">✨</text>
-      <text class="btn-text">创建群组</text>
+      <text class="btn-text">{{isEdit ? '完成修改' : '创建群组'}}</text>
     </button>
   </view>
 

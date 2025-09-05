@@ -18,16 +18,12 @@
       
       <view class="group-info">
         <text class="group-name">{{group.name}}</text>
-        <text class="group-desc">{{group.description || '暂无描述'}}</text>
+        <text class="group-desc" style="color: black">{{group.description || '暂无描述'}}</text>
         
         <view class="group-meta">
           <view class="meta-item">
             <text class="meta-icon">👥</text>
-            <text class="meta-text">{{group.memberCount}}/{{group.maxMembers}}人</text>
-          </view>
-          <view class="meta-item">
-            <text class="meta-icon">🏷️</text>
-            <text class="meta-text">{{group.type === 'public' ? '公开群组' : '私密群组'}}</text>
+            <text class="meta-text" style="color: black">{{group.memberCount}}/{{group.maxMembers}}人</text>
           </view>
         </view>
         
@@ -75,7 +71,7 @@
       <view class="feature-card" bindtap="openSharedAlbum" wx:if="{{group.features.sharedAlbum}}">
         <view class="feature-icon">📸</view>
         <text class="feature-name">共同相册</text>
-        <text class="feature-desc">共享照片</text>
+        <text class="feature-desc">{{hasSharedAlbum ? '查看相册' : '创建相册'}}</text>
       </view>
       
       <view class="feature-card" bindtap="openMapCheckin" wx:if="{{group.features.mapCheckin}}">
@@ -121,30 +117,6 @@
     </view>
   </view>
 
-  <!-- 最近活动 -->
-  <view class="activities-section" wx:if="{{recentActivities.length > 0}}">
-    <view class="section-header">
-      <text class="section-title">最近活动</text>
-      <text class="view-all" bindtap="viewAllActivities">查看全部</text>
-    </view>
-    
-    <view class="activities-list">
-      <view class="activity-item" wx:for="{{recentActivities}}" wx:key="id">
-        <view class="activity-icon">
-          <text class="icon-text">{{getActivityIcon(item.type)}}</text>
-        </view>
-        
-        <view class="activity-content">
-          <text class="activity-text">{{item.content}}</text>
-          <text class="activity-time">{{formatTime(item.time)}}</text>
-        </view>
-        
-        <view class="activity-user">
-          <text class="user-name">{{item.userName}}</text>
-        </view>
-      </view>
-    </view>
-  </view>
 
   <!-- 群组设置 -->
   <view class="group-settings" wx:if="{{isCreator}}">
@@ -162,12 +134,6 @@
       <view class="setting-item" bindtap="manageMembers">
         <view class="setting-icon">👥</view>
         <text class="setting-name">成员管理</text>
-        <text class="setting-arrow">></text>
-      </view>
-      
-      <view class="setting-item" bindtap="groupInvite">
-        <view class="setting-icon">🔗</view>
-        <text class="setting-name">邀请设置</text>
         <text class="setting-arrow">></text>
       </view>
       
@@ -194,27 +160,7 @@
         <text class="modal-title">加入群组</text>
         <view class="close-btn" bindtap="hideJoinModal">✕</view>
       </view>
-      
-      <view class="modal-body">
-        <view class="join-methods">
-          <view class="method-item" wx:if="{{group.verificationType === 'code'}}">
-            <text class="method-title">邀请码验证</text>
-            <view class="code-input-section">
-              <input class="code-input" placeholder="请输入邀请码" bindinput="onInviteCodeInput" value="{{inputInviteCode}}" maxlength="8" />
-            </view>
-          </view>
-          
-          <view class="method-item" wx:if="{{group.verificationType === 'approval'}}">
-            <text class="method-title">需要群主审批</text>
-            <text class="method-desc">您的加入申请将发送给群主审批</text>
-          </view>
-          
-          <view class="method-item" wx:if="{{group.verificationType === 'none'}}">
-            <text class="method-title">无需验证</text>
-            <text class="method-desc">点击确认即可加入群组</text>
-          </view>
-        </view>
-      </view>
+    
       
       <view class="modal-footer">
         <button class="btn-secondary" bindtap="hideJoinModal">取消</button>

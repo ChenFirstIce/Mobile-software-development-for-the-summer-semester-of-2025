@@ -1,120 +1,106 @@
 // app.js
 App({
   onLaunch: function () {
-    // 初始化云开发
-    if (!wx.cloud) {
-      console.error('请使用 2.2.3 或以上的基础库以使用云能力')
-    } else {
-      wx.cloud.init({
-        env: 'cloud1-3gfit3n1e60214ef', // 请替换为您的云开发环境ID
-        traceUser: true,
-      })
-    }
+    // 初始化全局数据
+    this.initGlobalData()
+  },
 
-    // 检查登录状态
-    this.checkLoginStatus()
+  // 初始化全局数据
+  initGlobalData: function() {
+    const token = wx.getStorageSync('userToken')
+    const userInfo = wx.getStorageSync('userInfo')
+    
+    if (token && userInfo) {
+      this.globalData.userInfo = userInfo
+      this.globalData.isLoggedIn = true
+    } else {
+      this.globalData.userInfo = null
+      this.globalData.isLoggedIn = false
+    }
   },
 
   // 检查登录状态
   checkLoginStatus: function() {
     const token = wx.getStorageSync('userToken')
-    if (token) {
-      // 验证token有效性
-      this.validateToken(token)
-    } else {
-      // 引导用户登录
-      this.showLoginGuide()
-    }
-  },
-
-  // 验证token
-  validateToken: function(token) {
-    // 这里应该调用后端API验证token
-    // 暂时模拟验证成功
     const userInfo = wx.getStorageSync('userInfo')
-    if (userInfo) {
+    
+    if (token && userInfo) {
       this.globalData.userInfo = userInfo
       this.globalData.isLoggedIn = true
+      return true
     } else {
-      this.showLoginGuide()
+      this.globalData.userInfo = null
+      this.globalData.isLoggedIn = false
+      return false
     }
   },
 
-  // 显示登录引导
-  showLoginGuide: function() {
-    // 可以在这里显示登录引导页面
-    console.log('需要登录')
-  },
+
 
   // 微信登录
   wxLogin: function() {
     return new Promise((resolve, reject) => {
-      wx.login({
-        success: (res) => {
-          if (res.code) {
-            // 发送 res.code 到后台换取 openId, sessionKey, unionId
-            this.getUserProfile(res.code)
-              .then(resolve)
-              .catch(reject)
-          } else {
-            reject(new Error('登录失败'))
-          }
-        },
-        fail: reject
-      })
-    })
-  },
-
-  // 获取用户信息
-  getUserProfile: function(code) {
-    return new Promise((resolve, reject) => {
+      // 获取用户信息
       wx.getUserProfile({
         desc: '用于完善用户资料',
         success: (res) => {
           const userInfo = res.userInfo
+          console.log('获取用户信息成功:', userInfo)
           
-          // 调用云函数进行登录
-          wx.cloud.callFunction({
-            name: 'login',
-            data: {
-              userInfo: userInfo
-            },
-            success: (result) => {
-              if (result.result.success) {
-                const { openid, unionid, user } = result.result
-                
-                // 构建完整的用户信息
-                const fullUserInfo = {
-                  ...userInfo,
-                  id: user._id,
-                  openId: openid,
-                  unionId: unionid,
-                  ...user
+          // 调用 wx.login 获取 code
+          wx.login({
+            success: (loginRes) => {
+              console.log('wx.login 成功，code:', loginRes.code)
+              if (loginRes.code) {
+                try {
+                  // 生成用户ID
+                  const userId = 'user_' + Date.now()
+                  
+                  // 构建完整的用户信息
+                  const fullUserInfo = {
+                    ...userInfo,
+                    id: userId,
+                    openId: loginRes.code,
+                    unionId: '',
+                    createTime: new Date(),
+                    updateTime: new Date(),
+                    lastLoginTime: new Date()
+                  }
+                  
+                  // 保存到本地存储
+                  wx.setStorageSync('userToken', userId)
+                  wx.setStorageSync('userInfo', fullUserInfo)
+                  
+                  // 更新全局数据
+                  this.globalData.userInfo = fullUserInfo
+                  this.globalData.isLoggedIn = true
+                  
+                  console.log('登录成功:', fullUserInfo)
+                  resolve(fullUserInfo)
+                  
+                } catch (error) {
+                  console.error('登录失败:', error)
+                  reject(error)
                 }
-                
-                // 保存到本地存储
-                wx.setStorageSync('userToken', openid)
-                wx.setStorageSync('userInfo', fullUserInfo)
-                
-                // 更新全局数据
-                this.globalData.userInfo = fullUserInfo
-                this.globalData.isLoggedIn = true
-                
-                resolve(fullUserInfo)
               } else {
-                reject(new Error(result.result.error || '登录失败'))
+                reject(new Error('获取登录凭证失败'))
               }
             },
             fail: (error) => {
-              console.error('云函数调用失败:', error)
+              console.error('wx.login 失败:', error)
               reject(error)
             }
           })
         },
-        fail: reject
+        fail: (error) => {
+          console.error('获取用户信息失败:', error)
+          reject(error)
+        }
       })
     })
   },
+
+
 
   // 获取好友列表
   getFriendList: function() {
@@ -177,5 +163,7 @@ App({
   // 隐藏加载中
   hideLoading: function() {
     wx.hideLoading()
-  }
+  },
+
+
 })

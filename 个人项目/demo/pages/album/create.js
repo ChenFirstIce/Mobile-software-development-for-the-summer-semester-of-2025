@@ -43,6 +43,18 @@ Page({
       this.loadAlbumData(options.id)
     }
     
+    // 如果从群组页面传入参数，自动设置群组关联
+    if (options.groupId) {
+      this.setData({
+        albumType: 'shared',
+        selectedGroupId: options.groupId,
+        selectedGroup: {
+          id: options.groupId,
+          name: decodeURIComponent(options.groupName || '群组相册')
+        }
+      })
+    }
+    
     this.loadAvailableGroups()
   },
 
@@ -70,10 +82,14 @@ Page({
   // 加载可用群组
   loadAvailableGroups: function () {
     const groups = wx.getStorageSync('groups') || []
-    const availableGroups = groups.filter(group => 
-      group.creatorId === app.globalData.userInfo?.id || 
-      (group.members && group.members.includes(app.globalData.userInfo?.id))
-    )
+    const currentUserId = app.globalData.userInfo?.id
+    const availableGroups = groups.filter(group => {
+      // 检查是否是群主
+      if (group.creatorId === currentUserId) return true
+      // 检查是否是群成员
+      if (group.members && group.members.some(member => member.id === currentUserId)) return true
+      return false
+    })
     
     this.setData({
       availableGroups: availableGroups
@@ -256,10 +272,12 @@ Page({
         upload: this.data.allowUpload
       },
       creatorId: app.globalData.userInfo?.id || 'unknown',
+      creatorName: app.globalData.userInfo?.nickName || '未知用户',
       createTime: this.data.isEdit ? this.data.createTime : new Date().toLocaleString(),
       updateTime: new Date().toLocaleString(),
       photoCount: this.data.isEdit ? this.data.photoCount : 0,
-      memberCount: this.data.isEdit ? this.data.memberCount : 1
+      memberCount: this.data.isEdit ? this.data.memberCount : 1,
+      status: 'active'
     }
 
     this.saveAlbumToStorage(albumData)
@@ -296,9 +314,4 @@ Page({
   cancelCreate: function () {
     wx.navigateBack()
   },
-
-  // 阻止事件冒泡
-  stopPropagation: function () {
-    // 空函数，用于阻止事件冒泡
-  }
 })

@@ -42,6 +42,12 @@
         "selectedIconPath": "images/album-active.png"
       },
       {
+        "pagePath": "pages/profile/profile",
+        "text": "个人",
+        "iconPath": "images/default-avatar.png",
+        "selectedIconPath": "images/default-avatar.png"
+      },
+      {
         "pagePath": "pages/map/map",
         "text": "地图",
         "iconPath": "images/map.png",
@@ -62,5 +68,8 @@
   },
   "requiredBackgroundModes": ["location"],
   "style": "v2",
-  "sitemapLocation": "sitemap.json"
+  "sitemapLocation": "sitemap.json",
+  "usingComponents": {
+    "lucky-wheel": "/miniprogram_npm/@lucky-canvas/mini/lucky-wheel/index"
+  }
 }
