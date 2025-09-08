@@ -13,8 +13,8 @@
     <!-- 旅游板块 -->
     <view class="feature-section">
       <view class="section-title">
-        <text class="title-text">旅游板块</text>
-        <text class="title-desc">记录旅行足迹</text>
+        
+        
       </view>
       
       <view class="feature-cards">

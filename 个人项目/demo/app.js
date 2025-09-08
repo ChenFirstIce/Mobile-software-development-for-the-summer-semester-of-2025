@@ -3,6 +3,9 @@ App({
   onLaunch: function () {
     // 初始化全局数据
     this.initGlobalData()
+    
+    // 检查登录状态，如果未登录则跳转到个人页面
+    this.checkLoginAndRedirect()
   },
 
   // 初始化全局数据
@@ -32,6 +35,18 @@ App({
       this.globalData.userInfo = null
       this.globalData.isLoggedIn = false
       return false
+    }
+  },
+
+  // 检查登录状态并重定向
+  checkLoginAndRedirect: function() {
+    if (!this.checkLoginStatus()) {
+      // 延迟跳转，确保页面加载完成
+      setTimeout(() => {
+        wx.switchTab({
+          url: '/pages/profile/profile'
+        })
+      }, 100)
     }
   },
 

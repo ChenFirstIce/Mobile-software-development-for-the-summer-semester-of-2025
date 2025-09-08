@@ -173,8 +173,6 @@ Page({
     this.hideJoinModal()
     app.showToast('成功加入群组！', 'success')
     
-    // 添加活动记录
-    this.addActivity('join', `${userInfo.nickName} 加入了群组`)
   },
 
   // 退出群组
@@ -217,8 +215,6 @@ Page({
       
       app.showToast('已退出群组', 'success')
       
-      // 添加活动记录
-      this.addActivity('leave', `${userInfo.nickName} 退出了群组`)
     }
   },
 
@@ -374,8 +370,6 @@ Page({
       
       app.showToast(`已移除成员 ${member.name}`, 'success')
       
-      // 添加活动记录
-      this.addActivity('remove', `群主移除了成员 ${member.name}`)
     }
   },
 
@@ -429,24 +423,6 @@ Page({
     }
   },
 
-  // 添加活动记录
-  addActivity: function (type, content) {
-    const userInfo = app.globalData.userInfo
-    if (!userInfo) return
-    
-    const activity = {
-      id: Date.now(),
-      type: type,
-      content: content,
-      time: new Date().toISOString(),
-      userName: userInfo.nickName
-    }
-    
-    const activities = [activity, ...this.data.recentActivities]
-    this.setData({
-      recentActivities: activities.slice(0, 10) // 只保留最近10条
-    })
-  },
 
   // 获取角色文本
   getRoleText: function (role) {
@@ -458,17 +434,6 @@ Page({
     return roleMap[role] || '成员'
   },
 
-  // 获取活动图标
-  getActivityIcon: function (type) {
-    const iconMap = {
-      'join': '➕',
-      'leave': '➖',
-      'photo': '📸',
-      'checkin': '📍',
-      'remove': '❌'
-    }
-    return iconMap[type] || '📝'
-  },
 
   // 格式化时间
   formatTime: function (timeString) {

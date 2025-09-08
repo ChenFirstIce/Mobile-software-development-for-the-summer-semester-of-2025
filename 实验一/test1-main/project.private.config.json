@@ -1,8 +1,8 @@
 {
-  "description": "项目私有配置文件。此文件中的内容将覆盖 project.config.json 中的相同字段。项目的改动优先同步到此文件中。详见文档：https://developers.weixin.qq.com/miniprogram/dev/devtools/projectconfig.html",
+  "libVersion": "3.9.2",
+  "condition": {},
   "projectname": "test1-main",
   "setting": {
-    "compileHotReLoad": true,
     "urlCheck": true,
     "coverView": true,
     "lazyloadPlaceholderEnable": false,
@@ -15,14 +15,9 @@
     "useStaticServer": false,
     "useLanDebug": false,
     "showES6CompileOption": false,
-    "bigPackageSizeSupport": false,
+    "compileHotReLoad": true,
     "checkInvalidKey": true,
-    "ignoreDevUnusedFiles": true
-  },
-<<<<<<< HEAD
-  "libVersion": "2.16.1",
-=======
-  "libVersion": "3.9.2",
->>>>>>> 4c273b32551c6b110e01e7450cb7a474b44c68c3
-  "condition": {}
+    "ignoreDevUnusedFiles": true,
+    "bigPackageSizeSupport": false
+  }
 }

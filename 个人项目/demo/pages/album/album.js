@@ -13,10 +13,26 @@ Page({
   },
 
   onLoad: function (options) {
-    this.loadAlbums()
+    this.checkLoginAndRedirect()
   },
 
   onShow: function () {
+    this.checkLoginAndRedirect()
+  },
+
+  // 检查登录状态并重定向
+  checkLoginAndRedirect: function () {
+    const isLoggedIn = wx.getStorageSync('userToken') ? true : false
+    
+    if (!isLoggedIn) {
+      // 未登录，跳转到登录页面
+      wx.switchTab({
+        url: '/pages/profile/profile'
+      })
+      return
+    }
+    
+    // 已登录，加载数据
     this.loadAlbums()
   },
 

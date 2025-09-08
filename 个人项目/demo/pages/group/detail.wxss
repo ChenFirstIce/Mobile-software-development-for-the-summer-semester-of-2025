@@ -364,77 +364,16 @@
   font-size: 20rpx;
 }
 
-/* 最近活动 */
-.activities-section {
-  background: white;
-  margin: 20rpx;
-  border-radius: 20rpx;
-  padding: 30rpx;
-  box-shadow: 0 4rpx 20rpx rgba(0, 0, 0, 0.1);
-}
 
-.view-all {
-  font-size: 26rpx;
-  color: #4CAF50;
-  cursor: pointer;
-}
 
-.activities-list {
-  display: flex;
-  flex-direction: column;
-  gap: 20rpx;
-}
 
-.activity-item {
-  display: flex;
-  align-items: center;
-  gap: 20rpx;
-  padding: 20rpx;
-  background: #f8f8f8;
-  border-radius: 15rpx;
-}
 
-.activity-icon {
-  flex-shrink: 0;
-  width: 60rpx;
-  height: 60rpx;
-  background: #e8f5e8;
-  border-radius: 30rpx;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
 
-.icon-text {
-  font-size: 28rpx;
-}
 
-.activity-content {
-  flex: 1;
-}
 
-.activity-text {
-  display: block;
-  font-size: 26rpx;
-  color: #333;
-  margin-bottom: 5rpx;
-}
 
-.activity-time {
-  display: block;
-  font-size: 22rpx;
-  color: #666;
-}
 
-.activity-user {
-  flex-shrink: 0;
-}
 
-.user-name {
-  font-size: 24rpx;
-  color: #4CAF50;
-  font-weight: 500;
-}
 
 /* 群组设置 */
 .group-settings {

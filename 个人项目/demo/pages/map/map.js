@@ -13,11 +13,27 @@ Page({
   },
 
   onLoad: function (options) {
-    this.initMap()
-    this.loadCheckinPoints()
+    this.checkLoginAndRedirect()
   },
 
   onShow: function () {
+    this.checkLoginAndRedirect()
+  },
+
+  // 检查登录状态并重定向
+  checkLoginAndRedirect: function () {
+    const isLoggedIn = wx.getStorageSync('userToken') ? true : false
+    
+    if (!isLoggedIn) {
+      // 未登录，跳转到登录页面
+      wx.switchTab({
+        url: '/pages/profile/profile'
+      })
+      return
+    }
+    
+    // 已登录，加载数据
+    this.initMap()
     this.loadCheckinPoints()
   },
 
@@ -98,11 +114,6 @@ Page({
     })
   },
 
-  showRouteModal: function () {
-    wx.navigateTo({
-      url: '/pages/map/route'
-    })
-  },
 
   navigateToHotel: function () {
     wx.navigateTo({
@@ -156,13 +167,60 @@ Page({
     const checkinPoint = this.data.checkinPoints[markerId]
     
     if (checkinPoint) {
-      wx.showModal({
-        title: '打卡信息',
-        content: `${checkinPoint.content}\n\n时间：${checkinPoint.time}\n位置：${checkinPoint.address}`,
-        showCancel: false,
-        confirmText: '知道了'
-      })
+      // 在特殊模式下显示删除选项
+      if (this.data.mapType === 'special') {
+        wx.showActionSheet({
+          itemList: ['查看详情', '删除打卡点'],
+          success: (res) => {
+            if (res.tapIndex === 0) {
+              // 查看详情
+              this.showCheckinDetails(checkinPoint)
+            } else if (res.tapIndex === 1) {
+              // 删除打卡点
+              this.deleteCheckinPoint(markerId)
+            }
+          }
+        })
+      } else {
+        // 普通模式只显示详情
+        this.showCheckinDetails(checkinPoint)
+      }
     }
+  },
+
+  // 显示打卡详情
+  showCheckinDetails: function (checkinPoint) {
+    wx.showModal({
+      title: '打卡信息',
+      content: `${checkinPoint.content}\n\n时间：${checkinPoint.time}\n位置：${checkinPoint.address}`,
+      showCancel: false,
+      confirmText: '知道了'
+    })
+  },
+
+  // 删除打卡点
+  deleteCheckinPoint: function (markerId) {
+    wx.showModal({
+      title: '确认删除',
+      content: '确定要删除这个打卡点吗？',
+      success: (res) => {
+        if (res.confirm) {
+          let checkinPoints = this.data.checkinPoints
+          checkinPoints.splice(markerId, 1)
+          
+          // 更新本地存储
+          wx.setStorageSync('checkinPoints', checkinPoints)
+          
+          // 更新页面数据
+          this.setData({
+            checkinPoints: checkinPoints
+          })
+          this.updateMarkers()
+          
+          app.showToast('打卡点已删除')
+        }
+      }
+    })
   },
 
   onMapTap: function (e) {
@@ -238,25 +296,4 @@ Page({
     this.updateMarkers()
   },
 
-  clearRoute: function () {
-    this.setData({
-      polyline: []
-    })
-  },
-
-  planRoute: function (start, end, waypoints = []) {
-    const polyline = [{
-      points: [
-        { longitude: start.longitude, latitude: start.latitude },
-        { longitude: end.longitude, latitude: end.latitude }
-      ],
-      color: '#4CAF50',
-      width: 4,
-      arrowLine: true
-    }]
-
-    this.setData({
-      polyline: polyline
-    })
-  }
 })

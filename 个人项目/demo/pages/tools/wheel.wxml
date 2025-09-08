@@ -37,13 +37,13 @@
       <!-- 使用lucky-canvas转盘组件 -->
       <lucky-wheel
         id="myLucky"
-        width="500rpx"
-        height="500rpx"
+        width="600rpx"
+        height="600rpx"
         blocks="{{blocks}}"
         prizes="{{prizes}}"
         buttons="{{buttons}}"
-        bindstart="startSpin"
-        bindend="onSpinEnd"
+        bindstart="start"
+        bindend="end"
         wx:if="{{prizes.length > 0}}"
       />
       
@@ -60,7 +60,7 @@
       <text class="btn-text">输入内容</text>
     </button>
     
-    <button class="btn btn-start {{isSpinning ? 'spinning' : ''}}" bindtap="startSpin" disabled="{{isSpinning || wheelItems.length === 0}}">
+    <button class="btn btn-start {{isSpinning ? 'spinning' : ''}}" bindtap="start" disabled="{{isSpinning || wheelItems.length === 0}}">
       <text class="btn-text">{{isSpinning ? '转动中...' : '开始'}}</text>
     </button>
   </view>

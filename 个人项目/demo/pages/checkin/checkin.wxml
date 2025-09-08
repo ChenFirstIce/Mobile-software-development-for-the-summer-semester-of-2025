@@ -12,10 +12,10 @@
       <text class="section-title">📍 当前位置</text>
       <view class="location-actions">
         <button class="refresh-btn" bindtap="refreshLocation">
-          <text class="refresh-icon">🔄</text>
+          <text class="refresh-icon">刷新</text>
         </button>
         <button class="custom-location-btn" bindtap="customLocationInput">
-          <text class="custom-icon">📍</text>
+          <text class="custom-icon">自定义地点</text>
         </button>
       </view>
     </view>

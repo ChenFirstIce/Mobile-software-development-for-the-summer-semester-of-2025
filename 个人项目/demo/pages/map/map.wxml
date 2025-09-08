@@ -47,11 +47,6 @@
       <text class="btn-text">打卡</text>
     </button>
     
-    <button class="func-btn route-btn" bindtap="showRouteModal">
-      <text class="btn-icon">🚋</text>
-      <text class="btn-text">路线</text>
-    </button>
-    
     <button class="func-btn hotel-btn" bindtap="navigateToHotel">
       <text class="btn-icon">🏨</text>
       <text class="btn-text">酒店</text>

@@ -137,9 +137,4 @@ Page({
       url: '/pages/profile/feedback'
     })
   },
-
-  // 阻止事件冒泡
-  stopPropagation: function () {
-    // 空函数，用于阻止事件冒泡
-  }
 })

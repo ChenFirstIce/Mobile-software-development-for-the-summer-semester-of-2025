@@ -22,7 +22,7 @@ Page({
     
     if (!isLoggedIn) {
       // 未登录，跳转到登录页面
-      wx.redirectTo({
+      wx.switchTab({
         url: '/pages/profile/profile'
       })
       return
@@ -30,11 +30,6 @@ Page({
     
     // 已登录，加载数据
     this.getUserInfo()
-    this.loadRecentActivities()
-  },
-
-  onShow: function () {
-    // 页面显示时刷新数据
     this.loadRecentActivities()
   },
 
@@ -138,12 +133,6 @@ Page({
     })
   },
 
-  // 快速路线规划
-  quickRoute: function () {
-    wx.navigateTo({
-      url: '/pages/map/map?action=route'
-    })
-  },
 
   // 查看活动详情
   viewActivity: function (e) {

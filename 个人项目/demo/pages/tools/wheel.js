@@ -15,16 +15,28 @@ Page({
     inputContent: '',
     isMemberCompleted: {},
     // lucky-canvas 配置
-    blocks: [{ padding: '10px', background: '#4CAF50' }],
+    blocks: [{ 
+      padding: '13px', 
+      background: '#617df2'
+    }],
     prizes: [],
     buttons: [
-      { radius: '40%', background: '#4CAF50' },
-      { radius: '35%', background: '#66BB6A' },
+      { 
+        radius: '50px', 
+        background: '#617df2'
+      },
+      { 
+        radius: '45px', 
+        background: '#afc8ff'
+      },
       {
-        radius: '30%', 
-        background: '#45a049',
+        radius: '40px', 
+        background: '#869cfa',
         pointer: true,
-        fonts: [{ text: '开始\n转动', top: '-20px' }] 
+        fonts: [{ 
+          text: '开始\n抽奖', 
+          top: '-20px'
+        }] 
       },
     ]
   },
@@ -172,7 +184,7 @@ Page({
   },
 
   // 开始转动
-  startSpin: function () {
+  start: function () {
     if (this.data.wheelItems.length === 0) {
       app.showToast('请先输入内容')
       return
@@ -191,20 +203,8 @@ Page({
     // 调用play方法开始旋转
     child.lucky.play()
     
-    // 根据权重随机选择结果
-    const totalWeight = this.data.wheelItems.reduce((sum, item) => sum + this.calculateWeight(item.content), 0)
-    let randomWeight = Math.random() * totalWeight
-    let selectedIndex = 0
-    
-    for (let i = 0; i < this.data.wheelItems.length; i++) {
-      const item = this.data.wheelItems[i]
-      randomWeight -= this.calculateWeight(item.content)
-      if (randomWeight <= 0) {
-        selectedIndex = i
-        break
-      }
-    }
-    
+    // 直接随机选择结果（平分概率）
+    const selectedIndex = Math.floor(Math.random() * this.data.wheelItems.length)
     
     // 用定时器模拟请求接口
     setTimeout(() => {
@@ -215,13 +215,15 @@ Page({
   },
 
   // 转盘结束回调
-  onSpinEnd: function (event) {
+  end: function (event) {
     this.setData({
       isSpinning: false
     })
     
-    // 获取中奖结果 - 根据lucky-canvas文档调整
+    // 中奖奖品详情
+    console.log(event.detail)
     
+    // 获取中奖结果
     let selectedIndex = 0
     if (event.detail && typeof event.detail === 'object') {
       // 如果event.detail是对象，尝试获取index
@@ -307,7 +309,7 @@ Page({
     })
   },
 
-  // 更新转盘奖品配置
+  // 更新转盘内容 - 根据用户输入动态生成prizes
   updatePrizes: function () {
     if (this.data.wheelItems.length === 0) {
       this.setData({
@@ -316,13 +318,21 @@ Page({
       return
     }
 
+    // 固定颜色数组，相邻颜色不同
+    const fixedColors = [
+      '#e9e8fe', '#b8c5f2', '#e9e8fe', '#b8c5f2', '#e9e8fe', '#b8c5f2',
+      '#e9e8fe', '#b8c5f2', '#e9e8fe', '#b8c5f2', '#e9e8fe', '#b8c5f2'
+    ]
+
     const prizes = this.data.wheelItems.map((item, index) => {
-      const randomColor = this.getRandColor()
+      const colorIndex = index % fixedColors.length
+      const backgroundColor = fixedColors[colorIndex]
       
       return {
-        background: randomColor,
+        background: backgroundColor,
         fonts: [{ 
-          text: item.content
+          text: item.content,
+          top: '10%'
         }]
       }
     })
@@ -337,71 +347,4 @@ Page({
       }
     })
   },
-
-  // 计算内容权重
-  calculateWeight: function (content) {
-    let weight = content.length
-    // 特殊字符增加权重
-    const specialChars = /[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/g
-    const specialCount = (content.match(specialChars) || []).length
-    weight += specialCount * 2
-    
-    // 数字增加权重
-    const numberCount = (content.match(/\d/g) || []).length
-    weight += numberCount * 1.5
-    
-    // 中文字符增加权重
-    const chineseCount = (content.match(/[\u4e00-\u9fa5]/g) || []).length
-    weight += chineseCount * 1.2
-    
-    return weight
-  },
-
-  // 生成随机颜色
-  getRandColor: function() {
-    let rgb = []
-    let isWhite = true
-    
-    // 循环直到生成非白色颜色
-    while (isWhite) {
-      rgb = []
-      for(let i = 0; i < 3; i++){
-        let color = Math.floor(Math.random() * 256).toString(16)
-        color = color.length == 1 ? '0' + color : color
-        rgb.push(color)
-      }
-      
-      // 检查是否为白色或接近白色
-      const r = parseInt(rgb[0], 16)
-      const g = parseInt(rgb[1], 16)
-      const b = parseInt(rgb[2], 16)
-      
-      // 如果RGB值都大于200，认为是白色或接近白色
-      if (r > 200 && g > 200 && b > 200) {
-        isWhite = true
-      } else {
-        isWhite = false
-      }
-    }
-    
-    return '#' + rgb.join('')
-  },
-
-  // 根据背景颜色计算对比度高的文字颜色
-  getContrastColor: function(backgroundColor) {
-    // 移除#号并转换为RGB
-    const hex = backgroundColor.replace('#', '')
-    const r = parseInt(hex.substr(0, 2), 16)
-    const g = parseInt(hex.substr(2, 2), 16)
-    const b = parseInt(hex.substr(4, 2), 16)
-    
-    // 计算亮度
-    const brightness = (r * 299 + g * 587 + b * 114) / 1000
-    
-    // 根据亮度返回黑色或白色
-    return brightness > 128 ? '#000000' : '#FFFFFF'
-  },
-
-
-  // 历史功能已移除
 })
