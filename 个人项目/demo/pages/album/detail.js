@@ -348,11 +348,6 @@ Page({
     app.showToast('照片编辑功能开发中')
   },
 
-  // 阻止事件冒泡
-  stopPropagation: function () {
-    // 空函数，用于阻止事件冒泡
-  },
-
   // 分享到微信
   onShareAppMessage: function () {
     return {

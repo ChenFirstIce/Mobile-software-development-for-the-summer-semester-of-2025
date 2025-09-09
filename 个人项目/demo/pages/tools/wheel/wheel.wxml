@@ -1,0 +1,159 @@
+<!--pages/tools/wheel/wheel.wxml-->
+<view class="container">
+  <!-- 导航栏 -->
+  <view class="nav-bar">
+    <view class="nav-title">随机转盘</view>
+  </view>
+
+  <!-- 群组信息 -->
+  <view class="group-info" wx:if="{{currentGroup}}">
+    <text class="group-name">{{currentGroup.name}}</text>
+    <text class="group-desc">{{currentGroup.description || '暂无描述'}}</text>
+  </view>
+
+  <!-- 未完成成员弹窗 -->
+  <view class="members-modal-container" wx:if="{{showMembersModal}}">
+    <view class="members-modal-content">
+      <view class="modal-header">
+        <text class="modal-title">未完成成员</text>
+        <text class="modal-close" bindtap="hideMembersModal">×</text>
+      </view>
+      
+      <view class="modal-body">
+        <view class="members-list">
+          <view class="member-item" wx:for="{{incompleteMembers}}" wx:key="id">
+            <image class="member-avatar-large" src="{{item.avatarUrl || '/images/default-avatar.png'}}" mode="aspectFill"></image>
+            <text class="member-name">{{item.nickName}}</text>
+          </view>
+        </view>
+      </view>
+      
+      <view class="modal-footer">
+        <button class="btn btn-confirm" bindtap="hideMembersModal">知道了</button>
+      </view>
+    </view>
+  </view>
+
+  <!-- 转盘区域 -->
+  <view class="wheel-section" wx:if="{{hasWheel}}">
+    <view class="wheel-container">
+      <view class="wheel-title">{{awardsConfig.option}}</view>
+      <view class="wheel-result">{{s_awards}}</view>
+      
+      <!-- 转盘组件 -->
+      <zhuanpan id='zhuanpan' 
+      bind:myData='getData' 
+      bind:myAwards="getAwards" 
+      bind:startZhuan="startZhuan" 
+      size='{{size}}' 
+      fastJuedin='{{fastJuedin}}' 
+      repeat='{{repeat}}' 
+      awardsConfig='{{awardsConfig}}'>
+      </zhuanpan>
+    </view>
+  </view>
+
+  <!-- 空状态界面 -->
+  <view class="empty-section" wx:if="{{!hasWheel}}">
+    <view class="empty-container">
+      <image class="empty-icon" src="/images/empty-wheel.png" mode="aspectFit"></image>
+      <text class="empty-title">还没有转盘</text>
+      <text class="empty-desc">点击下方按钮创建转盘内容</text>
+    </view>
+  </view>
+
+  <!-- 未完成成员头像 -->
+  <view class="members-section" wx:if="{{currentGroup}}">
+    <view class="section-header">
+      <text class="section-title">未完成输入</text>
+      <text class="member-count">{{completedMembers}}/{{currentGroup.members.length}}</text>
+    </view>
+    
+    <view class="members-row">
+      <view class="member-avatar" wx:for="{{currentGroup.members}}" wx:key="id" wx:if="{{!isMemberCompleted[item.id] && index < 5}}">
+        <image class="avatar-img" src="{{item.avatarUrl || '/images/default-avatar.png'}}" mode="aspectFill"></image>
+        <view class="avatar-status incomplete"></view>
+      </view>
+      
+      <!-- 省略号按钮 -->
+      <view class="more-btn" wx:if="{{incompleteMembers.length > 5}}" bindtap="showIncompleteMembers">
+        <text class="more-text">...</text>
+      </view>
+    </view>
+  </view>
+
+  <!-- 编辑和重新开始按钮 -->
+  <view class="edit-section" wx:if="{{currentGroup}}">
+    <button class="btn btn-edit" bindtap="editWheel" wx:if="{{!hasWheel}}">
+      <text class="btn-text">创建转盘内容</text>
+    </button>
+    <button class="btn btn-edit" bindtap="editWheel" wx:if="{{hasWheel}}">
+      <text class="btn-text">编辑转盘内容</text>
+    </button>
+    <button class="btn btn-restart" bindtap="restartWheel" wx:if="{{hasWheel}}">
+      <text class="btn-text">重新开始</text>
+    </button>
+  </view>
+</view>
+
+
+<!-- 编辑转盘弹窗 -->
+<view class="modal-overlay" wx:if="{{showEditModal}}" bindtap="hideEditModal">
+  <view class="modal-content" catchtap="stopPropagation">
+    <view class="modal-header">
+      <text class="modal-title">编辑转盘内容</text>
+      <text class="modal-close" bindtap="hideEditModal">×</text>
+    </view>
+    
+    <view class="modal-body">
+      <view class="edit-form">
+        <view class="form-item">
+          <text class="form-label">转盘标题</text>
+          <input class="form-input" 
+                 placeholder="请输入转盘标题"
+                 value="{{editTitle}}"
+                 bindinput="onTitleInput"></input>
+        </view>
+        
+        <view class="form-item">
+          <text class="form-label">转盘选项</text>
+          <view class="options-list">
+            <view class="option-item" wx:for="{{editOptions}}" wx:key="index">
+              <input class="option-input" 
+                     placeholder="请输入选项内容"
+                     value="{{item}}"
+                     bindinput="onOptionInput"
+                     data-index="{{index}}"></input>
+              <text class="remove-btn" bindtap="removeOption" data-index="{{index}}" wx:if="{{editOptions.length > 2}}">×</text>
+            </view>
+            <button class="add-option-btn" bindtap="addOption">+ 添加选项</button>
+          </view>
+        </view>
+      </view>
+    </view>
+    
+    <view class="modal-footer">
+      <button class="btn btn-cancel" bindtap="hideEditModal">取消</button>
+      <button class="btn btn-confirm" bindtap="saveWheelEdit">保存</button>
+    </view>
+  </view>
+</view>
+
+<block wx:if="{{saveFrameFlag}}">
+  <view class="middle-flex-column-center" style="position:fixed;left:0;top:0;width:100%;height:100%;background:rgba(0,0,0,0.2);z-index:10000;">
+    <view class="middle-flex-column-center" style="width:600rpx;height:920rpx;background:#ffffff;border-radius:16rpx;">
+      <view style="width:400rpx;height:650rpx;">
+        <image style="width:100%;height:100%;" src="{{shengchengUrl}}"></image>
+      </view>
+      <view style="width:600rpx;height:80rpx;line-height:80rpx;text-align:center;font-size:28rpx;color:#1078e7;">保存后分享到朋友圈</view>
+      <view style="width:600rpx;height:70rpx;" class="middle-flex-row-center">
+        <button style="margin:0;padding:0;width:200rpx;height:70rpx;color: #1078e7;border-radius: 8rpx;border: 1px solid #1078e7;background: none;font-size: 28rpx;text-align:center;line-height:70rpx;" bindtap='closeSaveFrame'>关闭</button>
+        <button style="margin:0;padding:0;width:200rpx;height:70rpx;color: #1078e7;border-radius: 8rpx;border: 1px solid #1078e7;background: none;font-size: 28rpx;text-align:center;line-height:70rpx;margin-left:30rpx;" bindtap='saveImage'>保存图片</button>
+      </view>
+    </view>
+  </view>
+</block>
+
+<block wx:if="{{showCanvasFlag}}">
+  <canvas canvas-id="shareCanvas" style="width:{{canvasWidth}}px;height:{{canvasHeight}}px;border:1px dashed black;"></canvas>
+</block>

@@ -128,11 +128,7 @@ Page({
   loadShareStats: function () {
     // 这里应该从实际数据中获取分享统计
     // 目前使用模拟数据
-    const shareStats = {
-      wechat: Math.floor(Math.random() * 20) + 5,
-      moments: Math.floor(Math.random() * 15) + 3,
-      group: Math.floor(Math.random() * 25) + 8
-    }
+    const shareStats = {}
     
     this.setData({
       shareStats: shareStats

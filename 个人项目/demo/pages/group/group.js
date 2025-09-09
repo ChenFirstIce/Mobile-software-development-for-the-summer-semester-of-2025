@@ -209,13 +209,6 @@ Page({
     })
   },
 
-  // 验证码输入
-  onVerifyCodeInput: function (e) {
-    this.setData({
-      verifyCode: e.detail.value
-    })
-  },
-
   // 加入群组
   joinGroup: function () {
     const { roomCode, verifyCode } = this.data
@@ -316,10 +309,6 @@ Page({
     }
   },
 
-  // 阻止事件冒泡
-  stopPropagation: function () {
-    // 空函数，用于阻止事件冒泡
-  },
 
   // 下拉刷新
   onPullDownRefresh: function () {

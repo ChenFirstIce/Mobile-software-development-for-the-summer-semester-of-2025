@@ -236,14 +236,14 @@ Page({
   // 打开随机转盘
   openRandomWheel: function () {
     wx.navigateTo({
-      url: `/pages/tools/wheel?groupId=${this.data.group.id}`
+      url: `/pages/tools/wheel/wheel?groupId=${this.data.group.id}`
     })
   },
 
   // 打开价格投票
   openPriceVote: function () {
     wx.navigateTo({
-      url: `/pages/tools/price?groupId=${this.data.group.id}`
+      url: `/pages/tools/price/price?groupId=${this.data.group.id}`
     })
   },
 
@@ -452,10 +452,6 @@ Page({
     }
   },
 
-  // 阻止事件冒泡
-  stopPropagation: function () {
-    // 空函数，用于阻止事件冒泡
-  },
 
   // 分享小程序
   onShareAppMessage: function () {

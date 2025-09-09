@@ -404,10 +404,6 @@ Page({
     })
   },
 
-  // 阻止事件冒泡
-  stopPropagation: function () {
-    // 空函数，用于阻止事件冒泡
-  },
 
   // 分享小程序
   onShareAppMessage: function () {

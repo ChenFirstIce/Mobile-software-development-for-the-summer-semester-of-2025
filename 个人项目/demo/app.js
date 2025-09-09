@@ -115,22 +115,6 @@ App({
     })
   },
 
-
-
-  // 获取好友列表
-  getFriendList: function() {
-    return new Promise((resolve, reject) => {
-      // 注意：微信小程序无法直接获取好友列表
-      // 这里需要通过后端API获取
-      // 或者使用微信开放平台的接口
-      
-      // 模拟好友数据
-      const friends = []
-      
-      resolve(friends)
-    })
-  },
-
   globalData: {
     userInfo: null,
     isLoggedIn: false,

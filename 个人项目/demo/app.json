@@ -13,9 +13,8 @@
     "pages/group/detail",
     "pages/profile/profile",
     "pages/tools/tools",
-    "pages/tools/wheel",
-    "pages/tools/price",
-    "pages/tools/wheel-input"
+    "pages/tools/wheel/wheel",
+    "pages/tools/price/price"
   ],
   "window": {
     "backgroundTextStyle": "light",
@@ -69,8 +68,5 @@
   },
   "requiredBackgroundModes": ["location"],
   "style": "v2",
-  "sitemapLocation": "sitemap.json",
-  "usingComponents": {
-    "lucky-wheel": "/miniprogram_npm/@lucky-canvas/mini/lucky-wheel/index"
-  }
+  "sitemapLocation": "sitemap.json"
 }

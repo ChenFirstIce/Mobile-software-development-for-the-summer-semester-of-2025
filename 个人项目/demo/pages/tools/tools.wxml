@@ -17,41 +17,7 @@
       </view>
     </view>
   </view>
-
-  <!-- 最近使用的工具 -->
-  <view class="recent-section" wx:if="{{wheels.length > 0 || votes.length > 0}}">
-    <view class="section-title">最近使用</view>
-    
-    <!-- 最近轮盘 -->
-    <view class="recent-wheels" wx:if="{{wheels.length > 0}}">
-      <view class="subsection-title">轮盘</view>
-      <view class="recent-list">
-        <view class="recent-item" wx:for="{{wheels.slice(0, 3)}}" wx:key="id" bindtap="showWheel" data-wheel="{{item}}">
-          <view class="item-icon">🎯</view>
-          <view class="item-content">
-            <text class="item-title">{{item.name}}</text>
-            <text class="item-info">选项：{{item.options.length}}个</text>
-          </view>
-          <view class="item-arrow">></view>
-        </view>
-      </view>
-    </view>
-
-    <!-- 最近投票 -->
-    <view class="recent-votes" wx:if="{{votes.length > 0}}">
-      <view class="subsection-title">投票</view>
-      <view class="recent-list">
-        <view class="recent-item" wx:for="{{votes.slice(0, 3)}}" wx:key="id" bindtap="showVote" data-vote="{{item}}">
-          <view class="item-icon">💰</view>
-          <view class="item-content">
-            <text class="item-title">{{item.name}}</text>
-            <text class="item-info">参与：{{item.participants.length}}人</text>
-          </view>
-          <view class="item-arrow">></view>
-        </view>
-      </view>
-    </view>
-  </view>
+  
 
   <!-- 使用说明 -->
   <view class="help-section">
