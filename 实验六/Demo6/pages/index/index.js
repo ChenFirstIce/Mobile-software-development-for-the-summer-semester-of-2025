@@ -4,9 +4,21 @@ Page({
    * 页面的初始数据
    */
   data: {
-    
+    levels: [
+      'level01.png',
+      'level02.png',
+      'level03.png',
+      'level04.png'
+    ]
   },
 
+  choosLevel: function(e){
+    let level = e.currentTarget.dataset.level
+    //页面跳转
+    wx.navigateTo({
+      url:'../game/game?level=' + level
+    })
+  },
   /**
    * 生命周期函数--监听页面加载
    */

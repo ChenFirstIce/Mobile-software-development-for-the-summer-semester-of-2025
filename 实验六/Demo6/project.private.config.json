@@ -19,5 +19,18 @@
     "checkInvalidKey": true,
     "ignoreDevUnusedFiles": true
   },
-  "libVersion": "3.10.0"
+  "libVersion": "3.10.0",
+  "condition": {
+    "miniprogram": {
+      "list": [
+        {
+          "name": "pages/game/game",
+          "pathName": "pages/game/game",
+          "query": "level=0",
+          "scene": null,
+          "launchMode": "default"
+        }
+      ]
+    }
+  }
 }

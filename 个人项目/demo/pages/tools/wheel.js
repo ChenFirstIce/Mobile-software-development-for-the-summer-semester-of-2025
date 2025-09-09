@@ -1,4 +1,3 @@
-// pages/tools/wheel.js
 const app = getApp()
 
 Page({
@@ -6,39 +5,19 @@ Page({
     groupId: '',
     groupInfo: null,
     members: [],
+    incompleteMembers: [],
+    filteredIncompleteMembers: [],
+    showMoreBtn: false,
+    completedCount: 0,
+    
     wheelItems: [],
+    rotation: 0,
+    spinDuration: 0,
     isSpinning: false,
     selectedItem: null,
-    showInputModal: false,
-    showResultModal: false,
+    
     showMembersModal: false,
-    inputContent: '',
-    isMemberCompleted: {},
-    // lucky-canvas 配置
-    blocks: [{ 
-      padding: '13px', 
-      background: '#617df2'
-    }],
-    prizes: [],
-    buttons: [
-      { 
-        radius: '50px', 
-        background: '#617df2'
-      },
-      { 
-        radius: '45px', 
-        background: '#afc8ff'
-      },
-      {
-        radius: '40px', 
-        background: '#869cfa',
-        pointer: true,
-        fonts: [{ 
-          text: '开始\n抽奖', 
-          top: '-20px'
-        }] 
-      },
-    ]
+    showResultModal: false
   },
 
   onLoad: function (options) {
@@ -46,16 +25,13 @@ Page({
       this.setData({
         groupId: options.groupId
       })
-      this.loadGroupInfo()
+      this.loadGroupData()
     }
   },
 
-  onShow: function () {
-    this.loadWheelData()
-  },
-
-  // 加载群组信息
-  loadGroupInfo: function () {
+  // 加载群组数据
+  loadGroupData: function () {
+    // 从缓存获取群组信息
     const groups = wx.getStorageSync('groups') || []
     const group = groups.find(g => g.id === this.data.groupId)
     
@@ -64,46 +40,82 @@ Page({
         groupInfo: group,
         members: group.members || []
       })
+      this.loadWheelItems()
     }
   },
 
-  // 加载转盘数据
-  loadWheelData: function () {
-    const wheelData = wx.getStorageSync(`wheel_${this.data.groupId}`) || {
-      items: [],
-      results: []
-    }
-    
+  // 加载转盘项目
+  loadWheelItems: function () {
+    const wheelData = wx.getStorageSync(`wheel_${this.data.groupId}`)
+    // 确保 wheelData 是数组
+    const wheelItems = Array.isArray(wheelData) ? wheelData : []
     this.setData({
-      wheelItems: wheelData.items || []
+      wheelItems: wheelItems
     })
     this.updateMemberStatus()
-    this.updatePrizes()
+    this.updateWheelColors()
   },
 
-  // 保存转盘数据
-  saveWheelData: function () {
-    const wheelData = {
-      items: this.data.wheelItems,
-      results: wx.getStorageSync(`wheel_${this.data.groupId}`)?.results || []
-    }
-    wx.setStorageSync(`wheel_${this.data.groupId}`, wheelData)
+  // 更新成员状态
+  updateMemberStatus: function () {
+    // 确保 wheelItems 是数组
+    const wheelItems = Array.isArray(this.data.wheelItems) ? this.data.wheelItems : []
+    const wheelUserIds = wheelItems.map(item => item.userId)
+    const incompleteMembers = this.data.members.filter(member => 
+      !wheelUserIds.includes(member.id)
+    )
+    
+    // 计算已完成人数
+    const completedCount = this.data.members.length - incompleteMembers.length
+    
+    // 最多显示5个头像，超过则显示省略号
+    const maxDisplay = 5
+    const filteredIncompleteMembers = incompleteMembers.slice(0, maxDisplay)
+    const showMoreBtn = incompleteMembers.length > maxDisplay
+    
+    this.setData({
+      incompleteMembers,
+      filteredIncompleteMembers,
+      showMoreBtn,
+      completedCount
+    })
   },
 
-  // 显示未完成成员头像
-  showIncompleteMembers: function () {
-    const incompleteMembers = this.data.members.filter(member => {
-      return !this.data.wheelItems.some(item => item.userId === member.id)
+  // 更新转盘颜色
+  updateWheelColors: function () {
+    // 确保 wheelItems 是数组
+    const wheelItems = Array.isArray(this.data.wheelItems) ? this.data.wheelItems : []
+    if (wheelItems.length === 0) return
+    
+    // 定义颜色数组
+    const colors = [
+      '#FFD700', '#FFA500', '#FF6347', '#40E0D0', 
+      '#9370DB', '#3CB371', '#1E90FF', '#FF69B4'
+    ]
+    
+    // 计算每个部分的角度
+    const anglePerItem = 360 / wheelItems.length
+    
+    // 为每个项目分配颜色和角度
+    const updatedItems = wheelItems.map((item, index) => {
+      return {
+        ...item,
+        color: colors[index % colors.length],
+        angle: anglePerItem,
+        startAngle: index * anglePerItem
+      }
     })
     
-    if (incompleteMembers.length > 0) {
-      this.setData({
-        incompleteMembers: incompleteMembers,
-        showMembersModal: true
-      })
-    } else {
-      app.showToast('所有成员已完成输入')
-    }
+    this.setData({
+      wheelItems: updatedItems
+    })
+  },
+
+  // 显示所有未完成成员
+  showAllIncompleteMembers: function () {
+    this.setData({
+      showMembersModal: true
+    })
   },
 
   // 隐藏成员弹窗
@@ -113,162 +125,80 @@ Page({
     })
   },
 
-  // 显示输入弹窗
-  showInputModal: function () {
-    this.setData({
-      showInputModal: true,
-      inputContent: ''
+  // 跳转到输入内容页面
+  navigateToInput: function () {
+    wx.navigateTo({
+      url: `/pages/tools/wheel-input?groupId=${this.data.groupId}`
     })
   },
 
-  // 隐藏输入弹窗
-  hideInputModal: function () {
-    this.setData({
-      showInputModal: false,
-      inputContent: ''
-    })
-  },
-
-  // 输入内容变化
-  onInputChange: function (e) {
-    this.setData({
-      inputContent: e.detail.value
-    })
-  },
-
-  // 确认输入
-  confirmInput: function () {
-    const content = this.data.inputContent.trim()
-    if (!content) {
-      app.showToast('请输入内容')
-      return
-    }
-
-    const currentUser = app.globalData.userInfo
-    if (!currentUser) {
-      app.showToast('请先登录')
-      return
-    }
-
-    // 检查是否已经输入过
-    const existingIndex = this.data.wheelItems.findIndex(item => item.userId === currentUser.id)
+  // 开始转盘
+  startSpin: function () {
+    const wheelItems = Array.isArray(this.data.wheelItems) ? this.data.wheelItems : []
+    if (this.data.isSpinning || wheelItems.length === 0) return
     
-    const newItem = {
-      id: Date.now().toString(),
-      userId: currentUser.id,
-      userName: currentUser.nickName,
-      userAvatar: currentUser.avatarUrl,
-      content: content,
-      timestamp: new Date().toISOString()
-    }
-
-    let wheelItems = [...this.data.wheelItems]
-    
-    if (existingIndex >= 0) {
-      // 更新现有项
-      wheelItems[existingIndex] = newItem
-    } else {
-      // 添加新项
-      wheelItems.push(newItem)
-    }
-
     this.setData({
-      wheelItems: wheelItems
+      isSpinning: true,
+      spinDuration: 5000 // 5秒动画
     })
-
-    this.saveWheelData()
-    this.updateMemberStatus()
-    this.updatePrizes()
-    this.hideInputModal()
-    app.showToast('输入成功')
-  },
-
-  // 开始转动
-  start: function () {
-    if (this.data.wheelItems.length === 0) {
-      app.showToast('请先输入内容')
-      return
-    }
-
-    if (this.data.isSpinning) {
-      return
-    }
-
+    
+    // 计算旋转角度 (3-5圈 + 随机角度)
+    const baseRotation = 360 * (3 + Math.random() * 2)
+    const randomRotation = Math.random() * 360
+    const totalRotation = this.data.rotation + baseRotation + randomRotation
+    
     this.setData({
-      isSpinning: true
+      rotation: totalRotation
     })
-
-    // 获取抽奖组件实例
-    const child = this.selectComponent('#myLucky')
-    // 调用play方法开始旋转
-    child.lucky.play()
     
-    // 直接随机选择结果（平分概率）
-    const selectedIndex = Math.floor(Math.random() * this.data.wheelItems.length)
-    
-    // 用定时器模拟请求接口
+    // 转盘停止后显示结果
     setTimeout(() => {
-      // 3s 后得到中奖索引
-      // 调用stop方法然后缓慢停止
-      child.lucky.stop(selectedIndex)
-    }, 3000)
+      this.determineWinner()
+    }, 5000)
   },
 
-  // 转盘结束回调
-  end: function (event) {
-    this.setData({
-      isSpinning: false
-    })
+  // 确定获胜者
+  determineWinner: function () {
+    const wheelItems = Array.isArray(this.data.wheelItems) ? this.data.wheelItems : []
+    if (wheelItems.length === 0) return
     
-    // 中奖奖品详情
-    console.log(event.detail)
+    // 计算最终角度 (取模360度)
+    const finalRotation = this.data.rotation % 360
+    // 转换为0-360度
+    const normalizedRotation = (finalRotation + 360) % 360
     
-    // 获取中奖结果
-    let selectedIndex = 0
-    if (event.detail && typeof event.detail === 'object') {
-      // 如果event.detail是对象，尝试获取index
-      selectedIndex = event.detail.index || event.detail.prizeIndex || 0
-    } else if (typeof event.detail === 'number') {
-      // 如果event.detail直接是数字
-      selectedIndex = event.detail
-    }
+    // 计算每个部分的角度
+    const anglePerItem = 360 / wheelItems.length
     
-    const selectedItem = this.data.wheelItems[selectedIndex]
+    // 确定指针指向的项目
+    // 指针在顶部，所以从270度位置开始计算
+    const pointerAngle = 270
+    let adjustedAngle = (normalizedRotation - pointerAngle + 360) % 360
+    let winnerIndex = Math.floor(adjustedAngle / anglePerItem)
     
-    // 检查selectedItem是否存在
-    if (!selectedItem) {
-      return
-    }
+    // 确保索引在有效范围内
+    winnerIndex = winnerIndex % wheelItems.length
     
     this.setData({
-      selectedItem: selectedItem
-    })
-    
-    this.showResult(selectedItem)
-  },
-
-  // 显示结果
-  showResult: function (item) {
-    if (!item) {
-      return
-    }
-
-    this.setData({
+      isSpinning: false,
+      selectedItem: wheelItems[winnerIndex],
       showResultModal: true
     })
+    
+    // 保存结果
+    this.saveResult(wheelItems[winnerIndex])
+  },
 
-    // 记录结果
-    const result = {
-      id: Date.now().toString(),
-      itemId: item.id || Date.now().toString(),
-      content: item.content || '未知内容',
-      userName: item.userName || '未知用户',
+  // 保存结果
+  saveResult: function (item) {
+    const results = wx.getStorageSync(`wheel_results_${this.data.groupId}`) || []
+    results.push({
+      itemId: item.id,
+      content: item.content,
+      userName: item.userName,
       timestamp: new Date().toISOString()
-    }
-
-    const wheelData = wx.getStorageSync(`wheel_${this.data.groupId}`) || { items: [], results: [] }
-    wheelData.results.push(result)
-    wx.setStorageSync(`wheel_${this.data.groupId}`, wheelData)
+    })
+    wx.setStorageSync(`wheel_results_${this.data.groupId}`, results)
   },
 
   // 隐藏结果弹窗
@@ -279,72 +209,13 @@ Page({
     })
   },
 
-  // 重置转盘
-  resetWheel: function () {
-    wx.showModal({
-      title: '确认重置',
-      content: '确定要清空所有输入内容吗？',
-      success: (res) => {
-        if (res.confirm) {
-          this.setData({
-            wheelItems: [],
-            prizes: [],
-            selectedItem: null
-          })
-          this.saveWheelData()
-          app.showToast('转盘已重置')
-        }
-      }
-    })
+  // 阻止事件冒泡
+  stopPropagation: function (e) {
+    e.stopPropagation()
   },
 
-  // 更新成员完成状态
-  updateMemberStatus: function () {
-    const isMemberCompleted = {}
-    this.data.members.forEach(member => {
-      isMemberCompleted[member.id] = this.data.wheelItems.some(item => item.userId === member.id)
-    })
-    this.setData({
-      isMemberCompleted: isMemberCompleted
-    })
-  },
-
-  // 更新转盘内容 - 根据用户输入动态生成prizes
-  updatePrizes: function () {
-    if (this.data.wheelItems.length === 0) {
-      this.setData({
-        prizes: []
-      })
-      return
-    }
-
-    // 固定颜色数组，相邻颜色不同
-    const fixedColors = [
-      '#e9e8fe', '#b8c5f2', '#e9e8fe', '#b8c5f2', '#e9e8fe', '#b8c5f2',
-      '#e9e8fe', '#b8c5f2', '#e9e8fe', '#b8c5f2', '#e9e8fe', '#b8c5f2'
-    ]
-
-    const prizes = this.data.wheelItems.map((item, index) => {
-      const colorIndex = index % fixedColors.length
-      const backgroundColor = fixedColors[colorIndex]
-      
-      return {
-        background: backgroundColor,
-        fonts: [{ 
-          text: item.content,
-          top: '10%'
-        }]
-      }
-    })
-    
-    this.setData({
-      prizes: prizes
-    }, () => {
-      // 强制更新lucky-canvas组件
-      const child = this.selectComponent('#myLucky')
-      if (child && child.lucky) {
-        child.lucky.init()
-      }
-    })
-  },
+  onShow: function () {
+    // 页面显示时重新加载数据
+    this.loadWheelItems()
+  }
 })

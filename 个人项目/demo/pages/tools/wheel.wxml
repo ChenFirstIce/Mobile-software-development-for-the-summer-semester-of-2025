@@ -1,4 +1,3 @@
-<!--pages/tools/wheel.wxml-->
 <view class="container">
   <!-- 导航栏 -->
   <view class="nav-bar">
@@ -15,17 +14,17 @@
   <view class="members-section">
     <view class="section-header">
       <text class="section-title">未完成输入</text>
-      <text class="member-count">{{wheelItems.length}}/{{members.length}}</text>
+      <text class="member-count">{{completedCount}}/{{members.length}}</text>
     </view>
     
     <view class="members-row">
-      <view class="member-avatar" wx:for="{{members}}" wx:key="id" wx:if="{{!isMemberCompleted[item.id]}}">
+      <view class="member-avatar" wx:for="{{filteredIncompleteMembers}}" wx:key="id">
         <image class="avatar-img" src="{{item.avatarUrl || '/images/default-avatar.png'}}" mode="aspectFill"></image>
         <view class="avatar-status incomplete"></view>
       </view>
       
       <!-- 省略号按钮 -->
-      <view class="more-btn" wx:if="{{members.length > 5}}" bindtap="showIncompleteMembers">
+      <view class="more-btn" wx:if="{{showMoreBtn}}" bindtap="showAllIncompleteMembers">
         <text class="more-text">...</text>
       </view>
     </view>
@@ -34,21 +33,23 @@
   <!-- 转盘区域 -->
   <view class="wheel-section">
     <view class="wheel-container">
-      <!-- 使用lucky-canvas转盘组件 -->
-      <lucky-wheel
-        id="myLucky"
-        width="600rpx"
-        height="600rpx"
-        blocks="{{blocks}}"
-        prizes="{{prizes}}"
-        buttons="{{buttons}}"
-        bindstart="start"
-        bindend="end"
-        wx:if="{{prizes.length > 0}}"
-      />
+      <!-- 转盘组件 -->
+      <view class="wheel" wx:if="{{wheelItems.length > 0}}" style="transform: rotate({{rotation}}deg); transition: transform {{spinDuration}}ms ease-out;">
+        <view class="wheel-part" wx:for="{{wheelItems}}" wx:key="id" 
+              style="background-color: {{item.color}}; transform: rotate({{item.angle}}deg) skewY({{90 - 360/wheelItems.length}}deg);">
+          <view class="wheel-text" style="transform: skewY({{360/wheelItems.length - 90}}deg) rotate({{90 - item.startAngle}}deg);">
+            {{item.content}}
+          </view>
+        </view>
+        <!-- 转盘中心 -->
+        <view class="wheel-center"></view>
+      </view>
+      
+      <!-- 转盘指针 -->
+      <view class="wheel-pointer" wx:if="{{wheelItems.length > 0}}"></view>
       
       <!-- 空状态显示 -->
-      <view class="empty-wheel" wx:if="{{prizes.length === 0}}">
+      <view class="empty-wheel" wx:if="{{wheelItems.length === 0}}">
         <text class="empty-text">暂无内容，请先输入</text>
       </view>
     </view>
@@ -56,41 +57,34 @@
 
   <!-- 操作按钮 -->
   <view class="action-buttons">
-    <button class="btn btn-input" bindtap="showInputModal">
+    <button class="btn input-btn" bindtap="navigateToInput">
       <text class="btn-text">输入内容</text>
     </button>
     
-    <button class="btn btn-start {{isSpinning ? 'spinning' : ''}}" bindtap="start" disabled="{{isSpinning || wheelItems.length === 0}}">
+    <button class="btn start-btn" bindtap="startSpin" disabled="{{isSpinning || wheelItems.length === 0}}">
       <text class="btn-text">{{isSpinning ? '转动中...' : '开始'}}</text>
     </button>
   </view>
 
-  <!-- 重置按钮 -->
-  <view class="reset-section">
-    <button class="btn btn-reset" bindtap="resetWheel">
-      <text class="btn-text">重置转盘</text>
-    </button>
-  </view>
-
-  <!-- 输入弹窗 -->
-  <view class="modal-overlay" wx:if="{{showInputModal}}" bindtap="hideInputModal">
+  <!-- 未完成成员弹窗 -->
+  <view class="modal-overlay" wx:if="{{showMembersModal}}" bindtap="hideMembersModal">
     <view class="modal-content" catchtap="stopPropagation">
       <view class="modal-header">
-        <text class="modal-title">输入内容</text>
-        <text class="modal-close" bindtap="hideInputModal">×</text>
+        <text class="modal-title">未完成成员</text>
+        <text class="modal-close" bindtap="hideMembersModal">×</text>
       </view>
       
       <view class="modal-body">
-        <textarea class="input-textarea" 
-                  placeholder="请输入您想要的内容..."
-                  value="{{inputContent}}"
-                  bindinput="onInputChange"
-                  maxlength="50"></textarea>
+        <view class="members-grid">
+          <view class="member-item" wx:for="{{incompleteMembers}}" wx:key="id">
+            <image class="member-img" src="{{item.avatarUrl || '/images/default-avatar.png'}}" mode="aspectFill"></image>
+            <text class="member-name">{{item.nickName}}</text>
+          </view>
+        </view>
       </view>
       
       <view class="modal-footer">
-        <button class="btn btn-cancel" bindtap="hideInputModal">取消</button>
-        <button class="btn btn-confirm" bindtap="confirmInput">确认</button>
+        <button class="modal-btn" bindtap="hideMembersModal">关闭</button>
       </view>
     </view>
   </view>
@@ -98,43 +92,12 @@
   <!-- 结果弹窗 -->
   <view class="modal-overlay" wx:if="{{showResultModal}}" bindtap="hideResultModal">
     <view class="modal-content result-modal" catchtap="stopPropagation">
-      <view class="modal-header">
-        <text class="modal-title">转盘结果</text>
-      </view>
+      <view class="result-icon">🎉</view>
+      <text class="result-title">抽奖结果</text>
+      <text class="result-content">{{selectedItem.content}}</text>
+      <text class="result-user">来自 {{selectedItem.userName}}</text>
       
-      <view class="modal-body">
-        <view class="result-content">
-          <text class="result-text">{{selectedItem.content}}</text>
-          <text class="result-user">—— {{selectedItem.userName}}</text>
-        </view>
-      </view>
-      
-      <view class="modal-footer">
-        <button class="btn btn-confirm" bindtap="hideResultModal">太棒了！</button>
-      </view>
-    </view>
-  </view>
-
-  <!-- 成员列表弹窗 -->
-  <view class="modal-overlay" wx:if="{{showMembersModal}}" bindtap="hideMembersModal">
-    <view class="modal-content members-modal" catchtap="stopPropagation">
-      <view class="modal-header">
-        <text class="modal-title">未完成成员</text>
-        <text class="modal-close" bindtap="hideMembersModal">×</text>
-      </view>
-      
-      <view class="modal-body">
-        <view class="members-list">
-          <view class="member-item" wx:for="{{incompleteMembers}}" wx:key="id">
-            <image class="member-avatar-large" src="{{item.avatarUrl || '/images/default-avatar.png'}}" mode="aspectFill"></image>
-            <text class="member-name">{{item.nickName}}</text>
-          </view>
-        </view>
-      </view>
-      
-      <view class="modal-footer">
-        <button class="btn btn-confirm" bindtap="hideMembersModal">知道了</button>
-      </view>
+      <button class="modal-btn" bindtap="hideResultModal">确定</button>
     </view>
   </view>
 </view>
