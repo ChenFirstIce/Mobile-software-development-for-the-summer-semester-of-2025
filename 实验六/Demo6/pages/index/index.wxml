@@ -1,0 +1,13 @@
+<view class='container'>
+  <!--标题-->
+  <view class='title'>游戏通关</view>
+  <!--关卡列表-->
+    <view class='levelBox'>
+    <!--增加循环，循环所有关卡，并设置跳转函数-->
+    <view class='box' wx:for='{{levels}}' wx:key='levels{{index}}' bindtap='choosLevel' data-level = '{{index}}'>
+      <image src = '/images/{{item}}'></image>
+      <text>第{{index + 1}}关</text>
+    </view>
+  </view>
+
+</view>
