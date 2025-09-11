@@ -7,7 +7,6 @@ Page({
     latitude: null,
     address: '',
     checkinContent: '',
-    checkinType: 'text', // text, photo, mixed
     checkinPhotos: [],
     availableTags: [
       { name: '风景', selected: false },
@@ -23,16 +22,23 @@ Page({
     ],
     selectedAlbum: null,
     selectedAlbumId: null,
-    privacy: 'public', // public, friends, private
+    privacy: 'public', // public, private
     showAlbumModal: false,
     showTagInputModal: false,
     customTagName: '',
     userAlbums: [],
-    canSubmit: false
+    canSubmit: false,
+    isLocationAlreadyCheckin: false, // 当前位置是否已经打卡过
+    existingCheckinInfo: null // 已存在的打卡信息
   },
 
   onLoad: function (options) {
-    this.initLocation()
+    // 检查是否从地图页面传递了位置信息
+    if (options.longitude && options.latitude) {
+      this.initLocationFromMap(options.longitude, options.latitude)
+    } else {
+      this.initLocation()
+    }
     this.loadUserAlbums()
     this.checkSubmitStatus()
   },
@@ -47,6 +53,9 @@ Page({
         latitude: res.latitude
       })
       
+      // 检查当前位置是否已经打卡过
+      this.checkLocationCheckinStatus(res.longitude, res.latitude)
+      
       // 解析地址
       this.reverseGeocode(res.longitude, res.latitude)
       
@@ -56,6 +65,24 @@ Page({
       app.hideLoading()
       app.showToast('获取位置失败，请检查定位权限', 'error')
     })
+  },
+
+  // 从地图页面初始化位置信息
+  initLocationFromMap: function (longitude, latitude) {
+    app.showLoading('设置位置中...')
+    
+    this.setData({
+      longitude: parseFloat(longitude),
+      latitude: parseFloat(latitude)
+    })
+    
+    // 检查当前位置是否已经打卡过
+    this.checkLocationCheckinStatus(parseFloat(longitude), parseFloat(latitude))
+    
+    // 解析地址
+    this.reverseGeocode(parseFloat(longitude), parseFloat(latitude))
+    
+    app.hideLoading()
   },
 
   // 自定义输入位置
@@ -85,23 +112,70 @@ Page({
     this.initLocation()
   },
 
-  // 反向地理编码（解析地址）
-  reverseGeocode: function (longitude, latitude) {
-    // 这里应该调用地图API进行地址解析
-    // 由于微信小程序限制，这里使用模拟数据
-    setTimeout(() => {
+  // 检查当前位置是否已经打卡过
+  checkLocationCheckinStatus: function (longitude, latitude) {
+    const checkins = wx.getStorageSync('checkinPoints') || []
+    const currentUserId = app.globalData.userInfo?.id
+    
+    if (!currentUserId) return
+    
+    // 精确到小数点后3位进行比较
+    const roundedLng = Math.round(longitude * 1000) / 1000
+    const roundedLat = Math.round(latitude * 1000) / 1000
+    
+    // 查找用户在该位置的打卡记录
+    const existingCheckin = checkins.find(checkin => {
+      if (checkin.userId !== currentUserId) return false
+      
+      const checkinLng = Math.round(checkin.longitude * 1000) / 1000
+      const checkinLat = Math.round(checkin.latitude * 1000) / 1000
+      
+      return checkinLng === roundedLng && checkinLat === roundedLat
+    })
+    
+    if (existingCheckin) {
       this.setData({
-        address: `经度${longitude.toFixed(6)}, 纬度${latitude.toFixed(6)}`
+        isLocationAlreadyCheckin: true,
+        existingCheckinInfo: existingCheckin
       })
-    }, 1000)
+    } else {
+      this.setData({
+        isLocationAlreadyCheckin: false,
+        existingCheckinInfo: null
+      })
+    }
+  },
+
+  // 反向地理编码（解析地址），使用腾讯地图的api
+  reverseGeocode: function (longitude, latitude) {
+    wx.request({
+      url: 'https://apis.map.qq.com/ws/geocoder/v1/',
+      method: 'GET',
+      data: {
+        location: `${latitude},${longitude}`,
+        key: app.globalData.tencentMapKey
+      },
+      success: (res) => {
+        console.log(res.data)
+        this.setData({
+          address: res.data.result.formatted_addresses.recommend
+        })
+      }
+    })
   },
 
   // 加载用户相册
   loadUserAlbums: function () {
     const albums = wx.getStorageSync('albums') || []
+    const currentUserId = app.globalData.userInfo?.id
+    
     const userAlbums = albums.filter(album => 
-      album.creatorId === app.globalData.userInfo?.id || 
-      (album.type === 'shared' && album.permissions && album.permissions.upload)
+      // 用户创建的相册
+      album.creatorId === currentUserId || 
+      // 共享相册且用户有上传权限
+      (album.type === 'shared' && album.permissions && album.permissions.upload) ||
+      // 默认相册（所有用户都可以使用）
+      album.isDefault === true
     )
     
     this.setData({
@@ -111,9 +185,9 @@ Page({
 
   // 检查提交状态
   checkSubmitStatus: function () {
-    const canSubmit = this.data.checkinContent.trim().length > 0
+    // 打卡内容不是必须的，总是可以提交
     this.setData({
-      canSubmit: canSubmit
+      canSubmit: true
     })
   },
 
@@ -125,13 +199,6 @@ Page({
     this.checkSubmitStatus()
   },
 
-  // 选择打卡类型
-  selectType: function (e) {
-    const type = e.currentTarget.dataset.type
-    this.setData({
-      checkinType: type
-    })
-  },
 
   // 添加照片
   addPhoto: function () {
@@ -297,8 +364,7 @@ Page({
       longitude: this.data.longitude,
       latitude: this.data.latitude,
       address: this.data.address,
-      content: this.data.checkinContent.trim(),
-      type: this.data.checkinType,
+      content: this.data.checkinContent.trim() || '无',
       photos: this.data.checkinPhotos,
       tags: selectedTags,
       albumId: this.data.selectedAlbumId,
@@ -313,12 +379,29 @@ Page({
     this.saveCheckinData(checkinData)
   },
 
+  // 取消打卡
+  cancelCheckin: function () {
+    wx.showModal({
+      title: '确认取消',
+      content: '确定要取消打卡吗？已填写的内容将不会保存。',
+      confirmText: '确定取消',
+      confirmColor: '#f44336',
+      cancelText: '继续编辑',
+      success: (res) => {
+        if (res.confirm) {
+          // 用户确认取消，返回上一页
+          wx.navigateBack()
+        }
+      }
+    })
+  },
+
   // 保存打卡数据
   saveCheckinData: function (checkinData) {
     // 保存到本地存储
-    let checkins = wx.getStorageSync('checkins') || []
+    let checkins = wx.getStorageSync('checkinPoints') || []
     checkins.push(checkinData)
-    wx.setStorageSync('checkins', checkins)
+    wx.setStorageSync('checkinPoints', checkins)
     
     // 如果选择了相册，将照片添加到相册
     if (checkinData.albumId && checkinData.photos.length > 0) {
@@ -376,7 +459,7 @@ Page({
       longitude: checkinData.longitude,
       latitude: checkinData.latitude,
       content: checkinData.content,
-      type: checkinData.type,
+      address: checkinData.address,
       photos: checkinData.photos,
       tags: checkinData.tags,
       createTime: checkinData.createTime,
@@ -386,10 +469,4 @@ Page({
     checkinPoints.push(newPoint)
     wx.setStorageSync('checkinPoints', checkinPoints)
   },
-
-  // 取消打卡
-  cancelCheckin: function () {
-    wx.navigateBack()
-  },
-
 })

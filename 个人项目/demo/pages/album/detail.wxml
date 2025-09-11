@@ -50,11 +50,6 @@
       <text class="btn-icon">✏️</text>
       <text class="btn-text">编辑相册</text>
     </button>
-    
-    <button class="action-btn" bindtap="shareAlbum">
-      <text class="btn-icon">📤</text>
-      <text class="btn-text">分享</text>
-    </button>
   </view>
 
   <!-- 照片网格 -->

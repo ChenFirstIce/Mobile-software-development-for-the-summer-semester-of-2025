@@ -56,7 +56,6 @@
   <!-- 空状态界面 -->
   <view class="empty-section" wx:if="{{!hasWheel}}">
     <view class="empty-container">
-      <image class="empty-icon" src="/images/empty-wheel.png" mode="aspectFit"></image>
       <text class="empty-title">还没有转盘</text>
       <text class="empty-desc">点击下方按钮创建转盘内容</text>
     </view>

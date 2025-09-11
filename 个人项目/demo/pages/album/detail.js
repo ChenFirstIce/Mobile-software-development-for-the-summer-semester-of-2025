@@ -18,6 +18,13 @@ Page({
     if (options.id) {
       this.loadAlbumData(options.id)
       this.loadPhotos(options.id)
+      
+      // 如果是从快速拍照跳转过来的，自动打开拍照功能
+      if (options.fromQuickPhoto === 'true') {
+        setTimeout(() => {
+          this.addPhotos()
+        }, 500) // 延迟500ms确保页面加载完成
+      }
     }
   },
 
@@ -158,14 +165,6 @@ Page({
   editAlbum: function () {
     wx.navigateTo({
       url: `/pages/album/create?id=${this.data.album.id}`
-    })
-  },
-
-  // 分享相册
-  shareAlbum: function () {
-    wx.showShareMenu({
-      withShareTicket: true,
-      menus: ['shareAppMessage', 'shareTimeline']
     })
   },
 
@@ -342,11 +341,6 @@ Page({
     })
   },
 
-  // 编辑照片
-  editPhoto: function () {
-    // 这里可以实现照片编辑功能
-    app.showToast('照片编辑功能开发中')
-  },
 
   // 分享到微信
   onShareAppMessage: function () {

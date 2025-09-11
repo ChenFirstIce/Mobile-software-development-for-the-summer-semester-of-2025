@@ -122,7 +122,8 @@ App({
     mapType: 'basic', 
     checkinPoints: [],
     albums: [],
-    groups: []
+    groups: [],
+    tencentMapKey: 'GATBZ-WPSKB-TWMUT-JE336-7DZM2-QJFH7' // 请替换为您的腾讯地图API密钥
   },
 
   // 获取当前位置

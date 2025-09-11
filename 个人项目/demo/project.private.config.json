@@ -1,9 +1,21 @@
 {
   "libVersion": "3.9.2",
   "projectname": "%E6%97%85%E5%86%B0Go",
-  "condition": {},
+  "condition": {
+    "miniprogram": {
+      "list": [
+        {
+          "name": "pages/checkin/checkin",
+          "pathName": "pages/map/map",
+          "query": "",
+          "scene": null,
+          "launchMode": "default"
+        }
+      ]
+    }
+  },
   "setting": {
-    "urlCheck": true,
+    "urlCheck": false,
     "coverView": true,
     "lazyloadPlaceholderEnable": false,
     "skylineRenderEnable": false,

@@ -159,8 +159,14 @@
         <view class="location-map">
           <view class="map-title">打卡热力图</view>
           <view class="heatmap-container">
+            <view wx:if="{{heatmapPoints.length === 0}}" class="no-data">暂无打卡数据</view>
             <view class="heatmap-point" wx:for="{{heatmapPoints}}" wx:key="id"
-                  style="left: {{item.x}}%; top: {{item.y}}%; opacity: {{item.intensity}};">
+                  style="opacity: {{item.intensity}};"
+                  data-longitude="{{item.longitude}}"
+                  data-latitude="{{item.latitude}}"
+                  data-address="{{item.address}}"
+                  data-count="{{item.count}}">
+              <view class="point-tooltip">{{item.address}} ({{item.count}}次)</view>
             </view>
           </view>
         </view>
@@ -182,44 +188,4 @@
     </view>
   </view>
 
-  <!-- 分享统计 -->
-  <view class="stats-section">
-    <view class="section-title">📤 分享统计</view>
-    
-    <view class="stats-content">
-      <view class="share-stats">
-        <view class="share-item">
-          <text class="share-label">分享到微信</text>
-          <text class="share-value">{{shareStats.wechat}}次</text>
-        </view>
-        <view class="share-item">
-          <text class="share-label">分享到朋友圈</text>
-          <text class="share-value">{{shareStats.moments}}次</text>
-        </view>
-        <view class="share-item">
-          <text class="share-label">群组分享</text>
-          <text class="share-value">{{shareStats.group}}次</text>
-        </view>
-      </view>
-    </view>
-  </view>
-
-  <!-- 导出功能 -->
-  <view class="export-section">
-    <view class="section-title">📋 数据导出</view>
-    <view class="export-buttons">
-      <button class="export-btn" bindtap="exportToImage">
-        <text class="btn-icon">🖼️</text>
-        <text class="btn-text">导出为图片</text>
-      </button>
-      <button class="export-btn" bindtap="exportToPDF">
-        <text class="btn-icon">📄</text>
-        <text class="btn-text">导出为PDF</text>
-      </button>
-      <button class="export-btn" bindtap="shareStats">
-        <text class="btn-icon">📤</text>
-        <text class="btn-text">分享统计</text>
-      </button>
-    </view>
-  </view>
 </view>

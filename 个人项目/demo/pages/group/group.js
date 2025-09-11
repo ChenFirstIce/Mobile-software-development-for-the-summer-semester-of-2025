@@ -1,5 +1,6 @@
 // pages/group/group.js
 const app = getApp()
+const util = require('../../utils/util')
 
 Page({
   data: {
@@ -19,26 +20,15 @@ Page({
   },
 
   onLoad: function (options) {
-    this.checkLoginAndRedirect()
+    util.checkLoginAndRedirect(this, this.onLoggedIn)
   },
 
   onShow: function () {
-    this.checkLoginAndRedirect()
+    util.checkLoginAndRedirect(this, this.onLoggedIn)
   },
 
-  // 检查登录状态并重定向
-  checkLoginAndRedirect: function () {
-    const isLoggedIn = wx.getStorageSync('userToken') ? true : false
-    
-    if (!isLoggedIn) {
-      // 未登录，跳转到登录页面
-      wx.switchTab({
-        url: '/pages/profile/profile'
-      })
-      return
-    }
-    
-    // 已登录，加载数据
+  // 登录成功后的回调
+  onLoggedIn: function () {
     this.loadGroups()
   },
 
@@ -84,6 +74,7 @@ Page({
     // 分组群组
     const myGroups = filtered.filter(group => group.creatorId === currentUserId)
     const joinedGroups = filtered.filter(group => 
+      group.creatorId !== currentUserId && // 排除我创建的群组
       group.members && 
       group.members.some(member => 
         member.id === currentUserId || member.name === currentUserName
@@ -162,12 +153,6 @@ Page({
     })
   },
 
-  // 导航到小工具页面
-  navigateToTools: function () {
-    wx.navigateTo({
-      url: '/pages/tools/tools'
-    })
-  },
 
   // 执行删除群组
   performDeleteGroup: function (groupId) {
@@ -309,10 +294,11 @@ Page({
     }
   },
 
-
-  // 下拉刷新
-  onPullDownRefresh: function () {
-    this.loadGroups()
-    wx.stopPullDownRefresh()
+  // 导航到工具页面
+  navigateToTools: function () {
+    wx.navigateTo({
+      url: '/pages/tools/tools'
+    })
   }
+
 })

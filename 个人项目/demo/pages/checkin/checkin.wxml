@@ -12,10 +12,10 @@
       <text class="section-title">📍 当前位置</text>
       <view class="location-actions">
         <button class="refresh-btn" bindtap="refreshLocation">
-          <text class="refresh-icon">刷新</text>
+          <text class="refresh-icon">🔄</text>
         </button>
         <button class="custom-location-btn" bindtap="customLocationInput">
-          <text class="custom-icon">自定义地点</text>
+          <text class="custom-icon">📍 自定义</text>
         </button>
       </view>
     </view>
@@ -34,41 +34,19 @@
         <text class="location-value">{{address || '正在解析地址...'}}</text>
       </view>
     </view>
-    
-    <view class="location-tip" wx:if="{{isCustomLocation}}">
-      <text class="tip-text">💡 已使用自定义位置</text>
-    </view>
   </view>
 
   <!-- 打卡内容 -->
   <view class="checkin-form">
     <view class="form-section">
-      <view class="input-group">
+      <view class="input-group" style="height: 339rpx; display: flex; box-sizing: border-box">
         <text class="input-label">打卡内容（可选）</text>
-        <textarea class="input-field" placeholder="记录一下此刻的心情或感受..." bindinput="onContentInput" value="{{checkinContent}}" maxlength="500" />
+        <textarea style="height: 260rpx; display: block; box-sizing: border-box; left: 0rpx; top: 0rpx" class="input-field" placeholder="记录一下此刻的心情或感受..." bindinput="onContentInput" value="{{checkinContent}}" maxlength="500" />
         <view class="char-count">{{checkinContent.length}}/500</view>
       </view>
 
-      <view class="input-group">
-        <text class="input-label">打卡类型</text>
-        <view class="type-selector">
-          <view class="type-option {{checkinType === 'text' ? 'active' : ''}}" bindtap="selectType" data-type="text">
-            <text class="type-icon">📝</text>
-            <text class="type-text">文字</text>
-          </view>
-          <view class="type-option {{checkinType === 'photo' ? 'active' : ''}}" bindtap="selectType" data-type="photo">
-            <text class="type-icon">📷</text>
-            <text class="type-text">照片</text>
-          </view>
-          <view class="type-option {{checkinType === 'mixed' ? 'active' : ''}}" bindtap="selectType" data-type="mixed">
-            <text class="type-icon">📸</text>
-            <text class="type-text">图文</text>
-          </view>
-        </view>
-      </view>
-
       <!-- 照片上传区域 -->
-      <view class="input-group" wx:if="{{checkinType === 'photo' || checkinType === 'mixed'}}">
+      <view class="input-group">
         <text class="input-label">上传照片</text>
         <view class="photo-upload">
           <view class="photo-list">
@@ -76,7 +54,7 @@
               <image src="{{item}}" mode="aspectFill" class="uploaded-photo"></image>
               <view class="photo-delete" bindtap="deletePhoto" data-index="{{index}}">✕</view>
             </view>
-            <view class="add-photo" bindtap="addPhoto" wx:if="{{checkinPhotos.length < 9}}">
+            <view class="add-photo" bindtap="addPhoto" wx:if="{{checkinPhotos.length < 9}}" style="width: 200rpx; height: 200rpx; display: flex; box-sizing: border-box">
               <text class="add-icon">+</text>
               <text class="add-text">添加照片</text>
             </view>
@@ -120,11 +98,6 @@
             <radio checked="{{privacy === 'public'}}" bindtap="setPrivacy" data-privacy="public" />
             <text class="privacy-text">公开</text>
             <text class="privacy-desc">所有人可见</text>
-          </view>
-          <view class="privacy-item">
-            <radio checked="{{privacy === 'friends'}}" bindtap="setPrivacy" data-privacy="friends" />
-            <text class="privacy-text">好友</text>
-            <text class="privacy-desc">仅好友可见</text>
           </view>
           <view class="privacy-item">
             <radio checked="{{privacy === 'private'}}" bindtap="setPrivacy" data-privacy="private" />

@@ -7,16 +7,15 @@
       <text class="welcome-subtitle">记录美好时光，探索精彩世界</text>
     </view>
   </view>
+  <!--显示当前天气-->
+  <view class="weather-section">
+    
+  </view>
 
   <!-- 功能导航区域 -->
   <view class="feature-grid">
     <!-- 旅游板块 -->
-    <view class="feature-section">
-      <view class="section-title">
-        
-        
-      </view>
-      
+    <view class="feature-section">      
       <view class="feature-cards">
         <view class="feature-card" bindtap="navigateToAlbum">
           <view class="card-content">
@@ -34,13 +33,6 @@
           <view class="card-arrow">></view>
         </view>
 
-        <view class="feature-card" bindtap="navigateToHotel">
-          <view class="card-content">
-            <text class="card-title">酒店比价</text>
-            <text class="card-desc">多平台价格对比</text>
-          </view>
-          <view class="card-arrow">></view>
-        </view>
 
         <view class="feature-card" bindtap="navigateToGroup">
           <view class="card-content">

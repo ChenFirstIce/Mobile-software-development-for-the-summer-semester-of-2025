@@ -356,12 +356,6 @@ Page({
     }
   },
 
-  //接收当前转盘初始化时传来的参数
-  getData(e) {
-    this.setData({
-      awardsConfig: e.detail,
-    })
-  },
 
   //接收当前转盘结束后的答案选项
   getAwards(e) {
@@ -371,44 +365,12 @@ Page({
     })
   },
 
-  //开始转
-  startZhuan(e) {
-    this.setData({
-        zhuanflg: e.detail ? true : false
-    })
-  },
 
 
 
 
-  onShareAppMessage: function () {
-    let that = this;
-    var picNum = Math.floor(Math.random() * 4 + 1);//获取1-4的随机数，用于随机展示分享图片
-
-    return {
-      title: "一起来抽'" + that.data.awardsConfig.option + "'吧",
-      path: '/pages/tools/wheel/wheel',
-      success: function (res) {
-        console.log('成功进入分享==========', res);
-      },
-      fail: function (res) {
-        console.log('进入分享失败==========', res);
-      }
-    }
-  },
 
 
-  // 加载自定义转盘
-  loadCustomWheel: function(wheelId) {
-    const wheels = wx.getStorageSync('wheels') || []
-    const wheel = wheels.find(w => w.id === wheelId)
-    if (wheel) {
-      // 切换到自定义转盘
-      setTimeout(() => {
-        this.safeSwitchZhuanpan(wheel, true)
-      }, 500)
-    }
-  },
 
   // 安全地获取转盘组件
   getZhuanpanComponent: function() {

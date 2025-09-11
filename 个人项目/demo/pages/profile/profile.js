@@ -5,7 +5,10 @@ Page({
   data: {
     userInfo: null,
     isLoggedIn: false,
-    showLoginModal: false
+    showLoginModal: false,
+    isEditingNickname: false,
+    editNickName: '',
+    editAvatar: ''
   },
 
   onLoad: function (options) {
@@ -98,43 +101,120 @@ Page({
     })
   },
 
-  // 编辑个人信息
-  editProfile: function () {
+  // 编辑头像
+  editAvatar: function () {
     if (!this.data.isLoggedIn) {
       this.showLoginModal()
       return
     }
     
-    wx.navigateTo({
-      url: '/pages/profile/edit'
+    wx.chooseImage({
+      count: 1,
+      sizeType: ['compressed'],
+      sourceType: ['album', 'camera'],
+      success: (res) => {
+        this.setData({
+          editAvatar: res.tempFilePaths[0]
+        })
+        this.saveAvatar()
+      }
     })
   },
 
-  // 查看设置
-  goToSettings: function () {
-    wx.navigateTo({
-      url: '/pages/profile/settings'
+  // 编辑昵称
+  editNickname: function () {
+    if (!this.data.isLoggedIn) {
+      this.showLoginModal()
+      return
+    }
+    
+    this.setData({
+      isEditingNickname: true,
+      editNickName: this.data.userInfo.nickName || ''
     })
   },
 
-  // 关于我们
-  goToAbout: function () {
-    wx.navigateTo({
-      url: '/pages/profile/about'
+  // 完成昵称编辑
+  finishNicknameEdit: function () {
+    if (this.data.isEditingNickname) {
+      this.saveNickname()
+    }
+  },
+
+  // 阻止事件冒泡
+  stopPropagation: function () {
+    // 空函数，用于阻止事件冒泡
+  },
+
+  // 昵称输入
+  onNickNameInput: function (e) {
+    this.setData({
+      editNickName: e.detail.value
     })
   },
 
-  // 帮助中心
-  goToHelp: function () {
-    wx.navigateTo({
-      url: '/pages/profile/help'
+  // 保存头像
+  saveAvatar: function () {
+    if (!this.data.editAvatar) return
+
+    app.showLoading('保存中...')
+
+    // 更新用户信息
+    const updatedUserInfo = {
+      ...this.data.userInfo,
+      avatarUrl: this.data.editAvatar,
+      updateTime: new Date().toISOString()
+    }
+
+    // 保存到本地存储
+    wx.setStorageSync('userInfo', updatedUserInfo)
+    
+    // 更新全局数据
+    app.globalData.userInfo = updatedUserInfo
+
+    // 更新页面数据
+    this.setData({
+      userInfo: updatedUserInfo,
+      editAvatar: ''
     })
+
+    app.hideLoading()
+    app.showToast('头像更新成功')
   },
 
-  // 意见反馈
-  goToFeedback: function () {
-    wx.navigateTo({
-      url: '/pages/profile/feedback'
+  // 保存昵称
+  saveNickname: function () {
+    const { editNickName } = this.data
+    
+    if (!editNickName.trim()) {
+      app.showToast('请输入昵称')
+      return
+    }
+
+    app.showLoading('保存中...')
+
+    // 更新用户信息
+    const updatedUserInfo = {
+      ...this.data.userInfo,
+      nickName: editNickName.trim(),
+      updateTime: new Date().toISOString()
+    }
+
+    // 保存到本地存储
+    wx.setStorageSync('userInfo', updatedUserInfo)
+    
+    // 更新全局数据
+    app.globalData.userInfo = updatedUserInfo
+
+    // 更新页面数据
+    this.setData({
+      userInfo: updatedUserInfo,
+      isEditingNickname: false,
+      editNickName: ''
     })
+
+    app.hideLoading()
+    app.showToast('昵称更新成功')
   },
+
 })

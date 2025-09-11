@@ -50,22 +50,22 @@ Page({
 
   // 加载概览数据
   loadOverviewData: function () {
-    const checkins = wx.getStorageSync('checkins') || []
+    const checkins = wx.getStorageSync('checkinPoints') || []
     const photos = wx.getStorageSync('photos') || []
     const albums = wx.getStorageSync('albums') || []
     const groups = wx.getStorageSync('groups') || []
     
     this.setData({
-      totalCheckins: checkins.length,
-      totalPhotos: photos.length,
-      totalAlbums: albums.length,
-      totalGroups: groups.length
+      totalCheckins: checkins.length || 0,
+      totalPhotos: photos.length || 0,
+      totalAlbums: albums.length || 0,
+      totalGroups: groups.length || 0
     })
   },
 
   // 加载打卡统计
   loadCheckinStats: function () {
-    const checkins = wx.getStorageSync('checkins') || []
+    const checkins = wx.getStorageSync('checkinPoints') || []
     const filteredCheckins = this.filterDataByTimeRange(checkins)
     
     // 生成打卡趋势数据
@@ -75,11 +75,11 @@ Page({
     const stats = this.calculateCheckinStats(filteredCheckins)
     
     this.setData({
-      checkinTrend: trendData,
-      mostCheckinTime: stats.mostCheckinTime,
-      mostCheckinType: stats.mostCheckinType,
-      avgCheckinInterval: stats.avgCheckinInterval,
-      maxCheckinInterval: stats.maxCheckinInterval
+      checkinTrend: trendData || [],
+      mostCheckinTime: stats.mostCheckinTime || '无',
+      mostCheckinType: stats.mostCheckinType || '无',
+      avgCheckinInterval: stats.avgCheckinInterval || '无',
+      maxCheckinInterval: stats.maxCheckinInterval || '无'
     })
   },
 
@@ -93,45 +93,51 @@ Page({
     const albumDistribution = this.calculateAlbumDistribution(albums, photos)
     
     this.setData({
-      photoStats: photoStats,
-      albumDistribution: albumDistribution
+      photoStats: photoStats || {
+        total: 0,
+        thisMonth: 0,
+        thisWeek: 0,
+        avgPerDay: 0
+      },
+      albumDistribution: albumDistribution || []
     })
   },
 
   // 加载地点统计
   loadLocationStats: function () {
-    const checkins = wx.getStorageSync('checkins') || []
+    const checkins = wx.getStorageSync('checkinPoints') || []
     const filteredCheckins = this.filterDataByTimeRange(checkins)
     
     const topLocations = this.calculateTopLocations(filteredCheckins)
     const heatmapPoints = this.generateHeatmapPoints(filteredCheckins)
     
     this.setData({
-      topLocations: topLocations,
-      heatmapPoints: heatmapPoints
+      topLocations: topLocations || [],
+      heatmapPoints: heatmapPoints || []
     })
   },
 
   // 加载标签统计
   loadTagStats: function () {
-    const checkins = wx.getStorageSync('checkins') || []
+    const checkins = wx.getStorageSync('checkinPoints') || []
     const filteredCheckins = this.filterDataByTimeRange(checkins)
     
     const tagStats = this.calculateTagStats(filteredCheckins)
     
     this.setData({
-      tagStats: tagStats
+      tagStats: tagStats || []
     })
   },
 
   // 加载分享统计
   loadShareStats: function () {
-    // 这里应该从实际数据中获取分享统计
-    // 目前使用模拟数据
-    const shareStats = {}
-    
+    // 删除分享统计功能
     this.setData({
-      shareStats: shareStats
+      shareStats: {
+        wechat: 0,
+        moments: 0,
+        group: 0
+      }
     })
   },
 
@@ -372,14 +378,45 @@ Page({
   generateHeatmapPoints: function (checkins) {
     if (checkins.length === 0) return []
     
-    const points = []
-    checkins.forEach((checkin, index) => {
-      points.push({
+    // 基于真实地理位置生成热力图
+    const locationGroups = {}
+    
+    // 按地址分组，统计每个地点的打卡次数
+    checkins.forEach(checkin => {
+      if (checkin.longitude && checkin.latitude) {
+        const key = `${checkin.longitude.toFixed(4)},${checkin.latitude.toFixed(4)}`
+        if (!locationGroups[key]) {
+          locationGroups[key] = {
+            longitude: checkin.longitude,
+            latitude: checkin.latitude,
+            address: checkin.address || '未知地点',
+            count: 0
+          }
+        }
+        locationGroups[key].count++
+      }
+    })
+    
+    // 转换为热力图点数据
+    const points = Object.values(locationGroups).map((location, index) => {
+      // 根据打卡次数计算强度 (1-5次为低强度，6-10次为中强度，10次以上为高强度)
+      let intensity = 0.3
+      if (location.count >= 10) {
+        intensity = 1.0
+      } else if (location.count >= 6) {
+        intensity = 0.7
+      } else if (location.count >= 3) {
+        intensity = 0.5
+      }
+      
+      return {
         id: index,
-        x: Math.random() * 80 + 10, // 10% - 90%
-        y: Math.random() * 80 + 10, // 10% - 90%
-        intensity: Math.random() * 0.8 + 0.2 // 0.2 - 1.0
-      })
+        longitude: location.longitude,
+        latitude: location.latitude,
+        address: location.address,
+        count: location.count,
+        intensity: intensity
+      }
     })
     
     return points
@@ -403,6 +440,8 @@ Page({
       .sort((a, b) => b.count - a.count)
       .slice(0, 20)
     
+    if (sortedTags.length === 0) return []
+    
     const maxCount = Math.max(...sortedTags.map(tag => tag.count))
     
     return sortedTags.map(tag => ({
@@ -421,38 +460,4 @@ Page({
     this.loadStatistics()
   },
 
-  // 导出为图片
-  exportToImage: function () {
-    app.showToast('图片导出功能开发中')
-  },
-
-  // 导出为PDF
-  exportToPDF: function () {
-    app.showToast('PDF导出功能开发中')
-  },
-
-  // 分享统计
-  shareStats: function () {
-    wx.showShareMenu({
-      withShareTicket: true,
-      menus: ['shareAppMessage', 'shareTimeline']
-    })
-  },
-
-  // 分享到微信
-  onShareAppMessage: function () {
-    return {
-      title: '我的旅游统计报告',
-      path: '/pages/statistics/statistics',
-      imageUrl: '/images/stats-share.png'
-    }
-  },
-
-  // 分享到朋友圈
-  onShareTimeline: function () {
-    return {
-      title: '我的旅游统计报告',
-      imageUrl: '/images/stats-share.png'
-    }
-  }
 })

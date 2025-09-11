@@ -1,5 +1,6 @@
 // pages/album/album.js
 const app = getApp()
+const util = require('../../utils/util')
 
 Page({
   data: {
@@ -13,26 +14,15 @@ Page({
   },
 
   onLoad: function (options) {
-    this.checkLoginAndRedirect()
+    util.checkLoginAndRedirect(this, this.onLoggedIn)
   },
 
   onShow: function () {
-    this.checkLoginAndRedirect()
+    util.checkLoginAndRedirect(this, this.onLoggedIn)
   },
 
-  // 检查登录状态并重定向
-  checkLoginAndRedirect: function () {
-    const isLoggedIn = wx.getStorageSync('userToken') ? true : false
-    
-    if (!isLoggedIn) {
-      // 未登录，跳转到登录页面
-      wx.switchTab({
-        url: '/pages/profile/profile'
-      })
-      return
-    }
-    
-    // 已登录，加载数据
+  // 登录成功后的回调
+  onLoggedIn: function () {
     this.loadAlbums()
   },
 
@@ -257,9 +247,4 @@ Page({
     app.showToast(`已删除 ${selectedIds.length} 个相册`)
   },
 
-  // 下拉刷新
-  onPullDownRefresh: function () {
-    this.loadAlbums()
-    wx.stopPullDownRefresh()
-  }
 })

@@ -7,7 +7,6 @@
     "pages/map/map",
     "pages/checkin/checkin",
     "pages/statistics/statistics",
-    "pages/hotel/hotel",
     "pages/group/group",
     "pages/group/create",
     "pages/group/detail",
@@ -66,6 +65,9 @@
       "desc": "您的位置信息将用于地图定位和打卡功能"
     }
   },
+  "requiredPrivateInfos": [
+    "getLocation"
+  ],
   "requiredBackgroundModes": ["location"],
   "style": "v2",
   "sitemapLocation": "sitemap.json"

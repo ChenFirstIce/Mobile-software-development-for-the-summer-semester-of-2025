@@ -121,67 +121,6 @@
       </view>
     </view>
 
-    <!-- 其他群组分组 -->
-    <view class="group-section" wx:if="{{otherGroups.length > 0}}">
-      <view class="section-header" bindtap="toggleSection" data-section="other">
-        <view class="section-title">
-          <text class="section-icon">🌍</text>
-          <text>发现更多群组</text>
-          <view class="section-count">{{otherGroups.length}}</view>
-        </view>
-        <view class="section-toggle">{{expandedSections.other ? '收起' : '展开'}}</view>
-      </view>
-      <view class="group-list" wx:if="{{expandedSections.other}}">
-        <view class="group-item" wx:for="{{otherGroups}}" wx:key="id" bindtap="openGroup" data-id="{{item.id}}">
-          <view class="group-avatar">
-            <image wx:if="{{item.avatar}}" src="{{item.avatar}}" mode="aspectFill" class="avatar-image"></image>
-            <view wx:else class="avatar-placeholder">
-              <text class="placeholder-icon">👥</text>
-            </view>
-            <view class="group-status active">
-              活跃
-            </view>
-          </view>
-          
-          <view class="group-info">
-            <view class="group-header">
-              <text class="group-name">{{item.name}}</text>
-              <view class="group-actions">
-                <view class="action-btn" catchtap="editGroup" data-id="{{item.id}}">
-                  <text class="action-icon">✏️</text>
-                </view>
-                <view class="action-btn" catchtap="deleteGroup" data-id="{{item.id}}">
-                  <text class="action-icon">🗑️</text>
-                </view>
-              </view>
-            </view>
-            
-            <text class="group-desc">{{item.description || '暂无描述'}}</text>
-            
-            <view class="group-stats">
-              <view class="stat-item">
-                <text class="stat-icon">👥</text>
-                <text class="stat-text">{{item.memberCount}}/{{item.maxMembers}}人</text>
-              </view>
-              <view class="stat-item">
-                <text class="stat-icon">📅</text>
-                <text class="stat-text">{{item.createTime}}</text>
-              </view>
-              <view class="stat-item">
-                <text class="stat-icon">🔑</text>
-                <text class="stat-text">房间号: {{item.roomCode}}</text>
-              </view>
-            </view>
-            
-            <view class="group-features">
-              <view class="feature-tag" wx:if="{{item.hasAlbum}}">📷 相册</view>
-              <view class="feature-tag" wx:if="{{item.hasWheel}}">🎲 轮盘</view>
-              <view class="feature-tag" wx:if="{{item.hasVote}}">📊 投票</view>
-            </view>
-          </view>
-        </view>
-      </view>
-    </view>
   </view>
 
   <!-- 空状态 -->

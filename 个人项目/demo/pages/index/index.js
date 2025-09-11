@@ -1,5 +1,6 @@
 // pages/index/index.js
 const app = getApp()
+const util = require('../../utils/util')
 
 Page({
   data: {
@@ -8,27 +9,16 @@ Page({
   },
 
   onLoad: function (options) {
-    this.checkLoginAndRedirect()
+    util.checkLoginAndRedirect(this, this.onLoggedIn)
   },
 
   onShow: function () {
     // 页面显示时检查登录状态
-    this.checkLoginAndRedirect()
+    util.checkLoginAndRedirect(this, this.onLoggedIn)
   },
 
-  // 检查登录状态并重定向
-  checkLoginAndRedirect: function () {
-    const isLoggedIn = wx.getStorageSync('userToken') ? true : false
-    
-    if (!isLoggedIn) {
-      // 未登录，跳转到登录页面
-      wx.switchTab({
-        url: '/pages/profile/profile'
-      })
-      return
-    }
-    
-    // 已登录，加载数据
+  // 登录成功后的回调
+  onLoggedIn: function () {
     this.getUserInfo()
     this.loadRecentActivities()
   },
@@ -51,7 +41,6 @@ Page({
 
   // 加载最近活动
   loadRecentActivities: function () {
-    // 从本地存储或云数据库获取最近活动
     const activities = wx.getStorageSync('recentActivities') || []
     this.setData({
       recentActivities: activities.slice(0, 5) // 只显示最近5条
@@ -72,12 +61,6 @@ Page({
     })
   },
 
-  // 导航到酒店比价页面
-  navigateToHotel: function () {
-    wx.navigateTo({
-      url: '/pages/hotel/hotel'
-    })
-  },
 
   // 导航到旅游群页面
   navigateToGroup: function () {
@@ -103,19 +86,41 @@ Page({
 
   // 快速拍照
   quickPhoto: function () {
-    wx.chooseImage({
-      count: 1,
-      sizeType: ['compressed'],
-      sourceType: ['camera'],
-      success: (res) => {
-        const tempFilePath = res.tempFilePaths[0]
-        // 保存到相册或创建新相册
-        this.saveQuickPhoto(tempFilePath)
-      },
-      fail: (err) => {
-        console.error('拍照失败:', err)
-        app.showToast('拍照失败')
+    // 直接跳转到相册页面，让用户在相册中拍照
+    this.navigateToDefaultAlbum()
+  },
+
+  // 导航到默认相册
+  navigateToDefaultAlbum: function () {
+    // 检查是否存在默认相册
+    let albums = wx.getStorageSync('albums') || []
+    let defaultAlbum = albums.find(album => album.isDefault === true)
+    
+    if (!defaultAlbum) {
+      // 如果没有默认相册，创建一个
+      defaultAlbum = {
+        id: 'default_' + Date.now(),
+        name: '默认相册',
+        description: '快速拍照的默认相册',
+        isDefault: true,
+        type: 'default',
+        coverImage: '',
+        photoCount: 0,
+        photos: [],
+        createTime: new Date().toISOString(),
+        updateTime: new Date().toISOString()
       }
+      
+      // 保存到本地存储
+      albums.unshift(defaultAlbum)
+      wx.setStorageSync('albums', albums)
+      
+      app.showToast('已创建默认相册')
+    }
+    
+    // 跳转到相册详情页面
+    wx.navigateTo({
+      url: `/pages/album/detail?id=${defaultAlbum.id}&fromQuickPhoto=true`
     })
   },
 
@@ -134,12 +139,6 @@ Page({
   },
 
 
-  // 查看活动详情
-  viewActivity: function (e) {
-    const activityId = e.currentTarget.dataset.id
-    // 根据活动类型跳转到相应页面
-    console.log('查看活动:', activityId)
-  },
 
   // 添加最近活动
   addRecentActivity: function (activity) {

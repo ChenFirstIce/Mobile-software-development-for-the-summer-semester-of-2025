@@ -1,3 +1,36 @@
+/**
+ * 检查登录状态并重定向
+ * @param {Object} pageContext - 页面上下文，用于调用页面方法
+ * @param {Function} onLoggedIn - 登录成功后的回调函数
+ * @param {string} redirectUrl - 未登录时重定向的URL，默认为 '/pages/profile/profile'
+ */
+function checkLoginAndRedirect(pageContext, onLoggedIn, redirectUrl = '/pages/profile/profile') {
+    const isLoggedIn = wx.getStorageSync('userToken') ? true : false
+    
+    if (!isLoggedIn) {
+        // 未登录，跳转到登录页面
+        wx.switchTab({
+            url: redirectUrl
+        })
+        return false
+    }
+    
+    // 已登录，执行回调函数
+    if (onLoggedIn && typeof onLoggedIn === 'function') {
+        onLoggedIn.call(pageContext)
+    }
+    
+    return true
+}
+ 
+/**
+ * 检查是否已登录
+ * @returns {boolean} 是否已登录
+ */
+function isLoggedIn() {
+    return wx.getStorageSync('userToken') ? true : false
+}
+
 function formatTime(date) {
   var year = date.getFullYear()
   var month = date.getMonth() + 1
@@ -53,26 +86,6 @@ function dateToString(now) {
     return dateTime;
 }  
 
-//一定概率执行处理，N是概率，例如：七分之一，n就是7
-const randomJudgeDo = n => {
-    var randomValue = Math.floor(Math.random() * n) + 1;
-    console.log("====randomJudgeDo===" + n + "|" + randomValue);
-    if (randomValue == n) {
-        return true;
-    } else {
-        return false;
-    }
-}
-
-function getRandomCode() {
-    var chars = ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z', 'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z'];
-    var nums = "";
-    for (var i = 0; i < 32; i++) {
-        var id = parseInt(Math.random() * 61);
-        nums += chars[id];
-    }
-    return nums;
-}  
 
 const isNull = str => {
     if (str == null || str == undefined || str == '') {
@@ -84,11 +97,10 @@ const isNull = str => {
 
 module.exports = {
   formatTime: formatTime,
-  randomJudgeDo: randomJudgeDo,
-  getRandomCode: getRandomCode,
-  getRandomNum: getRandomCode,
   isNull: isNull,
   getDays: getDays,
   dateToString: dateToString,
   formatDate: formatDate,
+  checkLoginAndRedirect: checkLoginAndRedirect,
+  isLoggedIn: isLoggedIn
 }

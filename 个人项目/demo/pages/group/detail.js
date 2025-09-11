@@ -276,10 +276,6 @@ Page({
   },
 
 
-  // 编辑群组信息
-  editGroupInfo: function () {
-    this.editGroup()
-  },
 
   // 成员管理
   manageMembers: function () {
@@ -435,22 +431,6 @@ Page({
   },
 
 
-  // 格式化时间
-  formatTime: function (timeString) {
-    const date = new Date(timeString)
-    const now = new Date()
-    const diff = now - date
-    
-    if (diff < 60 * 1000) {
-      return '刚刚'
-    } else if (diff < 60 * 60 * 1000) {
-      return `${Math.floor(diff / (60 * 1000))}分钟前`
-    } else if (diff < 24 * 60 * 60 * 1000) {
-      return `${Math.floor(diff / (60 * 60 * 1000))}小时前`
-    } else {
-      return `${date.getMonth() + 1}月${date.getDate()}日`
-    }
-  },
 
 
   // 分享小程序

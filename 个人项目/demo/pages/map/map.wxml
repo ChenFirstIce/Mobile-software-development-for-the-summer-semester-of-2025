@@ -10,6 +10,63 @@
     </view>
   </view>
 
+  <!-- 搜索框 -->
+  <view class="search-container" wx:if="{{mapType === 'basic'}}">
+    <!--下拉框-->
+    <view class="dropdown-container">
+      <view class="dropdown" bindtap="toggleDropdown">
+        <text class="dropdown-text">{{selectedCategory || '选择类型'}}</text>
+        <text class="dropdown-arrow {{dropdownOpen ? 'open' : ''}}">▼</text>
+      </view>
+      <view class="dropdown-menu {{dropdownOpen ? 'show' : ''}}" wx:if="{{dropdownOpen}}">
+        <view class="dropdown-item" bindtap="selectCategory" data-category="选择类型">
+          <text class="item-text">选择类型</text>
+        </view>
+        <view class="dropdown-item" bindtap="selectCategory" data-category="美食">
+          <text class="item-text">美食</text>
+        </view>
+        <view class="dropdown-item" bindtap="selectCategory" data-category="酒店">
+          <text class="item-text">酒店</text>
+        </view>
+      </view>
+    </view>
+    <view class="search-box" style="width: 439rpx; display: flex; box-sizing: border-box">
+      <input 
+        class="search-input" 
+        placeholder="搜索地点..." 
+        bindinput="onSearchInput" 
+        value="{{searchKeyword}}"
+        bindconfirm="searchLocation"
+        confirm-type="search"
+        bindfocus="onSearchFocus"
+        bindblur="onSearchBlur"
+      />
+      <view class="search-icon" bindtap="searchLocation">🔍</view>
+    </view>
+    
+    <!-- 搜索建议列表 -->
+    <view class="suggestions-container" wx:if="{{showSuggestions && suggestions.length > 0}}">
+      <view class="suggestions-list">
+        <view 
+          class="suggestion-item" 
+          wx:for="{{suggestions}}" 
+          wx:key="id"
+          bindtap="selectSuggestion"
+          data-index="{{index}}"
+        >
+          <view class="suggestion-content">
+            <text class="suggestion-title">{{item.title}}</text>
+            <text class="suggestion-address" wx:if="{{item.address}}">{{item.address}}</text>
+            <text class="suggestion-category" wx:if="{{item.category}}">{{item.category}}</text>
+          </view>
+          <view class="suggestion-distance" wx:if="{{item._distance}}">
+            <text class="distance-text">{{item._distance}}m</text>
+          </view>
+        </view>
+      </view>
+    </view>
+  </view>
+
   <!-- 地图容器 -->
   <view class="map-container">
     <map 
@@ -47,10 +104,6 @@
       <text class="btn-text">打卡</text>
     </button>
     
-    <button class="func-btn hotel-btn" bindtap="navigateToHotel">
-      <text class="btn-icon">🏨</text>
-      <text class="btn-text">酒店</text>
-    </button>
     
     <button class="func-btn stats-btn" bindtap="navigateToStats">
       <text class="btn-icon">📊</text>

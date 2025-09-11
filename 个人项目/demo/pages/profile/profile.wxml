@@ -1,10 +1,11 @@
 <!--pages/profile/profile.wxml-->
 <view class="container">
   <!-- 用户信息头部 -->
-  <view class="user-header">
-    <view class="avatar-section" wx:if="{{isLoggedIn}}" bindtap="editProfile">
-      <image src="{{userInfo.avatarUrl || '/images/default-avatar.png'}}" class="user-avatar"></image>
-      <view class="avatar-edit-hint">点击编辑</view>
+  <view class="user-header" bindtap="finishNicknameEdit">
+    <!-- 头像区域 -->
+    <view class="avatar-section" wx:if="{{isLoggedIn}}" bindtap="editAvatar">
+      <image src="{{editAvatar || userInfo.avatarUrl || '/images/default-avatar.png'}}" class="user-avatar"></image>
+      <view class="avatar-edit-hint">点击更换</view>
     </view>
     
     <view class="avatar-section" wx:else bindtap="showLoginModal">
@@ -12,15 +13,28 @@
       <view class="avatar-edit-hint">点击登录</view>
     </view>
     
+    <!-- 用户信息区域 -->
     <view class="user-info">
-      <view class="nickname-section" wx:if="{{isLoggedIn}}" bindtap="editProfile">
-        <text class="nickname">{{userInfo.nickName || '未设置昵称'}}</text>
-        <text class="edit-hint">点击编辑</text>
+      <!-- 昵称编辑区域 -->
+      <view class="nickname-section" wx:if="{{isLoggedIn}}" catchtap="stopPropagation">
+        <input wx:if="{{isEditingNickname}}" 
+               class="nickname-input" 
+               value="{{editNickName}}"
+               bindinput="onNickNameInput"
+               bindblur="finishNicknameEdit"
+               bindconfirm="finishNicknameEdit"
+               maxlength="20"
+               auto-focus="true"
+               placeholder="请输入昵称"></input>
+        <text wx:else class="nickname" bindtap="editNickname">{{userInfo.nickName || '未设置昵称'}}</text>
+        <text wx:if="{{!isEditingNickname}}" class="edit-hint">点击编辑</text>
       </view>
+      
       <view class="nickname-section" wx:else bindtap="showLoginModal">
         <text class="nickname">未登录</text>
         <text class="edit-hint">点击登录</text>
       </view>
+      
       <text class="user-id" wx:if="{{isLoggedIn}}">用户ID: {{userInfo.id || '未知'}}</text>
       <text class="user-id" wx:else>请先登录使用完整功能</text>
     </view>

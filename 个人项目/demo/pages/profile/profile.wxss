@@ -56,6 +56,24 @@
   margin-right: 20rpx;
 }
 
+.nickname-input {
+  font-size: 36rpx;
+  font-weight: bold;
+  color: white;
+  background: rgba(255, 255, 255, 0.2);
+  border: 2rpx solid rgba(255, 255, 255, 0.3);
+  border-radius: 8rpx;
+  padding: 8rpx 12rpx;
+  margin-right: 20rpx;
+  min-width: 200rpx;
+}
+
+.nickname-input:focus {
+  background: rgba(255, 255, 255, 0.9);
+  color: #333;
+  border-color: white;
+}
+
 .edit-hint {
   font-size: 24rpx;
   opacity: 0.8;
