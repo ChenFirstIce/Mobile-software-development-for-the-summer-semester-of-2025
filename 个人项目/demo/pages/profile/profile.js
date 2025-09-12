@@ -44,7 +44,7 @@ Page({
     })
   },
 
-  // 微信授权登录
+  // 微信授权登录（云开发版本）
   wxLogin: function () {
     wx.showLoading({
       title: '登录中...'
@@ -71,6 +71,32 @@ Page({
         wx.hideLoading()
         console.error('登录失败:', error)
         app.showToast('登录失败，请重试')
+      })
+  },
+
+  // 获取用户信息（云开发版本）
+  getUserProfile: function () {
+    if (!this.data.isLoggedIn) {
+      this.showLoginModal()
+      return
+    }
+
+    wx.showLoading({
+      title: '获取信息中...'
+    })
+
+    app.getUserProfile()
+      .then((userInfo) => {
+        wx.hideLoading()
+        this.setData({
+          userInfo: userInfo
+        })
+        app.showToast('用户信息更新成功')
+      })
+      .catch((error) => {
+        wx.hideLoading()
+        console.error('获取用户信息失败:', error)
+        app.showToast('获取用户信息失败')
       })
   },
 
@@ -153,36 +179,67 @@ Page({
     })
   },
 
-  // 保存头像
+  // 保存头像（云开发版本）
   saveAvatar: function () {
     if (!this.data.editAvatar) return
 
     app.showLoading('保存中...')
 
-    // 更新用户信息
-    const updatedUserInfo = {
-      ...this.data.userInfo,
-      avatarUrl: this.data.editAvatar,
-      updateTime: new Date().toISOString()
-    }
+    // 先上传图片到云存储
+    const fileName = `avatars/${this.data.userInfo._id}_${Date.now()}.jpg`
+    wx.cloud.uploadFile({
+      cloudPath: fileName,
+      filePath: this.data.editAvatar,
+      success: (res) => {
+        console.log('头像上传成功:', res)
+        
+        // 调用云函数更新用户信息
+        wx.cloud.callFunction({
+          name: 'updateUserInfo',
+          data: {
+            userInfo: {
+              avatarUrl: res.fileID
+            }
+          },
+          success: (res) => {
+            if (res.result.success) {
+              const updatedUserInfo = res.result.data
+              
+              // 保存到本地存储
+              wx.setStorageSync('userInfo', updatedUserInfo)
+              
+              // 更新全局数据
+              app.globalData.userInfo = updatedUserInfo
 
-    // 保存到本地存储
-    wx.setStorageSync('userInfo', updatedUserInfo)
-    
-    // 更新全局数据
-    app.globalData.userInfo = updatedUserInfo
+              // 更新页面数据
+              this.setData({
+                userInfo: updatedUserInfo,
+                editAvatar: ''
+              })
 
-    // 更新页面数据
-    this.setData({
-      userInfo: updatedUserInfo,
-      editAvatar: ''
+              app.hideLoading()
+              app.showToast('头像更新成功')
+            } else {
+              app.hideLoading()
+              app.showToast('头像更新失败: ' + res.result.message)
+            }
+          },
+          fail: (error) => {
+            app.hideLoading()
+            console.error('更新用户信息失败:', error)
+            app.showToast('头像更新失败')
+          }
+        })
+      },
+      fail: (error) => {
+        app.hideLoading()
+        console.error('头像上传失败:', error)
+        app.showToast('头像上传失败')
+      }
     })
-
-    app.hideLoading()
-    app.showToast('头像更新成功')
   },
 
-  // 保存昵称
+  // 保存昵称（云开发版本）
   saveNickname: function () {
     const { editNickName } = this.data
     
@@ -193,28 +250,44 @@ Page({
 
     app.showLoading('保存中...')
 
-    // 更新用户信息
-    const updatedUserInfo = {
-      ...this.data.userInfo,
-      nickName: editNickName.trim(),
-      updateTime: new Date().toISOString()
-    }
+    // 调用云函数更新用户信息
+    wx.cloud.callFunction({
+      name: 'updateUserInfo',
+      data: {
+        userInfo: {
+          nickName: editNickName.trim()
+        }
+      },
+      success: (res) => {
+        if (res.result.success) {
+          const updatedUserInfo = res.result.data
+          
+          // 保存到本地存储
+          wx.setStorageSync('userInfo', updatedUserInfo)
+          
+          // 更新全局数据
+          app.globalData.userInfo = updatedUserInfo
 
-    // 保存到本地存储
-    wx.setStorageSync('userInfo', updatedUserInfo)
-    
-    // 更新全局数据
-    app.globalData.userInfo = updatedUserInfo
+          // 更新页面数据
+          this.setData({
+            userInfo: updatedUserInfo,
+            isEditingNickname: false,
+            editNickName: ''
+          })
 
-    // 更新页面数据
-    this.setData({
-      userInfo: updatedUserInfo,
-      isEditingNickname: false,
-      editNickName: ''
+          app.hideLoading()
+          app.showToast('昵称更新成功')
+        } else {
+          app.hideLoading()
+          app.showToast('昵称更新失败: ' + res.result.message)
+        }
+      },
+      fail: (error) => {
+        app.hideLoading()
+        console.error('更新用户信息失败:', error)
+        app.showToast('昵称更新失败')
+      }
     })
-
-    app.hideLoading()
-    app.showToast('昵称更新成功')
   },
 
 })

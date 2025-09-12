@@ -41,6 +41,14 @@
           </view>
           <view class="card-arrow">></view>
         </view>
+
+        <view class="feature-card" bindtap="navigateToStatistics">
+          <view class="card-content">
+            <text class="card-title">数据分析</text>
+            <text class="card-desc">查看旅游数据，分享成就</text>
+          </view>
+          <view class="card-arrow">></view>
+        </view>
       </view>
     </view>
   </view>

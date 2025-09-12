@@ -749,7 +749,7 @@ Page({
     
     return {
       title: `我的旅游统计报告 - ${reportData.activityLevel} | 打卡${reportData.totalCheckins}次，拍照${reportData.totalPhotos}张，行程${reportData.totalDistance}公里`,
-      imageUrl: '/images/statistics-share.png'
+      //imageUrl: '/images/statistics-share.png'
     }
   },
 
@@ -758,7 +758,7 @@ Page({
     return {
       title: '查看我的旅游统计报告',
       path: '/pages/statistics/statistics',
-      imageUrl: '/images/statistics-share.png'
+      //imageUrl: '/images/statistics-share.png'
     }
   }
 

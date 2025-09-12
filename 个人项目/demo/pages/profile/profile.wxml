@@ -35,7 +35,7 @@
         <text class="edit-hint">点击登录</text>
       </view>
       
-      <text class="user-id" wx:if="{{isLoggedIn}}">用户ID: {{userInfo.id || '未知'}}</text>
+      <text class="user-id" wx:if="{{isLoggedIn}}">用户ID: {{userInfo._id || '未知'}}</text>
       <text class="user-id" wx:else>请先登录使用完整功能</text>
     </view>
   </view>

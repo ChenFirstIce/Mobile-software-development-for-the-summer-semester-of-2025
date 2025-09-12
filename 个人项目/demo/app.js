@@ -1,11 +1,29 @@
 // app.js
 App({
   onLaunch: function () {
+    // 初始化云开发
+    this.initCloud()
+    
     // 初始化全局数据
     this.initGlobalData()
     
     // 检查登录状态，如果未登录则跳转到个人页面
     this.checkLoginAndRedirect()
+  },
+
+  // 初始化云开发
+  initCloud: function() {
+    if (!wx.cloud) {
+      console.error('请使用 2.2.3 或以上的基础库以使用云能力')
+      return
+    }
+    
+    wx.cloud.init({
+      env: 'cloud1-3gfit3n1e60214ef', // 云开发环境ID
+      traceUser: true, 
+    })
+    
+    console.log('云开发初始化成功')
   },
 
   // 初始化全局数据
@@ -52,57 +70,89 @@ App({
 
 
 
-  // 微信登录
+  // 微信登录（云开发版本）
   wxLogin: function() {
     return new Promise((resolve, reject) => {
-      // 获取用户信息
+      // 调用 wx.login 获取 code
+      wx.login({
+        success: (loginRes) => {
+          console.log('wx.login 成功，code:', loginRes.code)
+          if (loginRes.code) {
+            // 调用云函数进行登录
+            wx.cloud.callFunction({
+              name: 'userLogin',
+              data: {
+                code: loginRes.code
+              },
+              success: (res) => {
+                console.log('云函数调用成功:', res)
+                if (res.result.success) {
+                  const userInfo = res.result.data
+                  
+                  // 保存到本地存储
+                  wx.setStorageSync('userToken', userInfo._id)
+                  wx.setStorageSync('userInfo', userInfo)
+                  
+                  // 更新全局数据
+                  this.globalData.userInfo = userInfo
+                  this.globalData.isLoggedIn = true
+                  
+                  console.log('登录成功:', userInfo)
+                  resolve(userInfo)
+                } else {
+                  reject(new Error(res.result.message || '登录失败'))
+                }
+              },
+              fail: (error) => {
+                console.error('云函数调用失败:', error)
+                reject(error)
+              }
+            })
+          } else {
+            reject(new Error('获取登录凭证失败'))
+          }
+        },
+        fail: (error) => {
+          console.error('wx.login 失败:', error)
+          reject(error)
+        }
+      })
+    })
+  },
+
+  // 获取用户信息（云开发版本）
+  getUserProfile: function() {
+    return new Promise((resolve, reject) => {
       wx.getUserProfile({
         desc: '用于完善用户资料',
         success: (res) => {
           const userInfo = res.userInfo
           console.log('获取用户信息成功:', userInfo)
           
-          // 调用 wx.login 获取 code
-          wx.login({
-            success: (loginRes) => {
-              console.log('wx.login 成功，code:', loginRes.code)
-              if (loginRes.code) {
-                try {
-                  // 生成用户ID
-                  const userId = 'user_' + Date.now()
-                  
-                  // 构建完整的用户信息
-                  const fullUserInfo = {
-                    ...userInfo,
-                    id: userId,
-                    openId: loginRes.code,
-                    unionId: '',
-                    createTime: new Date(),
-                    updateTime: new Date(),
-                    lastLoginTime: new Date()
-                  }
-                  
-                  // 保存到本地存储
-                  wx.setStorageSync('userToken', userId)
-                  wx.setStorageSync('userInfo', fullUserInfo)
-                  
-                  // 更新全局数据
-                  this.globalData.userInfo = fullUserInfo
-                  this.globalData.isLoggedIn = true
-                  
-                  console.log('登录成功:', fullUserInfo)
-                  resolve(fullUserInfo)
-                  
-                } catch (error) {
-                  console.error('登录失败:', error)
-                  reject(error)
-                }
+          // 调用云函数更新用户信息
+          wx.cloud.callFunction({
+            name: 'updateUserInfo',
+            data: {
+              userInfo: userInfo
+            },
+            success: (res) => {
+              console.log('更新用户信息成功:', res)
+              if (res.result.success) {
+                const updatedUserInfo = res.result.data
+                
+                // 更新本地存储
+                wx.setStorageSync('userInfo', updatedUserInfo)
+                
+                // 更新全局数据
+                this.globalData.userInfo = updatedUserInfo
+                
+                resolve(updatedUserInfo)
               } else {
-                reject(new Error('获取登录凭证失败'))
+                reject(new Error(res.result.message || '更新用户信息失败'))
               }
             },
             fail: (error) => {
-              console.error('wx.login 失败:', error)
+              console.error('更新用户信息失败:', error)
               reject(error)
             }
           })

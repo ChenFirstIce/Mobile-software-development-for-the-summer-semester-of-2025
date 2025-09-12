@@ -265,7 +265,6 @@
   <!-- 分享按钮 -->
   <view class="share-section">
     <button class="share-btn" open-type="share">
-      <text class="share-icon">📤</text>
       <text class="share-text">分享统计报告</text>
     </button>
   </view>

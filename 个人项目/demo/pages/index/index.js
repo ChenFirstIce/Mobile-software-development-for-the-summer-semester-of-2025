@@ -69,6 +69,12 @@ Page({
     })
   },
 
+  // 导航到统计页面
+  navigateToStatistics: function () {
+    wx.navigateTo({
+      url: '/pages/statistics/statistics'
+    })
+  },
 
   // 导航到个人设置页面
   navigateToProfile: function () {
