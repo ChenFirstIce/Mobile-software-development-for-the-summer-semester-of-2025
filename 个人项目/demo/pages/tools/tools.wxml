@@ -13,7 +13,7 @@
         <view class="tool-content">
           <text class="tool-name">{{item.name}}</text>
         </view>
-        <view class="tool-arrow">></view>
+        <view class="tool-arrow"></view>
       </view>
     </view>
   </view>

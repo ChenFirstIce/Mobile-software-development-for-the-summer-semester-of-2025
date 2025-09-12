@@ -541,7 +541,7 @@ Page({
       if (group.creator === userInfo?.nickName || group.creatorId === userInfo?.id) {
         created++
       } else if (group.members.some(member => 
-        member.id === userInfo?.id || member.name === userInfo?.nickName
+        member.userId === userInfo?._openid || member.nickName === userInfo?.nickName
       )) {
         joined++
       }
@@ -605,7 +605,7 @@ Page({
       if (group.creator === userInfo?.nickName || group.creatorId === userInfo?.id) {
         score += 50
       } else if (group.members.some(member => 
-        member.id === userInfo?.id || member.name === userInfo?.nickName
+        member.userId === userInfo?._openid || member.nickName === userInfo?.nickName
       )) {
         score += 20
       }

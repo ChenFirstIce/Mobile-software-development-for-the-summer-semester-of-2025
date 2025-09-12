@@ -22,7 +22,7 @@
         <view class="section-toggle">{{expandedSections.my ? '收起' : '展开'}}</view>
       </view>
       <view class="group-list" wx:if="{{expandedSections.my}}">
-        <view class="group-item" wx:for="{{myGroups}}" wx:key="id" bindtap="openGroup" data-id="{{item.id}}">
+        <view class="group-item" wx:for="{{myGroups}}" wx:key="_id" bindtap="openGroup" data-id="{{item._id || item.id}}">
           <view class="group-avatar">
             <image wx:if="{{item.coverImage}}" src="{{item.coverImage}}" mode="aspectFill" class="avatar-image"></image>
             <view wx:else class="avatar-placeholder">
@@ -34,10 +34,10 @@
             <view class="group-header">
               <text class="group-name">{{item.name}}</text>
               <view class="group-actions">
-                <view class="action-btn" catchtap="editGroup" data-id="{{item.id}}">
+                <view class="action-btn" catchtap="editGroup" data-id="{{item._id || item.id}}">
                   <text class="action-icon">✏️</text>
                 </view>
-                <view class="action-btn" catchtap="deleteGroup" data-id="{{item.id}}">
+                <view class="action-btn" catchtap="deleteGroup" data-id="{{item._id || item.id}}">
                   <text class="action-icon">🗑️</text>
                 </view>
               </view>
@@ -77,7 +77,7 @@
         <view class="section-toggle">{{expandedSections.joined ? '收起' : '展开'}}</view>
       </view>
       <view class="group-list" wx:if="{{expandedSections.joined}}">
-        <view class="group-item" wx:for="{{joinedGroups}}" wx:key="id" bindtap="openGroup" data-id="{{item.id}}">
+        <view class="group-item" wx:for="{{joinedGroups}}" wx:key="_id" bindtap="openGroup" data-id="{{item._id || item.id}}">
           <view class="group-avatar">
             <image wx:if="{{item.coverImage}}" src="{{item.coverImage}}" mode="aspectFill" class="avatar-image"></image>
             <view wx:else class="avatar-placeholder">
@@ -89,10 +89,10 @@
             <view class="group-header">
               <text class="group-name">{{item.name}}</text>
               <view class="group-actions">
-                <view class="action-btn" catchtap="editGroup" data-id="{{item.id}}">
+                <view class="action-btn" catchtap="editGroup" data-id="{{item._id || item.id}}">
                   <text class="action-icon">✏️</text>
                 </view>
-                <view class="action-btn" catchtap="deleteGroup" data-id="{{item.id}}">
+                <view class="action-btn" catchtap="deleteGroup" data-id="{{item._id || item.id}}">
                   <text class="action-icon">🗑️</text>
                 </view>
               </view>

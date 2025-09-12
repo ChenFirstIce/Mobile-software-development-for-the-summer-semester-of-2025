@@ -30,8 +30,8 @@ Page({
 
   onShow: function () {
     // 页面显示时刷新数据
-    if (this.data.album.id) {
-      this.loadPhotos(this.data.album.id)
+    if (this.data.album._id || this.data.album.id) {
+      this.loadPhotos(this.data.album._id || this.data.album.id)
     }
   },
 
@@ -78,8 +78,54 @@ Page({
     return false
   },
 
-  // 加载照片数据
+  // 加载照片数据（云开发版本）
   loadPhotos: function (albumId) {
+    app.showLoading('加载照片中...')
+    
+    // 调用云函数获取照片列表
+    wx.cloud.callFunction({
+      name: 'photoManager',
+      data: {
+        action: 'getList',
+        albumId: albumId
+      },
+      success: (res) => {
+        app.hideLoading()
+        if (res.result.success) {
+          const photos = res.result.data
+          
+          // 更新本地存储
+          let allPhotos = wx.getStorageSync('photos') || []
+          // 移除该相册的旧照片
+          allPhotos = allPhotos.filter(photo => photo.albumId !== albumId)
+          // 添加新照片
+          allPhotos = allPhotos.concat(photos)
+          wx.setStorageSync('photos', allPhotos)
+          
+          this.setData({
+            photos: photos
+          })
+          
+          // 更新相册照片数量
+          this.updateAlbumPhotoCount(albumId, photos.length)
+        } else {
+          app.showToast('加载照片失败: ' + res.result.message)
+          // 降级到本地存储
+          this.loadPhotosFromLocal(albumId)
+        }
+      },
+      fail: (error) => {
+        app.hideLoading()
+        console.error('云函数调用失败:', error)
+        app.showToast('网络错误，使用本地数据')
+        // 降级到本地存储
+        this.loadPhotosFromLocal(albumId)
+      }
+    })
+  },
+
+  // 从本地存储加载照片（降级方案）
+  loadPhotosFromLocal: function (albumId) {
     const allPhotos = wx.getStorageSync('photos') || []
     const photos = allPhotos.filter(photo => photo.albumId === albumId)
     
@@ -126,45 +172,132 @@ Page({
     })
   },
 
-  // 上传照片
+  // 上传照片（云开发版本）
   uploadPhotos: function (tempFilePaths) {
     app.showLoading('正在上传照片...')
     
-    const photos = tempFilePaths.map((filePath, index) => {
-      return {
-        id: Date.now() + index,
-        albumId: this.data.album.id,
-        url: filePath,
-        name: `照片${index + 1}`,
-        description: '',
-        location: '',
-        uploadTime: new Date().toLocaleString(),
-        size: 0, // 实际项目中应该获取文件大小
-        type: 'image'
+    // 检查上传权限
+    this.checkUploadPermission().then((hasPermission) => {
+      if (!hasPermission) {
+        app.hideLoading()
+        app.showToast('无上传权限')
+        return
+      }
+      
+      // 逐个上传照片到云存储
+      this.uploadPhotosToCloud(tempFilePaths, 0)
+    }).catch((error) => {
+      app.hideLoading()
+      console.error('权限检查失败:', error)
+      app.showToast('权限检查失败')
+    })
+  },
+
+  // 检查上传权限
+  checkUploadPermission: function () {
+    return new Promise((resolve, reject) => {
+      wx.cloud.callFunction({
+        name: 'albumManager',
+        data: {
+          action: 'checkPermission',
+          albumId: this.data.album._id
+        },
+        success: (res) => {
+          if (res.result.success) {
+            resolve(res.result.data.canUpload)
+          } else {
+            reject(new Error(res.result.message))
+          }
+        },
+        fail: reject
+      })
+    })
+  },
+
+  // 上传照片到云存储
+  uploadPhotosToCloud: function (tempFilePaths, index) {
+    if (index >= tempFilePaths.length) {
+      app.hideLoading()
+      app.showToast(`成功上传 ${tempFilePaths.length} 张照片`)
+      return
+    }
+    
+    const filePath = tempFilePaths[index]
+    const fileName = `photos/${this.data.album._id}/${Date.now()}_${index}.jpg`
+    
+    // 上传到云存储
+    wx.cloud.uploadFile({
+      cloudPath: fileName,
+      filePath: filePath,
+      success: (uploadRes) => {
+        console.log('照片上传成功:', uploadRes)
+        
+        // 调用云函数保存照片信息
+        const photoData = {
+          albumId: this.data.album._id,
+          groupId: this.data.album.groupId,
+          fileId: uploadRes.fileID,
+          name: `照片${index + 1}`,
+          description: '',
+          location: {
+            latitude: 0,
+            longitude: 0,
+            address: ''
+          },
+          size: 0,
+          width: 0,
+          height: 0
+        }
+        
+        wx.cloud.callFunction({
+          name: 'photoManager',
+          data: {
+            action: 'upload',
+            photoData: photoData
+          },
+          success: (res) => {
+            if (res.result.success) {
+              const photo = res.result.data
+              
+              // 更新本地存储
+              let allPhotos = wx.getStorageSync('photos') || []
+              allPhotos.push(photo)
+              wx.setStorageSync('photos', allPhotos)
+              
+              // 更新页面数据
+              this.setData({
+                photos: [...this.data.photos, photo]
+              })
+              
+              // 更新相册照片数量
+              this.updateAlbumPhotoCount(this.data.album._id, this.data.photos.length)
+              
+              // 继续上传下一张照片
+              this.uploadPhotosToCloud(tempFilePaths, index + 1)
+            } else {
+              app.hideLoading()
+              app.showToast('保存照片信息失败: ' + res.result.message)
+            }
+          },
+          fail: (error) => {
+            app.hideLoading()
+            console.error('保存照片信息失败:', error)
+            app.showToast('保存照片信息失败')
+          }
+        })
+      },
+      fail: (error) => {
+        app.hideLoading()
+        console.error('照片上传失败:', error)
+        app.showToast('照片上传失败')
       }
     })
-    
-    // 保存照片到本地存储
-    let allPhotos = wx.getStorageSync('photos') || []
-    allPhotos = allPhotos.concat(photos)
-    wx.setStorageSync('photos', allPhotos)
-    
-    // 更新页面数据
-    this.setData({
-      photos: [...this.data.photos, ...photos]
-    })
-    
-    // 更新相册照片数量
-    this.updateAlbumPhotoCount(this.data.album.id, this.data.photos.length)
-    
-    app.hideLoading()
-    app.showToast(`成功上传 ${photos.length} 张照片`)
   },
 
   // 编辑相册
   editAlbum: function () {
     wx.navigateTo({
-      url: `/pages/album/create?id=${this.data.album.id}`
+      url: `/pages/album/create?id=${this.data.album._id || this.data.album.id}`
     })
   },
 
@@ -216,7 +349,7 @@ Page({
     })
     
     // 更新相册照片数量
-    this.updateAlbumPhotoCount(this.data.album.id, photos.length)
+    this.updateAlbumPhotoCount(this.data.album._id || this.data.album.id, photos.length)
     
     app.showToast('照片已删除')
   },
@@ -329,7 +462,7 @@ Page({
     })
     
     // 更新相册照片数量
-    this.updateAlbumPhotoCount(this.data.album.id, photos.length)
+    this.updateAlbumPhotoCount(this.data.album._id || this.data.album.id, photos.length)
     
     app.showToast(`已删除 ${selectedIds.length} 张照片`)
   },
@@ -346,7 +479,7 @@ Page({
   onShareAppMessage: function () {
     return {
       title: `${this.data.album.name} - 相册分享`,
-      path: `/pages/album/detail?id=${this.data.album.id}`,
+      path: `/pages/album/detail?id=${this.data.album._id || this.data.album.id}`,
       imageUrl: this.data.album.coverImage || '/images/default-album.png'
     }
   },

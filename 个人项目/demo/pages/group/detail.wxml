@@ -90,22 +90,22 @@
     </view>
     
     <view class="members-list">
-      <view class="member-item" wx:for="{{group.members}}" wx:key="id">
+      <view class="member-item" wx:for="{{group.members}}" wx:key="userId">
         <view class="member-avatar">
-          <image wx:if="{{item.avatar}}" src="{{item.avatar}}" mode="aspectFill" class="member-img"></image>
+          <image wx:if="{{item.avatarUrl}}" src="{{item.avatarUrl}}" mode="aspectFill" class="member-img"></image>
           <view wx:else class="member-placeholder">
-            <text class="member-text">{{item.name.charAt(0)}}</text>
+            <text class="member-text">{{item.nickName.charAt(0)}}</text>
           </view>
         </view>
         
         <view class="member-info">
           <view class="member-header">
-            <text class="member-name">{{item.name}}</text>
+            <text class="member-name">{{item.nickName}}</text>
             <view class="member-role">
               <text class="role-badge {{item.role}}">{{getRoleText(item.role)}}</text>
             </view>
           </view>
-          <text class="member-join-time">加入时间：{{formatTime(item.joinTime)}}</text>
+          <text class="member-join-time">加入时间：{{item.joinTime}}</text>
         </view>
         
         <view class="member-actions" wx:if="{{isCreator && item.role !== 'creator'}}">
@@ -155,7 +155,7 @@
 
   <!-- 加入群组弹窗 -->
   <view class="modal-overlay" wx:if="{{showJoinModal}}" bindtap="hideJoinModal">
-    <view class="modal-content join-modal" catchtap="stopPropagation">
+    <view class="modal-content join-modal" >
       <view class="modal-header">
         <text class="modal-title">加入群组</text>
         <view class="close-btn" bindtap="hideJoinModal">✕</view>
@@ -173,7 +173,7 @@
 
   <!-- 成员管理弹窗 -->
   <view class="modal-overlay" wx:if="{{showMemberModal}}" bindtap="hideMemberModal">
-    <view class="modal-content member-modal" catchtap="stopPropagation">
+    <view class="modal-content member-modal" >
       <view class="modal-header">
         <text class="modal-title">成员管理</text>
         <view class="close-btn" bindtap="hideMemberModal">✕</view>
@@ -189,9 +189,9 @@
           </view>
           
           <view class="filtered-members">
-            <view class="member-row" wx:for="{{filteredMembers}}" wx:key="id">
+            <view class="member-row" wx:for="{{filteredMembers}}" wx:key="userId">
               <view class="member-info">
-                <text class="member-name">{{item.name}}</text>
+                <text class="member-name">{{item.nickName}}</text>
                 <text class="member-role">{{getRoleText(item.role)}}</text>
               </view>
               <view class="member-actions">

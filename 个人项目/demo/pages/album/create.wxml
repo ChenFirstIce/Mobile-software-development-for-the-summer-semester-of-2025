@@ -109,7 +109,7 @@
 
   <!-- 标签选择弹窗 -->
   <view class="modal-overlay" wx:if="{{showTagModal}}" bindtap="hideTagSelector">
-    <view class="modal-content" catchtap="stopPropagation">
+    <view class="modal-content" >
       <view class="modal-header">
         <text class="modal-title">选择标签</text>
         <view class="close-btn" bindtap="hideTagSelector">✕</view>
@@ -139,7 +139,7 @@
 
   <!-- 群组选择弹窗 -->
   <view class="modal-overlay" wx:if="{{showGroupModal}}" bindtap="hideGroupSelector">
-    <view class="modal-content" catchtap="stopPropagation">
+    <view class="modal-content" >
       <view class="modal-header">
         <text class="modal-title">选择群组</text>
         <view class="close-btn" bindtap="hideGroupSelector">✕</view>

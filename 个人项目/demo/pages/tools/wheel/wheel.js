@@ -39,8 +39,12 @@ Page({
       this.setData({
         groupId: options.groupId
       })
+      // 先加载群组信息，再加载转盘
       this.loadGroupInfo()
-      this.loadGroupWheel()
+      // 延迟加载转盘，确保群组信息已加载
+      setTimeout(() => {
+        this.loadGroupWheel()
+      }, 100)
     } else {
       wx.showToast({
         title: '缺少群组信息',
@@ -71,7 +75,7 @@ Page({
   // 加载群组信息
   loadGroupInfo: function() {
     const groups = wx.getStorageSync('groups') || []
-    const group = groups.find(g => g.id === this.data.groupId)
+    const group = groups.find(g => (g._id === this.data.groupId) || (g.id === this.data.groupId))
     if (group) {
       this.setData({
         currentGroup: group
@@ -83,7 +87,14 @@ Page({
   // 加载群组转盘
   loadGroupWheel: function() {
     const groupWheels = wx.getStorageSync('groupWheels') || {}
-    const groupWheel = groupWheels[this.data.groupId]
+    // 尝试多种ID格式查找转盘
+    let groupWheel = groupWheels[this.data.groupId]
+    
+    // 如果没有找到，尝试使用群组的实际ID
+    if (!groupWheel && this.data.currentGroup) {
+      const actualGroupId = this.data.currentGroup._id || this.data.currentGroup.id
+      groupWheel = groupWheels[actualGroupId]
+    }
     
     if (groupWheel && groupWheel.length > 0) {
       // 有转盘，切换到群组转盘
@@ -121,12 +132,13 @@ Page({
         if (res.confirm) {
           // 清空群组转盘
           const groupWheels = wx.getStorageSync('groupWheels') || {}
-          delete groupWheels[this.data.groupId]
+          const groupId = this.data.currentGroup ? (this.data.currentGroup._id || this.data.currentGroup.id) : this.data.groupId
+          delete groupWheels[groupId]
           wx.setStorageSync('groupWheels', groupWheels)
           
           // 清空贡献记录
           const wheelContributions = wx.getStorageSync('wheelContributions') || {}
-          delete wheelContributions[this.data.groupId]
+          delete wheelContributions[groupId]
           wx.setStorageSync('wheelContributions', wheelContributions)
           
           // 重置状态
@@ -152,15 +164,15 @@ Page({
     if (!group) return
 
     const wheelContributions = wx.getStorageSync('wheelContributions') || {}
-    const groupContributions = wheelContributions[group.id] || {}
+    const groupContributions = wheelContributions[group._id || group.id] || {}
     
     let completedCount = 0
     const isMemberCompleted = {}
     const incompleteMembers = []
 
     group.members.forEach(member => {
-      const hasContributed = groupContributions[member.id] || false
-      isMemberCompleted[member.id] = hasContributed
+      const hasContributed = groupContributions[member.userId] || false
+      isMemberCompleted[member.userId] = hasContributed
       if (hasContributed) {
         completedCount++
       } else {
@@ -183,11 +195,11 @@ Page({
     const currentUser = wx.getStorageSync('userInfo') || { id: 'anonymous' }
     const wheelContributions = wx.getStorageSync('wheelContributions') || {}
     
-    if (!wheelContributions[group.id]) {
-      wheelContributions[group.id] = {}
+    if (!wheelContributions[group._id || group.id]) {
+      wheelContributions[group._id || group.id] = {}
     }
     
-    wheelContributions[group.id][currentUser.id] = true
+    wheelContributions[group._id || group.id][currentUser._openid] = true
     wx.setStorageSync('wheelContributions', wheelContributions)
     
     this.updateMemberStatus()
@@ -236,7 +248,9 @@ Page({
 
   // 保存转盘编辑
   saveWheelEdit: function() {
-    const { editTitle, editOptions, groupId } = this.data
+    const { editTitle, editOptions } = this.data
+    // 使用群组的实际ID
+    const groupId = this.data.currentGroup ? (this.data.currentGroup._id || this.data.currentGroup.id) : this.data.groupId
     
     if (!editTitle.trim()) {
       wx.showToast({
@@ -365,13 +379,6 @@ Page({
     })
   },
 
-
-
-
-
-
-
-
   // 安全地获取转盘组件
   getZhuanpanComponent: function() {
     if (!this.zhuanpan) {
@@ -388,5 +395,10 @@ Page({
       return true
     }
     return false
+  },
+  
+  // 添加阻止事件冒泡的函数
+  stopPropagation: function () {
+  // 阻止事件冒泡，防止点击弹窗内容时关闭弹窗
   }
 })

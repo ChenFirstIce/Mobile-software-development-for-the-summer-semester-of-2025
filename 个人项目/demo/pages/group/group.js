@@ -12,7 +12,6 @@ Page({
     searchKeyword: '',
     showJoinModal: false,
     roomCode: '',
-    verifyCode: '',
     expandedSections: {
       my: true,
       joined: true
@@ -32,8 +31,46 @@ Page({
     this.loadGroups()
   },
 
-  // 加载群组数据
+  // 加载群组数据（云开发版本）
   loadGroups: function () {
+    app.showLoading('加载中...')
+    
+    // 调用云函数获取群组列表
+    wx.cloud.callFunction({
+      name: 'groupManager',
+      data: {
+        action: 'getList'
+      },
+      success: (res) => {
+        app.hideLoading()
+        if (res.result.success) {
+          const groups = res.result.data
+          
+          // 更新本地存储
+          wx.setStorageSync('groups', groups)
+          
+          this.setData({
+            groups: groups
+          })
+          this.filterGroups()
+        } else {
+          app.showToast('加载群组失败: ' + res.result.message)
+          // 降级到本地存储
+          this.loadGroupsFromLocal()
+        }
+      },
+      fail: (error) => {
+        app.hideLoading()
+        console.error('云函数调用失败:', error)
+        app.showToast('网络错误，使用本地数据')
+        // 降级到本地存储
+        this.loadGroupsFromLocal()
+      }
+    })
+  },
+
+  // 从本地存储加载群组（降级方案）
+  loadGroupsFromLocal: function () {
     const groups = wx.getStorageSync('groups') || []
     this.setData({
       groups: groups
@@ -47,7 +84,7 @@ Page({
 
     // 按类型过滤 - 只显示用户创建或加入的群组
     const currentUser = app.globalData.userInfo
-    const currentUserId = currentUser ? currentUser.id : null
+    const currentUserId = currentUser ? currentUser._openid : null
     const currentUserName = currentUser ? currentUser.nickName : ''
     
     if (this.data.currentType === 'my') {
@@ -56,8 +93,8 @@ Page({
       // 全部：显示用户创建或加入的群组
       filtered = filtered.filter(group => 
         group.creatorId === currentUserId || 
-        (group.members && group.members.some(member => 
-          member.id === currentUserId || member.name === currentUserName
+        (group.members && Array.isArray(group.members) && group.members.some(member => 
+          member.userId === currentUserId || member.nickName === currentUserName
         ))
       )
     }
@@ -77,7 +114,7 @@ Page({
       group.creatorId !== currentUserId && // 排除我创建的群组
       group.members && 
       group.members.some(member => 
-        member.id === currentUserId || member.name === currentUserName
+        member.userId === currentUserId || member.nickName === currentUserName
       )
     )
 
@@ -154,29 +191,50 @@ Page({
   },
 
 
-  // 执行删除群组
+  // 执行删除群组（云开发版本）
   performDeleteGroup: function (groupId) {
-    let groups = this.data.groups
-    groups = groups.filter(group => group.id !== groupId)
+    app.showLoading('删除中...')
     
-    // 更新本地存储
-    wx.setStorageSync('groups', groups)
-    
-    // 更新页面数据
-    this.setData({
-      groups: groups
+    wx.cloud.callFunction({
+      name: 'groupManager',
+      data: {
+        action: 'delete',
+        groupId: groupId
+      },
+      success: (res) => {
+        app.hideLoading()
+        if (res.result.success) {
+          // 从本地数据中移除
+          let groups = this.data.groups
+          groups = groups.filter(group => group._id !== groupId && group.id !== groupId)
+          
+          // 更新本地存储
+          wx.setStorageSync('groups', groups)
+          
+          // 更新页面数据
+          this.setData({
+            groups: groups
+          })
+          this.filterGroups()
+          
+          app.showToast('群组已删除')
+        } else {
+          app.showToast('删除失败: ' + res.result.message)
+        }
+      },
+      fail: (error) => {
+        app.hideLoading()
+        console.error('删除群组失败:', error)
+        app.showToast('删除失败，请重试')
+      }
     })
-    this.filterGroups()
-    
-    app.showToast('群组已删除')
   },
 
   // 显示加入群组弹窗
   showJoinModal: function () {
     this.setData({
       showJoinModal: true,
-      roomCode: '',
-      verifyCode: ''
+      roomCode: ''
     })
   },
 
@@ -185,6 +243,11 @@ Page({
     this.setData({
       showJoinModal: false
     })
+  },
+
+  // 阻止事件冒泡
+  stopPropagation: function () {
+    // 阻止事件冒泡，防止点击弹窗内容时关闭弹窗
   },
 
   // 房间号输入
@@ -196,58 +259,92 @@ Page({
 
   // 加入群组
   joinGroup: function () {
-    const { roomCode, verifyCode } = this.data
+    const { roomCode } = this.data
     
     if (!roomCode || roomCode.length !== 6) {
       app.showToast('请输入6位房间号')
       return
     }
 
-    // 查找群组
-    const group = this.data.groups.find(g => g.roomCode === roomCode)
+    app.showLoading('搜索群组中...')
     
-    if (!group) {
-      app.showToast('房间号不存在')
-      return
-    }
-
-    // 检查验证码
-    if (group.verifyCode && group.verifyCode !== verifyCode) {
-      app.showToast('验证码错误')
-      return
-    }
-
-    // 检查是否已加入
-    const currentUser = app.globalData.userInfo
-    if (!currentUser) {
-      app.showToast('请先登录')
-      return
-    }
-    
-    // 检查用户是否已经是群组成员（通过ID或昵称检查）
-    const isAlreadyMember = group.members && group.members.some(member => 
-      member.id === currentUser.id || member.name === currentUser.nickName
-    )
-    
-    if (isAlreadyMember) {
-      app.showToast('您已经是该群组成员')
-      return
-    }
-
-    // 检查群组人数
-    if (group.memberCount >= group.maxMembers) {
-      app.showToast('群组人数已满')
-      return
-    }
-
-    // 加入群组
-    this.performJoinGroup(group)
+    // 先搜索群组
+    wx.cloud.callFunction({
+      name: 'groupManager',
+      data: {
+        action: 'searchByRoomCode',
+        roomCode: roomCode
+      },
+      success: (res) => {
+        app.hideLoading()
+        console.log('云函数返回结果:', res)
+        
+        if (res.result && res.result.success) {
+          const groupInfo = res.result.data
+          
+          // 检查是否已经是成员
+          if (groupInfo.isAlreadyMember) {
+            app.showToast('您已经是该群组成员')
+            return
+          }
+          
+          // 直接执行加入群组
+          this.performJoinGroupByRoomCode(roomCode)
+        } else {
+          const errorMsg = res.result ? res.result.message : '未知错误'
+          console.error('搜索群组失败:', errorMsg)
+          app.showToast('搜索失败: ' + errorMsg)
+        }
+      },
+      fail: (error) => {
+        app.hideLoading()
+        console.error('云函数调用失败:', error)
+        app.showToast('网络错误，请检查云函数是否已部署')
+      }
+    })
   },
 
-  // 执行加入群组
+  // 通过房间号执行加入群组（云开发版本）
+  performJoinGroupByRoomCode: function (roomCode) {
+    app.showLoading('加入群组中...')
+    
+    wx.cloud.callFunction({
+      name: 'groupManager',
+      data: {
+        action: 'joinByRoomCode',
+        roomCode: roomCode
+      },
+      success: (res) => {
+        app.hideLoading()
+        if (res.result.success) {
+          // 隐藏弹窗
+          this.hideJoinModal()
+          
+          app.showToast('成功加入群组')
+          
+          // 重新加载群组列表
+          this.loadGroups()
+          
+          // 跳转到群组详情页
+          wx.navigateTo({
+            url: `/pages/group/detail?id=${res.result.data.groupId}`
+          })
+        } else {
+          app.showToast(res.result.message)
+        }
+      },
+      fail: (error) => {
+        app.hideLoading()
+        console.error('加入群组失败:', error)
+        app.showToast('加入群组失败，请重试')
+      }
+    })
+  },
+
+  // 执行加入群组（本地版本，保留作为备用）
   performJoinGroup: function (group) {
     let groups = this.data.groups
-    const groupIndex = groups.findIndex(g => g.id === group.id)
+    const groupIndex = groups.findIndex(g => g._id === group._id || g.id === group.id)
     
     if (groupIndex > -1) {
       // 添加成员
@@ -296,9 +393,17 @@ Page({
 
   // 导航到工具页面
   navigateToTools: function () {
-    wx.navigateTo({
-      url: '/pages/tools/tools'
-    })
+    // 获取当前选中的群组
+    const currentGroup = this.data.groups.find(group => group._id || group.id)
+    if (currentGroup) {
+      wx.navigateTo({
+        url: `/pages/tools/tools?groupId=${currentGroup._id || currentGroup.id}`
+      })
+    } else {
+      wx.navigateTo({
+        url: '/pages/tools/tools'
+      })
+    }
   }
 
 })

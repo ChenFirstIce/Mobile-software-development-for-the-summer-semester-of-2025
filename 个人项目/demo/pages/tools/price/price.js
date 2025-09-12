@@ -90,7 +90,7 @@ Page({
   // 显示未完成成员头像
   showIncompleteMembers: function () {
     const incompleteMembers = this.data.members.filter(member => {
-      return !this.data.priceItems.some(item => item.userId === member.id)
+      return !this.data.priceItems.some(item => item.userId === member.userId)
     })
     
     if (incompleteMembers.length > 0) {
@@ -300,7 +300,7 @@ Page({
   updateMemberStatus: function () {
     const isMemberCompleted = {}
     this.data.members.forEach(member => {
-      isMemberCompleted[member.id] = this.data.priceItems.some(item => item.userId === member.id)
+      isMemberCompleted[member.userId] = this.data.priceItems.some(item => item.userId === member.userId)
     })
     this.setData({
       isMemberCompleted: isMemberCompleted

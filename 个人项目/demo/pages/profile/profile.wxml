@@ -16,7 +16,7 @@
     <!-- 用户信息区域 -->
     <view class="user-info">
       <!-- 昵称编辑区域 -->
-      <view class="nickname-section" wx:if="{{isLoggedIn}}" catchtap="stopPropagation">
+      <view class="nickname-section" wx:if="{{isLoggedIn}}" >
         <input wx:if="{{isEditingNickname}}" 
                class="nickname-input" 
                value="{{editNickName}}"
@@ -85,7 +85,7 @@
 
   <!-- 登录弹窗 -->
   <view class="modal-overlay" wx:if="{{showLoginModal}}" bindtap="hideLoginModal">
-    <view class="modal-content" catchtap="stopPropagation">
+    <view class="modal-content" >
       <view class="modal-header">
         <text class="modal-title">微信授权登录</text>
         <text class="modal-close" bindtap="hideLoginModal">×</text>

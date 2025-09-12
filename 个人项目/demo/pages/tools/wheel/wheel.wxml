@@ -86,7 +86,7 @@
     <button class="btn btn-edit" bindtap="editWheel" wx:if="{{!hasWheel}}">
       <text class="btn-text">创建转盘内容</text>
     </button>
-    <button class="btn btn-edit" bindtap="editWheel" wx:if="{{hasWheel}}">
+    <button class="btn btn-edit" bindtap="editWheel" wx:if="{{hasWheel}}" bindtap = >
       <text class="btn-text">编辑转盘内容</text>
     </button>
     <button class="btn btn-restart" bindtap="restartWheel" wx:if="{{hasWheel}}">
@@ -98,7 +98,7 @@
 
 <!-- 编辑转盘弹窗 -->
 <view class="modal-overlay" wx:if="{{showEditModal}}" bindtap="hideEditModal">
-  <view class="modal-content" catchtap="stopPropagation">
+  <view class="modal-content" >
     <view class="modal-header">
       <text class="modal-title">编辑转盘内容</text>
       <text class="modal-close" bindtap="hideEditModal">×</text>

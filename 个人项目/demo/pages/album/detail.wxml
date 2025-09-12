@@ -130,7 +130,7 @@
 
   <!-- 照片详情弹窗 -->
   <view class="modal-overlay" wx:if="{{showPhotoModal}}" bindtap="hidePhotoModal">
-    <view class="modal-content photo-modal" catchtap="stopPropagation">
+    <view class="modal-content photo-modal" >
       <view class="modal-header">
         <text class="modal-title">照片详情</text>
         <view class="close-btn" bindtap="hidePhotoModal">✕</view>

@@ -59,25 +59,63 @@ Page({
 
   // 加载群组数据（编辑模式）
   loadGroupData: function (groupId) {
+    app.showLoading('加载群组信息...')
+    
+    // 先尝试从云函数获取最新数据
+    wx.cloud.callFunction({
+      name: 'groupManager',
+      data: {
+        action: 'getDetail',
+        groupId: groupId
+      },
+      success: (res) => {
+        app.hideLoading()
+        if (res.result.success) {
+          const group = res.result.data
+          this.setGroupData(group)
+        } else {
+          // 降级到本地存储
+          this.loadGroupDataFromLocal(groupId)
+        }
+      },
+      fail: (error) => {
+        app.hideLoading()
+        console.error('加载群组数据失败:', error)
+        // 降级到本地存储
+        this.loadGroupDataFromLocal(groupId)
+      }
+    })
+  },
+
+  // 从本地存储加载群组数据（降级方案）
+  loadGroupDataFromLocal: function (groupId) {
     const groups = wx.getStorageSync('groups') || []
-    const group = groups.find(g => g.id === groupId)
+    const group = groups.find(g => g._id === groupId || g.id === groupId)
     
     if (group) {
-      this.setData({
-        groupName: group.name,
-        groupDesc: group.description || '',
-        maxMembers: group.maxMembers || 10,
-        features: group.features || {
-          random: true,
-          priceVote: true,
-          sharedAlbum: true,
-          mapCheckin: true
-        },
-        coverImage: group.coverImage || '',
-        selectedTags: group.tags || []
-      })
-      this.checkFormStatus()
+      this.setGroupData(group)
+    } else {
+      app.showToast('群组不存在', 'error')
+      wx.navigateBack()
     }
+  },
+
+  // 设置群组数据到页面
+  setGroupData: function (group) {
+    this.setData({
+      groupName: group.name,
+      groupDesc: group.description || '',
+      maxMembers: group.maxMembers || 10,
+      features: group.features || {
+        random: true,
+        priceVote: true,
+        sharedAlbum: true,
+        mapCheckin: true
+      },
+      coverImage: group.coverImage || '',
+      selectedTags: group.tags || []
+    })
+    this.checkFormStatus()
   },
 
   // 检查表单状态
@@ -268,109 +306,105 @@ Page({
 
   // 执行创建群组
   performCreateGroup: function () {
-    // 生成6位随机房间号
-    const roomCode = this.generateRoomCode()
-    
     const groupData = {
-      id: Date.now().toString(),
-      roomCode: roomCode, // 添加房间号
       name: this.data.groupName,
       description: this.data.groupDesc,
       maxMembers: this.data.maxMembers,
       features: this.data.features,
       coverImage: this.data.coverImage,
       tags: this.data.selectedTags,
-      creator: app.globalData.userInfo ? app.globalData.userInfo.nickName : app.globalData.userInfo.nickName,
-      createTime: new Date().toISOString(),
       status: 'active'
     }
 
-    // 保存到本地存储
+    // 直接调用云函数保存群组
     this.saveGroupToStorage(groupData)
-    
-    app.hideLoading()
-    app.showToast('群组创建成功！', 'success')
-    
-    // 自动加入群组
-    this.autoJoinGroup(groupData)
-    
-    // 延迟跳转，让用户看到成功提示
-    setTimeout(() => {
-      wx.navigateBack()
-    }, 1500)
   },
 
   // 执行更新群组
   performUpdateGroup: function () {
-    const groups = wx.getStorageSync('groups') || []
-    const groupIndex = groups.findIndex(g => g.id === this.data.groupId)
-    
-    if (groupIndex > -1) {
-      // 更新群组信息
-      groups[groupIndex].name = this.data.groupName
-      groups[groupIndex].description = this.data.groupDesc
-      groups[groupIndex].maxMembers = this.data.maxMembers
-      groups[groupIndex].features = this.data.features
-      groups[groupIndex].coverImage = this.data.coverImage
-      groups[groupIndex].tags = this.data.selectedTags
-      groups[groupIndex].updateTime = new Date().toISOString()
-      
-      // 保存到本地存储
-      wx.setStorageSync('groups', groups)
-      
-      app.hideLoading()
-      app.showToast('群组信息已更新！', 'success')
-      
-      // 延迟跳转，让用户看到成功提示
-      setTimeout(() => {
-        wx.navigateBack()
-      }, 1500)
-    } else {
-      app.hideLoading()
-      app.showToast('群组不存在', 'error')
+    const groupData = {
+      name: this.data.groupName,
+      description: this.data.groupDesc,
+      maxMembers: this.data.maxMembers,
+      features: this.data.features,
+      coverImage: this.data.coverImage,
+      tags: this.data.selectedTags
     }
+
+    // 调用云函数更新群组
+    this.saveGroupToStorage(groupData)
   },
 
-  // 保存群组到本地存储
+  // 保存群组到本地存储（云开发版本）
   saveGroupToStorage: function (groupData) {
-    let groups = wx.getStorageSync('groups') || []
-    groups.unshift(groupData)
-    wx.setStorageSync('groups', groups)
+    app.showLoading('保存中...')
     
-    // 更新全局数据
-    if (app.globalData.groups) {
-      app.globalData.groups.unshift(groupData)
+    const action = this.data.isEdit ? 'update' : 'create'
+    const cloudData = {
+      action: action,
+      groupData: groupData
     }
-  },
-
-  // 自动加入群组
-  autoJoinGroup: function (groupData) {
-    const currentUser = app.globalData.userInfo
-    if (currentUser) {
-      // 将创建者添加到群组成员列表
-      const memberInfo = {
-        id: currentUser.id,
-        name: currentUser.nickName,
-        avatar: currentUser.avatarUrl || '/images/default-avatar.png',
-        joinTime: new Date().toISOString(),
-        role: 'creator'
-      }
-      
-      // 更新群组成员信息
-      let groups = wx.getStorageSync('groups') || []
-      const groupIndex = groups.findIndex(g => g.id === groupData.id)
-      if (groupIndex !== -1) {
-        if (!groups[groupIndex].members) {
-          groups[groupIndex].members = []
+    
+    if (this.data.isEdit) {
+      cloudData.groupId = this.data.groupId
+    }
+    
+    // 调用云函数保存群组
+    wx.cloud.callFunction({
+      name: 'groupManager',
+      data: cloudData,
+      success: (res) => {
+        app.hideLoading()
+        if (res.result.success) {
+          const savedGroup = res.result.data
+          
+          // 更新本地存储
+          let groups = wx.getStorageSync('groups') || []
+          
+          if (this.data.isEdit) {
+            // 编辑模式：更新现有群组
+            const index = groups.findIndex(g => g._id === this.data.groupId)
+            if (index > -1) {
+              groups[index] = savedGroup
+            }
+          } else {
+            // 创建模式：添加新群组
+            groups.unshift(savedGroup)
+          }
+          
+          wx.setStorageSync('groups', groups)
+          
+          // 更新全局数据
+          if (app.globalData.groups) {
+            if (this.data.isEdit) {
+              const index = app.globalData.groups.findIndex(g => g._id === this.data.groupId)
+              if (index > -1) {
+                app.globalData.groups[index] = savedGroup
+              }
+            } else {
+              app.globalData.groups.unshift(savedGroup)
+            }
+          }
+          
+          // 显示成功提示
+          app.showToast(this.data.isEdit ? '群组修改成功' : '群组创建成功')
+          
+          // 返回上一页
+          setTimeout(() => {
+            wx.navigateBack()
+          }, 1500)
+        } else {
+          app.showToast('保存失败: ' + res.result.message)
         }
-        groups[groupIndex].members.push(memberInfo)
-        groups[groupIndex].memberCount = groups[groupIndex].members.length
-        groups[groupIndex].creatorId = currentUser.id // 添加创建者ID
-        wx.setStorageSync('groups', groups)
+      },
+      fail: (error) => {
+        app.hideLoading()
+        console.error('保存群组失败:', error)
+        app.showToast('保存失败，请重试')
       }
-    }
+    })
   },
-
+  
   // 生成6位随机房间号
   generateRoomCode: function () {
     const chars = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ'

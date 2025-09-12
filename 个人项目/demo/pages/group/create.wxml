@@ -176,7 +176,7 @@
 
   <!-- 标签选择弹窗 -->
   <view class="modal-overlay" wx:if="{{showTagModal}}" bindtap="hideTagSelector">
-    <view class="modal-content tag-modal" catchtap="stopPropagation">
+    <view class="modal-content tag-modal">
       <view class="modal-header">
         <text class="modal-title">选择标签</text>
         <view class="close-btn" bindtap="hideTagSelector">✕</view>

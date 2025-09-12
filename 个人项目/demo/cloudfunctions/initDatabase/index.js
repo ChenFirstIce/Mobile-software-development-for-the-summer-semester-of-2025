@@ -14,22 +14,18 @@ exports.main = async (event, context) => {
     
     for (const collectionName of collections) {
       try {
-        // 尝试获取集合信息，如果不存在会抛出异常
         await db.collection(collectionName).limit(1).get()
         console.log(`集合 ${collectionName} 已存在`)
       } catch (error) {
         // 集合不存在，创建它
         console.log(`创建集合 ${collectionName}`)
-        // 注意：云开发中集合会在第一次写入数据时自动创建
-        // 这里我们只是添加一个占位文档
         await db.collection(collectionName).add({
           data: {
             _init: true,
-            createTime: new Date()
+            createTime: new Date()//创建一个实例文件，后面会删掉
           }
         })
         
-        // 删除占位文档
         const result = await db.collection(collectionName).where({
           _init: true
         }).get()

@@ -34,16 +34,64 @@ Page({
   onShow: function () {
     // 页面显示时刷新数据
     if (this.data.group) {
-      this.loadGroupData(this.data.group.id)
+      this.loadGroupData(this.data.group._id || this.data.group.id)
     }
     // 检查相册状态
     this.checkSharedAlbumStatus()
   },
 
-  // 加载群组数据
+  // 加载群组数据（云开发版本）
   loadGroupData: function (groupId) {
+    app.showLoading('加载中...')
+    
+    // 调用云函数获取群组详情
+    wx.cloud.callFunction({
+      name: 'groupManager',
+      data: {
+        action: 'getDetail',
+        groupId: groupId
+      },
+      success: (res) => {
+        app.hideLoading()
+        if (res.result.success) {
+          const group = res.result.data
+          
+          // 更新本地存储
+          let groups = wx.getStorageSync('groups') || []
+          const groupIndex = groups.findIndex(g => g._id === groupId)
+          if (groupIndex > -1) {
+            groups[groupIndex] = group
+          } else {
+            groups.push(group)
+          }
+          wx.setStorageSync('groups', groups)
+          
+          this.setData({
+            group: group
+          })
+          this.checkUserStatus()
+          this.loadFilteredMembers()
+          this.checkSharedAlbumStatus()
+        } else {
+          app.showToast('加载群组失败: ' + res.result.message)
+          // 降级到本地存储
+          this.loadGroupDataFromLocal(groupId)
+        }
+      },
+      fail: (error) => {
+        app.hideLoading()
+        console.error('云函数调用失败:', error)
+        app.showToast('网络错误，使用本地数据')
+        // 降级到本地存储
+        this.loadGroupDataFromLocal(groupId)
+      }
+    })
+  },
+
+  // 从本地存储加载群组（降级方案）
+  loadGroupDataFromLocal: function (groupId) {
     const groups = wx.getStorageSync('groups') || []
-    const group = groups.find(g => g.id === groupId)
+    const group = groups.find(g => g._id === groupId || g.id === groupId)
     
     if (group) {
       this.setData({
@@ -63,7 +111,7 @@ Page({
     const group = this.data.group
     const userInfo = app.globalData.userInfo
     
-    if (!userInfo) {
+    if (!userInfo || !group) {
       this.setData({
         isMember: false,
         isCreator: false
@@ -72,10 +120,10 @@ Page({
     }
     
     // 检查用户是否已经是群组成员（通过ID或昵称检查）
-    const isMember = group.members.some(member => 
-      member.id === userInfo.id || member.name === userInfo.nickName
+    const isMember = group.members && group.members.some(member => 
+      member.userId === userInfo._openid || member.nickName === userInfo.nickName
     )
-    const isCreator = group.creator === userInfo.nickName || group.creatorId === userInfo.id
+    const isCreator = group.creatorId === userInfo._openid
     
     this.setData({
       isMember: isMember,
@@ -86,16 +134,27 @@ Page({
 
   // 加载筛选后的成员
   loadFilteredMembers: function () {
-    this.setData({
-      filteredMembers: this.data.group.members
-    })
+    if (this.data.group && this.data.group.members && Array.isArray(this.data.group.members)) {
+      this.setData({
+        filteredMembers: this.data.group.members
+      })
+    } else {
+      this.setData({
+        filteredMembers: []
+      })
+    }
   },
 
   // 检查共享相册状态
   checkSharedAlbumStatus: function () {
+    if (!this.data.group || (!this.data.group._id && !this.data.group.id)) {
+      return
+    }
+    
     const albums = wx.getStorageSync('albums') || []
+    const groupId = this.data.group._id || this.data.group.id
     const hasSharedAlbum = albums.some(album => 
-      album.groupId === this.data.group.id && album.type === 'shared'
+      album.groupId === groupId && album.type === 'shared'
     )
     
     this.setData({
@@ -134,8 +193,8 @@ Page({
     }
     
     // 检查用户是否已经是群组成员
-    const isAlreadyMember = group.members.some(member => 
-      member.id === userInfo.id || member.name === userInfo.nickName
+    const isAlreadyMember = group.members && Array.isArray(group.members) && group.members.some(member => 
+      member.userId === userInfo._openid || member.nickName === userInfo.nickName
     )
     
     if (isAlreadyMember) {
@@ -150,11 +209,11 @@ Page({
     
     // 添加新成员
     const newMember = {
-      id: userInfo.id,
-      name: userInfo.nickName,
-      avatar: userInfo.avatarUrl || '/images/default-avatar.png',
+      userId: userInfo._openid,
+      nickName: userInfo.nickName,
+      avatarUrl: userInfo.avatarUrl || '/images/default-avatar.png',
       role: 'member',
-      joinTime: new Date().toISOString()
+      joinTime: new Date()
     }
     
     group.members.push(newMember)
@@ -197,7 +256,7 @@ Page({
     
     // 移除成员
     const memberIndex = group.members.findIndex(m => 
-      m.id === userInfo.id || m.name === userInfo.nickName
+      m.userId === userInfo._openid || m.nickName === userInfo.nickName
     )
     if (memberIndex > -1) {
       group.members.splice(memberIndex, 1)
@@ -220,8 +279,17 @@ Page({
 
   // 编辑群组
   editGroup: function () {
+    const groupId = this.data.group._id || this.data.group.id
     wx.navigateTo({
-      url: `/pages/group/create?id=${this.data.group.id}`
+      url: `/pages/group/create?id=${groupId}`
+    })
+  },
+
+  // 编辑群组信息
+  editGroupInfo: function () {
+    const groupId = this.data.group._id || this.data.group.id
+    wx.navigateTo({
+      url: `/pages/group/create?id=${groupId}`
     })
   },
 
@@ -235,15 +303,17 @@ Page({
 
   // 打开随机转盘
   openRandomWheel: function () {
+    const groupId = this.data.group._id || this.data.group.id
     wx.navigateTo({
-      url: `/pages/tools/wheel/wheel?groupId=${this.data.group.id}`
+      url: `/pages/tools/wheel/wheel?groupId=${groupId}`
     })
   },
 
   // 打开价格投票
   openPriceVote: function () {
+    const groupId = this.data.group._id || this.data.group.id
     wx.navigateTo({
-      url: `/pages/tools/price/price?groupId=${this.data.group.id}`
+      url: `/pages/tools/price/price?groupId=${groupId}`
     })
   },
 
@@ -251,19 +321,20 @@ Page({
   openSharedAlbum: function () {
     // 检查是否已经存在该群组的共享相册
     const albums = wx.getStorageSync('albums') || []
+    const groupId = this.data.group._id || this.data.group.id
     const existingAlbum = albums.find(album => 
-      album.groupId === this.data.group.id && album.type === 'shared'
+      album.groupId === groupId && album.type === 'shared'
     )
     
     if (existingAlbum) {
       // 如果存在共享相册，直接进入详情页面
       wx.navigateTo({
-        url: `/pages/album/detail?id=${existingAlbum.id}`
+        url: `/pages/album/detail?id=${existingAlbum._id || existingAlbum.id}`
       })
     } else {
       // 如果不存在，进入创建页面
       wx.navigateTo({
-        url: `/pages/album/create?groupId=${this.data.group.id}&groupName=${encodeURIComponent(this.data.group.name)}`
+        url: `/pages/album/create?groupId=${groupId}&groupName=${encodeURIComponent(this.data.group.name)}`
       })
     }
   },
@@ -300,9 +371,11 @@ Page({
     })
     
     // 筛选成员
-    const filtered = this.data.group.members.filter(member => 
-      member.name.toLowerCase().includes(keyword.toLowerCase())
-    )
+    const filtered = this.data.group.members && Array.isArray(this.data.group.members) 
+      ? this.data.group.members.filter(member => 
+          member.nickName.toLowerCase().includes(keyword.toLowerCase())
+        )
+      : []
     
     this.setData({
       filteredMembers: filtered
@@ -324,7 +397,7 @@ Page({
     // 更新筛选后的成员列表
     this.loadFilteredMembers()
     
-    app.showToast(`已将 ${member.name} 的角色更改为 ${this.getRoleText(newRole)}`, 'success')
+    app.showToast(`已将 ${member.nickName} 的角色更改为 ${this.getRoleText(newRole)}`, 'success')
   },
 
   // 移除成员
@@ -333,7 +406,7 @@ Page({
     
     wx.showModal({
       title: '确认移除',
-      content: `确定要移除成员 ${member.name} 吗？`,
+      content: `确定要移除成员 ${member.nickName} 吗？`,
       success: (res) => {
         if (res.confirm) {
           this.performRemoveMember(member)
@@ -346,7 +419,7 @@ Page({
   performRemoveMember: function (member) {
     const group = this.data.group
     const memberIndex = group.members.findIndex(m => 
-      m.id === member.id || m.name === member.name
+      m.userId === member.userId || m.nickName === member.nickName
     )
     
     if (memberIndex > -1) {
@@ -364,7 +437,7 @@ Page({
       // 更新筛选后的成员列表
       this.loadFilteredMembers()
       
-      app.showToast(`已移除成员 ${member.name}`, 'success')
+      app.showToast(`已移除成员 ${member.nickName}`, 'success')
       
     }
   },
@@ -383,21 +456,39 @@ Page({
     })
   },
 
-  // 执行解散群组
+  // 执行解散群组（云开发版本）
   performDeleteGroup: function () {
-    const groups = wx.getStorageSync('groups') || []
-    const groupIndex = groups.findIndex(g => g.id === this.data.group.id)
+    app.showLoading('解散群组中...')
     
-    if (groupIndex > -1) {
-      groups.splice(groupIndex, 1)
-      wx.setStorageSync('groups', groups)
-      
-      app.showToast('群组已解散', 'success')
-      
-      setTimeout(() => {
-        wx.navigateBack()
-      }, 1500)
-    }
+    wx.cloud.callFunction({
+      name: 'groupManager',
+      data: {
+        action: 'delete',
+        groupId: this.data.group._id || this.data.group.id
+      },
+      success: (res) => {
+        app.hideLoading()
+        if (res.result.success) {
+          // 从本地存储中移除群组
+          let groups = wx.getStorageSync('groups') || []
+          groups = groups.filter(g => (g._id !== this.data.group._id && g.id !== this.data.group.id))
+          wx.setStorageSync('groups', groups)
+          
+          app.showToast('群组已解散', 'success')
+          
+          setTimeout(() => {
+            wx.navigateBack()
+          }, 1500)
+        } else {
+          app.showToast('解散群组失败: ' + res.result.message)
+        }
+      },
+      fail: (error) => {
+        app.hideLoading()
+        console.error('解散群组失败:', error)
+        app.showToast('解散群组失败，请重试')
+      }
+    })
   },
 
   // 更新本地存储中的群组
@@ -436,9 +527,10 @@ Page({
   // 分享小程序
   onShareAppMessage: function () {
     const group = this.data.group
+    const groupId = group._id || group.id
     return {
       title: `邀请你加入旅游群：${group.name}`,
-      path: `/pages/group/detail?id=${group.id}`,
+      path: `/pages/group/detail?id=${groupId}`,
       imageUrl: group.coverImage || '/images/default-group.png'
     }
   },

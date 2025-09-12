@@ -26,11 +26,47 @@ Page({
     this.loadAlbums()
   },
 
-  // 加载相册数据
+  // 加载相册数据（云开发版本）
   loadAlbums: function () {
-    // 从本地存储或云数据库获取相册数据
+    app.showLoading('加载中...')
+    
+    // 调用云函数获取相册列表
+    wx.cloud.callFunction({
+      name: 'albumManager',
+      data: {
+        action: 'getList'
+      },
+      success: (res) => {
+        app.hideLoading()
+        if (res.result.success) {
+          const albums = res.result.data
+          
+          // 更新本地存储
+          wx.setStorageSync('albums', albums)
+          
+          this.setData({
+            albums: albums
+          })
+          this.filterAlbums()
+        } else {
+          app.showToast('加载相册失败: ' + res.result.message)
+          // 降级到本地存储
+          this.loadAlbumsFromLocal()
+        }
+      },
+      fail: (error) => {
+        app.hideLoading()
+        console.error('云函数调用失败:', error)
+        app.showToast('网络错误，使用本地数据')
+        // 降级到本地存储
+        this.loadAlbumsFromLocal()
+      }
+    })
+  },
+
+  // 从本地存储加载相册（降级方案）
+  loadAlbumsFromLocal: function () {
     let albums = wx.getStorageSync('albums') || []
-  
     this.setData({
       albums: albums
     })
@@ -136,21 +172,44 @@ Page({
     })
   },
 
-  // 执行删除相册
+  // 执行删除相册（云开发版本）
   performDeleteAlbum: function (albumId) {
-    let albums = this.data.albums
-    albums = albums.filter(album => album.id !== albumId)
+    app.showLoading('删除中...')
     
-    // 更新本地存储
-    wx.setStorageSync('albums', albums)
-    
-    // 更新页面数据
-    this.setData({
-      albums: albums
+    // 调用云函数删除相册
+    wx.cloud.callFunction({
+      name: 'albumManager',
+      data: {
+        action: 'delete',
+        albumId: albumId
+      },
+      success: (res) => {
+        app.hideLoading()
+        if (res.result.success) {
+          // 从本地数据中移除
+          let albums = this.data.albums
+          albums = albums.filter(album => album._id !== albumId)
+          
+          // 更新本地存储
+          wx.setStorageSync('albums', albums)
+          
+          // 更新页面数据
+          this.setData({
+            albums: albums
+          })
+          this.filterAlbums()
+          
+          app.showToast('相册已删除')
+        } else {
+          app.showToast('删除失败: ' + res.result.message)
+        }
+      },
+      fail: (error) => {
+        app.hideLoading()
+        console.error('删除相册失败:', error)
+        app.showToast('删除失败，请重试')
+      }
     })
-    this.filterAlbums()
-    
-    app.showToast('相册已删除')
   },
 
   // 切换批量操作模式
@@ -196,7 +255,7 @@ Page({
         isAllSelected: false
       })
     } else {
-      const allIds = this.data.filteredAlbums.map(album => album.id)
+      const allIds = this.data.filteredAlbums.map(album => album._id || album.id)
       this.setData({
         selectedAlbums: allIds,
         isAllSelected: true
@@ -230,7 +289,7 @@ Page({
     const selectedIds = this.data.selectedAlbums
     
     // 过滤掉选中的相册
-    albums = albums.filter(album => !selectedIds.includes(album.id))
+    albums = albums.filter(album => !selectedIds.includes(album._id || album.id))
     
     // 更新本地存储
     wx.setStorageSync('albums', albums)

@@ -311,7 +311,7 @@ Page({
     const album = e.currentTarget.dataset.album
     this.setData({
       selectedAlbum: album,
-      selectedAlbumId: album.id
+      selectedAlbumId: album._id || album.id
     })
   },
 

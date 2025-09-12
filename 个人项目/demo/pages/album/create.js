@@ -82,12 +82,12 @@ Page({
   // 加载可用群组
   loadAvailableGroups: function () {
     const groups = wx.getStorageSync('groups') || []
-    const currentUserId = app.globalData.userInfo?.id
+    const currentUserId = app.globalData.userInfo?._openid
     const availableGroups = groups.filter(group => {
       // 检查是否是群主
       if (group.creatorId === currentUserId) return true
       // 检查是否是群成员
-      if (group.members && group.members.some(member => member.id === currentUserId)) return true
+      if (group.members && group.members.some(member => member.userId === currentUserId)) return true
       return false
     })
     
@@ -135,7 +135,7 @@ Page({
     const group = e.currentTarget.dataset.group
     this.setData({
       selectedGroup: group,
-      selectedGroupId: group.id
+      selectedGroupId: group._id || group.id
     })
   },
 
@@ -283,31 +283,62 @@ Page({
     this.saveAlbumToStorage(albumData)
   },
 
-  // 保存相册到存储
+  // 保存相册到存储（云开发版本）
   saveAlbumToStorage: function (albumData) {
-    let albums = wx.getStorageSync('albums') || []
+    app.showLoading('保存中...')
     
-    if (this.data.isEdit) {
-      // 编辑模式：更新现有相册
-      const index = albums.findIndex(a => a.id === this.data.albumId)
-      if (index > -1) {
-        albums[index] = { ...albums[index], ...albumData }
-      }
-    } else {
-      // 创建模式：添加新相册
-      albums.push(albumData)
+    const action = this.data.isEdit ? 'update' : 'create'
+    const cloudData = {
+      action: action,
+      albumData: albumData
     }
     
-    // 保存到本地存储
-    wx.setStorageSync('albums', albums)
+    if (this.data.isEdit) {
+      cloudData.albumId = this.data.albumId
+    }
     
-    // 显示成功提示
-    app.showToast(this.data.isEdit ? '相册修改成功' : '相册创建成功')
-    
-    // 返回上一页
-    setTimeout(() => {
-      wx.navigateBack()
-    }, 1500)
+    // 调用云函数保存相册
+    wx.cloud.callFunction({
+      name: 'albumManager',
+      data: cloudData,
+      success: (res) => {
+        app.hideLoading()
+        if (res.result.success) {
+          const savedAlbum = res.result.data
+          
+          // 更新本地存储
+          let albums = wx.getStorageSync('albums') || []
+          
+          if (this.data.isEdit) {
+            // 编辑模式：更新现有相册
+            const index = albums.findIndex(a => a._id === this.data.albumId)
+            if (index > -1) {
+              albums[index] = savedAlbum
+            }
+          } else {
+            // 创建模式：添加新相册
+            albums.push(savedAlbum)
+          }
+          
+          wx.setStorageSync('albums', albums)
+          
+          // 显示成功提示
+          app.showToast(this.data.isEdit ? '相册修改成功' : '相册创建成功')
+          
+          // 返回上一页
+          setTimeout(() => {
+            wx.navigateBack()
+          }, 1500)
+        } else {
+          app.showToast('保存失败: ' + res.result.message)
+        }
+      },
+      fail: (error) => {
+        app.hideLoading()
+        console.error('保存相册失败:', error)
+        app.showToast('保存失败，请重试')
+      }
+    })
   },
 
   // 取消创建
