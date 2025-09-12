@@ -65,8 +65,8 @@ Page({
       repeat: false,
     })
 
-    // 重新加载群组转盘
-    if (that.data.groupId) {
+    // 重新加载群组转盘（但不重置编辑状态）
+    if (that.data.groupId && !that.data.showEditModal) {
       that.loadGroupWheel()
       that.updateMemberStatus()
     }
@@ -114,12 +114,14 @@ Page({
         hasWheel: true,
         awardsConfig: wheel // 直接设置转盘配置
       })
+      console.log('转盘加载完成，hasWheel:', true)
     } else {
       // 没有转盘，显示空状态
       this.setData({
         hasWheel: false,
         awardsConfig: null
       })
+      console.log('没有转盘，显示空状态，hasWheel:', false)
     }
   },
 
@@ -221,9 +223,12 @@ Page({
 
   // 编辑转盘内容
   editWheel: function() {
+    console.log('编辑转盘被点击')
     const currentConfig = this.data.awardsConfig
+    console.log('当前转盘配置:', currentConfig)
     if (currentConfig) {
       // 编辑现有转盘
+      console.log('编辑现有转盘')
       this.setData({
         showEditModal: true,
         editTitle: currentConfig.option,
@@ -231,12 +236,14 @@ Page({
       })
     } else {
       // 创建新转盘
+      console.log('创建新转盘')
       this.setData({
         showEditModal: true,
         editTitle: '',
         editOptions: ['选项1', '选项2']
       })
     }
+    console.log('设置后的状态:', this.data.showEditModal)
   },
 
   // 隐藏编辑弹窗

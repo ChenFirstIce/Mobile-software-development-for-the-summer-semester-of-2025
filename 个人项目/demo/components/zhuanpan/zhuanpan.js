@@ -117,9 +117,11 @@ Component({
    attached: function () {
       console.log('==========attached==========');
 
+      /*
       this.setData({
          awardsConfig: this.data.zhuanpanArr[0]
       })
+      */
       this.initAdards();
    },
 
