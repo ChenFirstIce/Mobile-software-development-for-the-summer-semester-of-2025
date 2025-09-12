@@ -6,7 +6,7 @@
       "list": [
         {
           "name": "pages/checkin/checkin",
-          "pathName": "pages/map/map",
+          "pathName": "pages/route/route",
           "query": "",
           "scene": null,
           "launchMode": "default"

@@ -90,6 +90,13 @@ Page({
     this.navigateToDefaultAlbum()
   },
 
+  // 快速路线规划
+  quickRoute: function () {
+    wx.navigateTo({
+      url: '/pages/route/route'
+    })
+  },
+
   // 导航到默认相册
   navigateToDefaultAlbum: function () {
     // 检查是否存在默认相册

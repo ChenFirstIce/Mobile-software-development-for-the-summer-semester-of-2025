@@ -1,0 +1,218 @@
+<!--pages/route/route.wxml-->
+<view class="container">
+  <!-- 地图容器 -->
+  <view class="map-container">
+    <map
+      id="routeMap"
+      class="route-map"
+      longitude="{{mapCenter.longitude}}"
+      latitude="{{mapCenter.latitude}}"
+      scale="{{mapScale}}"
+      markers="{{markers}}"
+      polyline="{{polylines}}"
+      show-location="{{true}}"
+      enable-3D="{{false}}"
+      show-compass="{{false}}"
+      enable-overlooking="{{false}}"
+      enable-zoom="{{true}}"
+      enable-scroll="{{true}}"
+      enable-rotate="{{false}}"
+      enable-satellite="{{false}}"
+      enable-traffic="{{false}}"
+      bindmarkertap="onMarkerTap"
+      bindtap="onMapTap"
+      bindregionchange="onRegionChange"
+    ></map>
+    
+    <!-- 地图控制按钮 -->
+    <view class="map-controls">
+      <view class="control-btn" bindtap="moveToLocation">
+        <text class="control-icon">📍</text>
+      </view>
+    </view>
+  </view>
+
+  <!-- 路线规划面板 -->
+  <view class="route-panel">
+    <!-- 起点终点输入 -->
+    <view class="input-section">
+      <view class="input-item">
+        <view class="input-label">起点</view>
+        <view class="input-content" bindtap="selectStartPoint">
+          <text class="input-text">{{startPoint.name || '请选择起点'}}</text>
+          <text class="input-icon">📍</text>
+        </view>
+      </view>
+      
+      <view class="input-item">
+        <view class="input-label">终点</view>
+        <view class="input-content" bindtap="selectEndPoint">
+          <text class="input-text">{{endPoint.name || '请选择终点'}}</text>
+          <text class="input-icon">🎯</text>
+        </view>
+      </view>
+      
+      <!-- 途径点（仅驾车模式显示） -->
+      <view class="waypoints-section" wx:if="{{selectedTransport === 'driving'}}">
+        <view class="section-title">途径点</view>
+        <view class="waypoints-list">
+          <view wx:for="{{waypoints}}" wx:key="index" class="waypoint-item">
+            <view class="waypoint-info" bindtap="selectWaypoint" data-index="{{index}}">
+              <text class="waypoint-text">{{item.name || '请选择途径点'}}</text>
+              <text class="waypoint-number">{{index + 1}}</text>
+            </view>
+            <view class="waypoint-remove" bindtap="removeWaypoint" data-index="{{index}}">
+              <text>✕</text>
+            </view>
+          </view>
+          
+          <view class="add-waypoint" bindtap="addWaypoint">
+            <text class="add-icon">+</text>
+            <text class="add-text">添加途径点</text>
+          </view>
+        </view>
+      </view>
+    </view>
+
+    <!-- 交通方式选择 -->
+    <view class="transport-section">
+      <view class="section-title">交通方式</view>
+      <view class="transport-options">
+        <view 
+          class="transport-item {{selectedTransport === 'driving' ? 'active' : ''}}"
+          bindtap="selectTransport"
+          data-type="driving"
+        >
+          <text class="transport-icon">🚗</text>
+          <text class="transport-name">驾车</text>
+        </view>
+        <view 
+          class="transport-item {{selectedTransport === 'walking' ? 'active' : ''}}"
+          bindtap="selectTransport"
+          data-type="walking"
+        >
+          <text class="transport-icon">🚶</text>
+          <text class="transport-name">步行</text>
+        </view>
+        <view 
+          class="transport-item {{selectedTransport === 'bicycling' ? 'active' : ''}}"
+          bindtap="selectTransport"
+          data-type="bicycling"
+        >
+          <text class="transport-icon">🚴</text>
+          <text class="transport-name">骑行</text>
+        </view>
+        <view 
+          class="transport-item {{selectedTransport === 'transit' ? 'active' : ''}}"
+          bindtap="selectTransport"
+          data-type="transit"
+        >
+          <text class="transport-icon">🚌</text>
+          <text class="transport-name">公交</text>
+        </view>
+      </view>
+    </view>
+
+    <!-- 路线信息 -->
+    <view class="route-info" wx:if="{{routeInfo}}">
+      <view class="info-row">
+        <view class="info-item">
+          <text class="info-label">距离</text>
+          <text class="info-value">{{routeInfo.distance}}</text>
+        </view>
+        <view class="info-item">
+          <text class="info-label">时间</text>
+          <text class="info-value">{{routeInfo.duration}}</text>
+        </view>
+      </view>
+      <view class="info-row" wx:if="{{routeInfo.cost || routeInfo.tolls}}">
+        <view class="info-item">
+          <text class="info-label">费用</text>
+          <text class="info-value">{{routeInfo.cost || '免费'}}</text>
+        </view>
+        <view class="info-item" wx:if="{{routeInfo.tolls > 0}}">
+          <text class="info-label">过路费</text>
+          <text class="info-value">¥{{routeInfo.tolls}}</text>
+        </view>
+      </view>
+      <view class="info-row" wx:if="{{routeInfo.tollDistance > 0}}">
+        <view class="info-item">
+          <text class="info-label">收费路段</text>
+          <text class="info-value">{{routeInfo.tollDistance}}米</text>
+        </view>
+      </view>
+    </view>
+
+    <!-- 操作按钮 -->
+    <view class="action-section">
+      <button class="action-btn secondary" bindtap="clearRoute">清除路线</button>
+      <button class="action-btn primary" bindtap="planRoute" disabled="{{!canPlanRoute}}">
+        开始规划
+      </button>
+    </view>
+  </view>
+
+  <!-- 地点搜索弹窗 -->
+  <view class="search-modal" wx:if="{{showSearchModal}}">
+    <view class="modal-content">
+      <view class="modal-header">
+        <text class="modal-title">
+          {{searchType === 'start' ? '选择起点' : (searchType === 'end' ? '选择终点' : '选择途径点' + (searchWaypointIndex !== null ? (searchWaypointIndex + 1) : ''))}}
+        </text>
+        <text class="close-btn" bindtap="closeSearchModal">✕</text>
+      </view>
+      
+      <view class="search-input">
+        <input 
+          placeholder="搜索地点" 
+          value="{{searchKeyword}}"
+          bindinput="onSearchInput"
+          bindfocus="onSearchFocus"
+          bindblur="onSearchBlur"
+          bindconfirm="searchLocation"
+        />
+        <button class="search-btn" bindtap="searchLocation">搜索</button>
+      </view>
+      
+      <!-- 快速选择 -->
+      <view class="quick-actions">
+        <button class="quick-btn" bindtap="useCurrentLocation">
+          <text class="quick-icon">📍</text>
+          <text>使用当前位置</text>
+        </button>
+      </view>
+      
+      <!-- 搜索建议 -->
+      <view class="search-suggestions" wx:if="{{showSuggestions && searchSuggestions.length > 0}}">
+        <view 
+          class="suggestion-item" 
+          wx:for="{{searchSuggestions}}" 
+          wx:key="id"
+          bindtap="selectSuggestion"
+          data-index="{{index}}"
+        >
+          <text class="suggestion-name">{{item.title}}</text>
+          <text class="suggestion-address">{{item.address}}</text>
+        </view>
+      </view>
+      
+      <!-- 搜索结果 -->
+      <view class="search-results" wx:if="{{!showSuggestions}}">
+        <view 
+          class="result-item" 
+          wx:for="{{searchResults}}" 
+          wx:key="id"
+          bindtap="selectLocation"
+          data-location="{{item}}"
+        >
+          <text class="result-name">{{item.title}}</text>
+          <text class="result-address">{{item.address}}</text>
+        </view>
+        
+        <view wx:if="{{searchResults.length === 0 && searchKeyword}}" class="no-results">
+          <text>未找到相关地点</text>
+        </view>
+      </view>
+    </view>
+  </view>
+</view>

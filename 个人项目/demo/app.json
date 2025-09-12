@@ -13,7 +13,8 @@
     "pages/profile/profile",
     "pages/tools/tools",
     "pages/tools/wheel/wheel",
-    "pages/tools/price/price"
+    "pages/tools/price/price",
+    "pages/route/route"
   ],
   "window": {
     "backgroundTextStyle": "light",

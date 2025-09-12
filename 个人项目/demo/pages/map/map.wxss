@@ -298,81 +298,77 @@
   color: #333;
 }
 
-.function-buttons {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 20rpx;
-  margin-bottom: 30rpx;
+/* 功能导航区域样式 */
+.feature-section {
+  margin-bottom: 40rpx;
 }
 
-.func-btn {
+.section-title {
+  margin-bottom: 20rpx;
+}
+
+.title-text {
+  display: block;
+  font-size: 32rpx;
+  font-weight: bold;
+  color: #333;
+  margin-bottom: 8rpx;
+}
+
+.title-desc {
+  display: block;
+  font-size: 24rpx;
+  color: #666;
+}
+
+.feature-cards {
   display: flex;
   flex-direction: column;
+  gap: 20rpx;
+}
+
+.feature-card {
+  display: flex;
   align-items: center;
-  justify-content: center;
   background: white;
-  border: none;
+  padding: 30rpx;
   border-radius: 16rpx;
-  padding: 40rpx 20rpx;
   box-shadow: 0 2rpx 12rpx rgba(0, 0, 0, 0.1);
   transition: all 0.3s ease;
 }
 
-.func-btn:active {
-  transform: scale(0.95);
+.feature-card:active {
+  transform: scale(0.98);
   box-shadow: 0 1rpx 6rpx rgba(0, 0, 0, 0.15);
 }
 
-.btn-icon {
+.card-icon {
   font-size: 48rpx;
-  margin-bottom: 16rpx;
+  margin-right: 20rpx;
+  width: 60rpx;
+  text-align: center;
 }
 
-.btn-text {
-  font-size: 28rpx;
+.card-content {
+  flex: 1;
+}
+
+.card-title {
+  display: block;
+  font-size: 30rpx;
+  font-weight: bold;
   color: #333;
-  font-weight: 500;
+  margin-bottom: 8rpx;
 }
 
-.checkin-btn {
-  background: linear-gradient(135deg, #4CAF50, #45a049);
-  color: white;
+.card-desc {
+  display: block;
+  font-size: 24rpx;
+  color: #666;
 }
 
-.checkin-btn .btn-text {
-  color: white;
-}
-
-.stats-btn {
-  background: linear-gradient(135deg, #9C27B0, #7B1FA2);
-  color: white;
-}
-
-.stats-btn .btn-text {
-  color: white;
-}
-
-/* 响应式设计 */
-@media (max-width: 750rpx) {
-  .map-container {
-    height: 500rpx;
-  }
-  
-  .function-buttons {
-    grid-template-columns: 1fr;
-  }
-  
-  .map-controls {
-    right: 20rpx;
-    top: 150rpx;
-  }
-  
-  .control-btn {
-    width: 60rpx;
-    height: 60rpx;
-  }
-  
-  .control-icon {
-    font-size: 24rpx;
-  }
+.card-arrow {
+  font-size: 32rpx;
+  color: #ccc;
+  font-weight: bold;
 }

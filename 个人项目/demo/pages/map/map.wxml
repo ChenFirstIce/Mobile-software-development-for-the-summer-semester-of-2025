@@ -77,9 +77,9 @@
       scale="{{scale}}"
       markers="{{markers}}"
       polyline="{{polyline}}"
+      circles="{{circles}}"
       show-location="true"
       bindmarkertap="onMarkerTap"
-      bindregionchange="onRegionChange"
       bindtap="onMapTap">
     </map>
   </view>
@@ -97,17 +97,35 @@
     </view>
   </view>
 
-  <!-- 功能按钮区域 -->
-  <view class="function-buttons">
-    <button class="func-btn checkin-btn" bindtap="showCheckinModal">
-      <text class="btn-icon">📍</text>
-      <text class="btn-text">打卡</text>
-    </button>
-    
-    
-    <button class="func-btn stats-btn" bindtap="navigateToStats">
-      <text class="btn-icon">📊</text>
-      <text class="btn-text">统计</text>
-    </button>
+  <!-- 功能导航区域 -->
+  <view class="feature-section">
+    <view class="feature-cards">
+      <view class="feature-card" bindtap="navigateToRoute">
+        <text class="card-icon">🗺️</text>
+        <view class="card-content">
+          <text class="card-title">路径规划</text>
+          <text class="card-desc">智能路线规划，多种交通方式</text>
+        </view>
+        <view class="card-arrow">></view>
+      </view>
+
+      <view class="feature-card" bindtap="showCheckinModal">
+        <text class="card-icon">📍</text>
+        <view class="card-content">
+          <text class="card-title">地图打卡</text>
+          <text class="card-desc">记录位置，分享足迹</text>
+        </view>
+        <view class="card-arrow">></view>
+      </view>
+
+      <view class="feature-card" bindtap="navigateToStats">
+        <text class="card-icon">📊</text>
+        <view class="card-content">
+          <text class="card-title">数据统计</text>
+          <text class="card-desc">查看活动数据，分析趋势</text>
+        </view>
+        <view class="card-arrow">></view>
+      </view>
+    </view>
   </view>
 </view>

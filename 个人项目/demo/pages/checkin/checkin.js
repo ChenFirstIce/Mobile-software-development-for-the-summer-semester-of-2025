@@ -408,9 +408,6 @@ Page({
       this.addPhotosToAlbum(checkinData)
     }
     
-    // 更新地图页面的打卡点
-    this.updateMapCheckinPoints(checkinData)
-    
     app.hideLoading()
     app.showToast('打卡成功！')
     
@@ -450,23 +447,4 @@ Page({
     }
   },
 
-  // 更新地图打卡点
-  updateMapCheckinPoints: function (checkinData) {
-    let checkinPoints = wx.getStorageSync('checkinPoints') || []
-    
-    const newPoint = {
-      id: checkinData.id,
-      longitude: checkinData.longitude,
-      latitude: checkinData.latitude,
-      content: checkinData.content,
-      address: checkinData.address,
-      photos: checkinData.photos,
-      tags: checkinData.tags,
-      createTime: checkinData.createTime,
-      privacy: checkinData.privacy
-    }
-    
-    checkinPoints.push(newPoint)
-    wx.setStorageSync('checkinPoints', checkinPoints)
-  },
 })

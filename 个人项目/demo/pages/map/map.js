@@ -9,7 +9,6 @@ Page({
     latitude: 39.908860,
     scale: 14,
     markers: [],
-    polyline: [],
     checkinPoints: [],
     enableMapTap: false, // 是否启用地图点击创建打卡点
     searchKeyword: '', // 搜索关键词
@@ -24,6 +23,7 @@ Page({
     showSuggestions: false, // 是否显示建议列表
     searchTimer: null, // 搜索防抖定时器
     MarkerId: null, // 标记的id
+    mapContext: null, // 地图上下文对象
   },
 
 /**********检查登录**********/
@@ -37,8 +37,16 @@ Page({
 
   // 登录成功后的回调
   onLoggedIn: function () {
+    this.createMapContext()
     this.initMap()
     this.loadCheckinPoints()
+  },
+
+  // 创建地图上下文
+  createMapContext: function () {
+    this.setData({
+      mapContext: wx.createMapContext('map', this)
+    })
   },
 
 /**********初始化地图**********/
@@ -90,6 +98,20 @@ Page({
         latitude: res.latitude,
         scale: 16
       })
+      
+      // 使用MapContext移动地图到当前位置
+      if (this.data.mapContext) {
+        this.data.mapContext.moveToLocation({
+          longitude: res.longitude,
+          latitude: res.latitude,
+          success: () => {
+            console.log('地图已移动到当前位置')
+          },
+          fail: (err) => {
+            console.error('移动地图失败:', err)
+          }
+        })
+      }
     }).catch(err => {
       app.showToast('获取位置失败')
     })
@@ -166,6 +188,15 @@ Page({
       this.setData({
         scale: scale + 1
       })
+      
+      // 使用MapContext获取当前地图信息并调整缩放
+      if (this.data.mapContext) {
+        this.data.mapContext.getScale({
+          success: (res) => {
+            console.log('当前缩放级别:', res.scale)
+          }
+        })
+      }
     }
   },
 
@@ -175,6 +206,15 @@ Page({
       this.setData({
         scale: scale - 1
       })
+      
+      // 使用MapContext获取当前地图信息并调整缩放
+      if (this.data.mapContext) {
+        this.data.mapContext.getScale({
+          success: (res) => {
+            console.log('当前缩放级别:', res.scale)
+          }
+        })
+      }
     }
   },
 
@@ -188,6 +228,12 @@ Page({
   navigateToStats: function () {
     wx.navigateTo({
       url: '/pages/statistics/statistics'
+    })
+  },
+
+  navigateToRoute: function () {
+    wx.navigateTo({
+      url: '/pages/route/route'
     })
   },
 
@@ -284,6 +330,8 @@ Page({
   addCheckinPoint: function (point) {
     let checkinPoints = this.data.checkinPoints
     checkinPoints.push(point)
+
+    console.log('addCheckinPoint', checkinPoints)
     
     wx.setStorageSync('checkinPoints', checkinPoints)
     
@@ -306,12 +354,14 @@ Page({
       clearTimeout(this.data.searchTimer)
     }
     
-    // 如果输入为空，隐藏建议列表
+    // 如果输入为空，隐藏建议列表并清除搜索结果
     if (!keyword.trim()) {
       this.setData({
         showSuggestions: false,
         suggestions: []
       })
+      // 清除之前的搜索结果
+      this.clearSearchMarkers()
       return
     }
     
@@ -493,6 +543,9 @@ Page({
     var category = this.data.selectedCategory
     var location = this.data.Location
 
+    // 清除之前的搜索结果
+    this.clearSearchMarkers()
+
     if(location.longitude === '' || location.latitude === ''){
       this.setData({
         Location: {
@@ -502,12 +555,10 @@ Page({
       })
       location = this.data.Location
     }
-
-    // 清除之前的搜索结果标记，只保留打卡点标记
-    this.clearSearchMarkers()
-
+    
+    console.log('circles', this.data.circles)
     // 绘制搜索范围圆圈
-    this.drawSearchCircle(location.latitude, location.longitude, 1000)
+    this.drawSearchCircle(location, 1000)
 
     wx.request({
       url: 'https://apis.map.qq.com/ws/place/v1/search',
@@ -539,6 +590,26 @@ Page({
     })
   },
 
+  // 绘制搜索范围圆圈（使用圆形蒙版）
+  drawSearchCircle: function (location, radius) {
+    // 创建圆形蒙版
+    const circle = {
+      latitude: location.latitude,
+      longitude: location.longitude,
+      radius: radius, // 半径（米）
+      color: '#4CAF50FF', // 边框颜色
+      fillColor: '#4CAF5020', // 填充颜色（半透明）
+      strokeWidth: 3, // 边框宽度
+      strokeColor: '#4CAF50FF' // 边框颜色
+    }
+    
+    this.setData({
+      circles: [circle]
+    })
+    
+    console.log('circles', this.data.circles)
+  },
+
   // 清除搜索结果标记，保留打卡点标记
   clearSearchMarkers: function () {
     // 只保留打卡点标记，过滤掉搜索结果标记
@@ -548,51 +619,11 @@ Page({
     
     this.setData({
       markers: checkinMarkers,
-      polyline: [] // 清除搜索圆圈
+      Location: {
+        longitude: '',
+        latitude: ''
+      },
+      circles: [] // 清除圆形蒙版
     })
-  },
-
-  // 绘制搜索范围圆圈
-  drawSearchCircle: function (centerLat, centerLng, radius) {
-    // 生成圆形边界点
-    const points = this.generateCirclePoints(centerLat, centerLng, radius)
-    
-    // 创建圆形折线
-    const circlePolyline = {
-      points: points,
-      color: '#4CAF50FF',
-      width: 3,
-      dottedLine: true,
-      arrowLine: false,
-      borderColor: '#4CAF50FF',
-      borderWidth: 1
-    }
-    
-    this.setData({
-      polyline: [circlePolyline]
-    })
-  },
-
-  // 生成圆形边界点
-  generateCirclePoints: function (centerLat, centerLng, radius) {
-    const points = []
-    const numPoints = 64 // 圆形精度，点数越多越圆滑
-    
-    // 将半径从米转换为经纬度度数（近似）
-    const latRadius = radius / 111000 // 1度纬度约等于111km
-    const lngRadius = radius / (111000 * Math.cos(centerLat * Math.PI / 180))
-    
-    for (let i = 0; i <= numPoints; i++) {
-      const angle = (2 * Math.PI * i) / numPoints
-      const lat = centerLat + latRadius * Math.cos(angle)
-      const lng = centerLng + lngRadius * Math.sin(angle)
-      
-      points.push({
-        latitude: lat,
-        longitude: lng
-      })
-    }
-    
-    return points
   }
 })

@@ -2,43 +2,47 @@
 <view class="container">
   <!-- 页面标题 -->
   <view class="page-header">
-    <text class="page-title">旅游统计</text>
-    <text class="page-subtitle">查看您的旅行足迹数据</text>
+    <text class="page-title">我的旅游统计</text>
+    <text class="page-subtitle">记录每一次旅行的美好</text>
+    <view class="activity-level">
+      <text class="level-text">{{activityLevel}}</text>
+      <text class="score-text">活跃度 {{activityScore}}分</text>
+    </view>
   </view>
 
   <!-- 统计概览 -->
   <view class="overview-section">
-    <view class="overview-title">📊 统计概览</view>
+    <view class="overview-title">📊 数据概览</view>
     <view class="overview-cards">
-      <view class="overview-card">
+      <view class="overview-card primary">
         <view class="card-icon">📍</view>
         <view class="card-content">
           <text class="card-value">{{totalCheckins}}</text>
-          <text class="card-label">总打卡次数</text>
+          <text class="card-label">打卡次数</text>
         </view>
       </view>
       
-      <view class="overview-card">
+      <view class="overview-card success">
         <view class="card-icon">📷</view>
         <view class="card-content">
           <text class="card-value">{{totalPhotos}}</text>
-          <text class="card-label">总照片数</text>
+          <text class="card-label">照片数量</text>
         </view>
       </view>
       
-      <view class="overview-card">
+      <view class="overview-card warning">
         <view class="card-icon">🗺️</view>
         <view class="card-content">
-          <text class="card-value">{{totalAlbums}}</text>
-          <text class="card-label">总相册数</text>
+          <text class="card-value">{{totalDistance}}</text>
+          <text class="card-label">行程公里</text>
         </view>
       </view>
       
-      <view class="overview-card">
-        <view class="card-icon">👥</view>
+      <view class="overview-card info">
+        <view class="card-icon">📅</view>
         <view class="card-content">
-          <text class="card-value">{{totalGroups}}</text>
-          <text class="card-label">总群组数</text>
+          <text class="card-value">{{totalDays}}</text>
+          <text class="card-label">活跃天数</text>
         </view>
       </view>
     </view>
@@ -68,6 +72,25 @@
     <view class="section-title">📍 打卡统计</view>
     
     <view class="stats-content">
+      <!-- 连续打卡 -->
+      <view class="streak-section">
+        <view class="streak-item">
+          <view class="streak-icon">🔥</view>
+          <view class="streak-info">
+            <text class="streak-label">当前连续</text>
+            <text class="streak-value">{{checkinStreak}}天</text>
+          </view>
+        </view>
+        <view class="streak-item">
+          <view class="streak-icon">🏆</view>
+          <view class="streak-info">
+            <text class="streak-label">最长连续</text>
+            <text class="streak-value">{{longestStreak}}天</text>
+          </view>
+        </view>
+      </view>
+      
+      <!-- 打卡趋势图 -->
       <view class="chart-container">
         <view class="chart-title">打卡趋势</view>
         <view class="trend-chart">
@@ -80,14 +103,11 @@
         </view>
       </view>
       
+      <!-- 打卡详情 -->
       <view class="stats-grid">
         <view class="stat-item">
           <text class="stat-label">最常打卡时间</text>
           <text class="stat-value">{{mostCheckinTime}}</text>
-        </view>
-        <view class="stat-item">
-          <text class="stat-label">最常打卡类型</text>
-          <text class="stat-value">{{mostCheckinType}}</text>
         </view>
         <view class="stat-item">
           <text class="stat-label">平均打卡间隔</text>
@@ -125,17 +145,6 @@
         </view>
       </view>
       
-      <view class="album-stats">
-        <view class="album-chart">
-          <view class="chart-title">相册分布</view>
-          <view class="pie-chart">
-            <view class="pie-segment" wx:for="{{albumDistribution}}" wx:key="name" 
-                  style="transform: rotate({{item.rotation}}deg); background: {{item.color}};">
-              <view class="segment-label">{{item.name}}</view>
-            </view>
-          </view>
-        </view>
-      </view>
     </view>
   </view>
 
@@ -155,37 +164,110 @@
             <view class="location-percentage">{{item.percentage}}%</view>
           </view>
         </view>
-        
-        <view class="location-map">
-          <view class="map-title">打卡热力图</view>
-          <view class="heatmap-container">
-            <view wx:if="{{heatmapPoints.length === 0}}" class="no-data">暂无打卡数据</view>
-            <view class="heatmap-point" wx:for="{{heatmapPoints}}" wx:key="id"
-                  style="opacity: {{item.intensity}};"
-                  data-longitude="{{item.longitude}}"
-                  data-latitude="{{item.latitude}}"
-                  data-address="{{item.address}}"
-                  data-count="{{item.count}}">
-              <view class="point-tooltip">{{item.address}} ({{item.count}}次)</view>
-            </view>
+      </view>
+    </view>
+  </view>
+
+  <!-- 群组统计 -->
+  <view class="stats-section">
+    <view class="section-title">👥 群组统计</view>
+    
+    <view class="stats-content">
+      <view class="group-stats">
+        <view class="group-stat-item">
+          <view class="stat-icon">📊</view>
+          <view class="stat-info">
+            <text class="stat-label">总群组数</text>
+            <text class="stat-value">{{groupStats.total}}</text>
+          </view>
+        </view>
+        <view class="group-stat-item">
+          <view class="stat-icon">➕</view>
+          <view class="stat-info">
+            <text class="stat-label">创建群组</text>
+            <text class="stat-value">{{groupStats.created}}</text>
+          </view>
+        </view>
+        <view class="group-stat-item">
+          <view class="stat-icon">👤</view>
+          <view class="stat-info">
+            <text class="stat-label">加入群组</text>
+            <text class="stat-value">{{groupStats.joined}}</text>
+          </view>
+        </view>
+        <view class="group-stat-item">
+          <view class="stat-icon">🔥</view>
+          <view class="stat-info">
+            <text class="stat-label">活跃群组</text>
+            <text class="stat-value">{{groupStats.active}}</text>
           </view>
         </view>
       </view>
     </view>
   </view>
 
-  <!-- 标签统计 -->
+  <!-- 活跃度统计 -->
   <view class="stats-section">
-    <view class="section-title">🏷️ 标签统计</view>
+    <view class="section-title">📈 活跃度分析</view>
     
     <view class="stats-content">
-      <view class="tag-cloud">
-        <view class="tag-item" wx:for="{{tagStats}}" wx:key="name" 
-              style="font-size: {{item.size}}rpx; opacity: {{item.opacity}};">
-          {{item.name}} ({{item.count}})
+      <!-- 周活跃度 -->
+      <view class="activity-chart">
+        <view class="chart-title">本周活跃度</view>
+        <view class="weekly-chart">
+          <view class="day-item" wx:for="{{weeklyActivity}}" wx:key="date">
+            <view class="day-bar" style="height: {{item.total * 10}}rpx;"></view>
+            <text class="day-label">{{item.date}}</text>
+            <text class="day-count">{{item.total}}</text>
+          </view>
+        </view>
+      </view>
+      
+      <!-- 活跃度等级 -->
+      <view class="activity-level-card">
+        <view class="level-icon">⭐</view>
+        <view class="level-info">
+          <text class="level-title">{{activityLevel}}</text>
+          <text class="level-desc">活跃度 {{activityScore}}分</text>
+        </view>
+        <view class="level-progress">
+          <view class="progress-bar">
+            <view class="progress-fill" style="width: {{activityScore / 10}}%;"></view>
+          </view>
+          <text class="progress-text">{{activityScore}}/1000</text>
         </view>
       </view>
     </view>
+  </view>
+
+  <!-- 成就系统 -->
+  <view class="stats-section">
+    <view class="section-title">🏆 成就徽章</view>
+    
+    <view class="stats-content">
+      <view class="achievements-grid">
+        <view class="achievement-item" wx:for="{{achievements}}" wx:key="name">
+          <view class="achievement-icon">{{item.icon}}</view>
+          <view class="achievement-info">
+            <text class="achievement-name">{{item.name}}</text>
+            <text class="achievement-desc">{{item.desc}}</text>
+          </view>
+          <view class="achievement-status unlocked">已获得</view>
+        </view>
+        
+        <view wx:if="{{achievements.length === 0}}" class="no-achievements">
+          <text class="no-achievements-text">暂无成就，继续努力吧！</text>
+        </view>
+      </view>
+    </view>
+  </view>
+
+  <!-- 分享按钮 -->
+  <view class="share-section">
+    <button class="share-btn" open-type="share">
+      <text class="share-icon">📤</text>
+      <text class="share-text">分享统计报告</text>
+    </button>
   </view>
 
 </view>
