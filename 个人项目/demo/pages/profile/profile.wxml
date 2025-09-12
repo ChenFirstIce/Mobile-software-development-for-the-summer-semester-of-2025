@@ -95,8 +95,9 @@
         <view class="login-content">
           <image class="login-avatar" src="/images/default-avatar.png"></image>
           <text class="login-title">欢迎使用旅冰GO</text>
-          <text class="login-desc">登录后可以使用完整功能，包括：</text>
+          <text class="login-desc">授权登录后将直接使用您的微信头像和昵称，并可以使用完整功能：</text>
           <view class="login-features">
+            <text class="feature-item">• 使用微信头像和昵称</text>
             <text class="feature-item">• 创建和管理群组</text>
             <text class="feature-item">• 使用小工具功能</text>
             <text class="feature-item">• 同步数据到云端</text>

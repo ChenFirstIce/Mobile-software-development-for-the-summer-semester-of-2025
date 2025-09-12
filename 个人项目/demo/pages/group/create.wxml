@@ -31,7 +31,7 @@
     <!-- 群组设置 -->
     <view class="form-section">
       <view class="section-title">
-        <text class="title-icon">⚙️</text>
+        <image class="title-icon" src="/images/settings.png"></image>
         <text class="title-text">群组设置</text>
       </view>
       
@@ -58,14 +58,14 @@
     <!-- 功能设置 -->
     <view class="form-section">
       <view class="section-title">
-        <text class="title-icon">🎯</text>
+        <image class="title-icon" src="/images/tool-box.png"></image>
         <text class="title-text">功能设置</text>
       </view>
       
       <view class="feature-list">
         <view class="feature-item">
           <view class="feature-info">
-            <text class="feature-icon">🎲</text>
+            <image class="feature-icon" src="/images/wheel-of-fortune.png"></image>
             <view class="feature-details">
               <text class="feature-name">随机功能</text>
               <text class="feature-desc">创建转盘，随机选择目的地或活动</text>
@@ -76,7 +76,7 @@
         
         <view class="feature-item">
           <view class="feature-info">
-            <text class="feature-icon">💰</text>
+            <image class="feature-icon" src="/images/money-bag.png"></image>
             <view class="feature-details">
               <text class="feature-name">价格投票</text>
               <text class="feature-desc">匿名投票，预测最低价和最高价</text>

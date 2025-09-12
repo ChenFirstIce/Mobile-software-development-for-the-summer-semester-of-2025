@@ -48,7 +48,8 @@
 }
 
 .title-icon {
-  font-size: 36rpx;
+  width: 36rpx;
+  height: 36rpx;
 }
 
 .title-text {

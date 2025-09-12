@@ -68,12 +68,17 @@
     
     <!-- 网格视图 -->
     <view class="photos-grid" wx:if="{{viewMode === 'grid' && photos.length > 0}}">
-      <view class="photo-item" wx:for="{{photos}}" wx:key="id" bindtap="viewPhoto" data-id="{{item.id}}">
+      <view class="photo-item" wx:for="{{photos}}" wx:key="id" bindtap="{{isBatchMode ? 'togglePhotoSelection' : 'viewPhoto'}}" data-id="{{item._id || item.id}}">
         <image src="{{item.url}}" mode="aspectFill" class="photo-image"></image>
         <view class="photo-overlay">
-          <view class="photo-actions">
-            <view class="action-icon" catchtap="deletePhoto" data-id="{{item.id}}">🗑️</view>
-            <view class="action-icon" catchtap="downloadPhoto" data-id="{{item.id}}">⬇️</view>
+          <view class="photo-actions" wx:if="{{!isBatchMode}}">
+            <view class="action-icon" catchtap="deletePhoto" data-id="{{item._id || item.id}}">🗑️</view>
+            <view class="action-icon" catchtap="downloadPhoto" data-id="{{item._id || item.id}}">⬇️</view>
+          </view>
+          <view class="photo-selection" wx:if="{{isBatchMode}}">
+            <view class="selection-checkbox {{selectedPhotos.indexOf(item._id || item.id) > -1 ? 'selected' : ''}}">
+              {{selectedPhotos.indexOf(item._id || item.id) > -1 ? '✓' : ''}}
+            </view>
           </view>
         </view>
         <view class="photo-info">
@@ -84,16 +89,21 @@
     
     <!-- 列表视图 -->
     <view class="photos-list" wx:if="{{viewMode === 'list' && photos.length > 0}}">
-      <view class="photo-list-item" wx:for="{{photos}}" wx:key="id" bindtap="viewPhoto" data-id="{{item.id}}">
+      <view class="photo-list-item" wx:for="{{photos}}" wx:key="id" bindtap="{{isBatchMode ? 'togglePhotoSelection' : 'viewPhoto'}}" data-id="{{item._id || item.id}}">
         <image src="{{item.url}}" mode="aspectFill" class="list-photo"></image>
         <view class="list-photo-info">
           <text class="list-photo-name">{{item.name || '未命名照片'}}</text>
           <text class="list-photo-time">{{item.uploadTime}}</text>
           <text class="list-photo-desc">{{item.description || '暂无描述'}}</text>
         </view>
-        <view class="list-photo-actions">
-          <view class="action-icon" catchtap="deletePhoto" data-id="{{item.id}}">🗑️</view>
-          <view class="action-icon" catchtap="downloadPhoto" data-id="{{item.id}}">⬇️</view>
+        <view class="list-photo-actions" wx:if="{{!isBatchMode}}">
+          <view class="action-icon" catchtap="deletePhoto" data-id="{{item._id || item.id}}">🗑️</view>
+          <view class="action-icon" catchtap="downloadPhoto" data-id="{{item._id || item.id}}">⬇️</view>
+        </view>
+        <view class="list-photo-selection" wx:if="{{isBatchMode}}">
+          <view class="selection-checkbox {{selectedPhotos.indexOf(item._id || item.id) > -1 ? 'selected' : ''}}">
+            {{selectedPhotos.indexOf(item._id || item.id) > -1 ? '✓' : ''}}
+          </view>
         </view>
       </view>
     </view>
@@ -125,7 +135,8 @@
 
   <!-- 浮动操作按钮 -->
   <view class="fab" bindtap="toggleBatchMode">
-    <text class="fab-icon">{{isBatchMode ? '✕' : '⚙️'}}</text>
+    <image wx:if="{{!isBatchMode}}" class="fab-icon" src="/images/settings.png"></image>
+    <text wx:else class="fab-icon">✕</text>
   </view>
 
   <!-- 照片详情弹窗 -->
@@ -137,7 +148,7 @@
       </view>
       
       <view class="modal-body">
-        <image src="{{selectedPhoto.url}}" mode="aspectFit" class="modal-photo"></image>
+        <image src="{{selectedPhoto.fileId}}" mode="aspectFit" class="modal-photo"></image>
         
         <view class="photo-details">
           <view class="detail-item">
@@ -146,22 +157,17 @@
           </view>
           <view class="detail-item">
             <text class="detail-label">上传时间：</text>
-            <text class="detail-value">{{selectedPhoto.uploadTime}}</text>
+            <text class="detail-value">{{selectedPhoto.createTime}}</text>
           </view>
-          <view class="detail-item" wx:if="{{selectedPhoto.description}}">
+          <view class="detail-item">
             <text class="detail-label">描述：</text>
-            <text class="detail-value">{{selectedPhoto.description}}</text>
-          </view>
-          <view class="detail-item" wx:if="{{selectedPhoto.location}}">
-            <text class="detail-label">位置：</text>
-            <text class="detail-value">{{selectedPhoto.location}}</text>
+            <text class="detail-value">{{selectedPhoto.description || '无'}}</text>
           </view>
         </view>
       </view>
       
       <view class="modal-footer">
         <button class="btn-secondary" bindtap="hidePhotoModal">关闭</button>
-        <button class="btn-primary" bindtap="editPhoto">编辑</button>
       </view>
     </view>
   </view>

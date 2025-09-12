@@ -40,7 +40,7 @@
     </view>
     <view class="filter-actions">
       <button class="filter-btn" bindtap="showFilter">
-        <text class="filter-icon">🔍</text>
+        <image class="filter-icon" src="/images/search.png"></image>
         筛选
       </button>
     </view>

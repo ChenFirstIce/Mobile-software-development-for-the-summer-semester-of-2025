@@ -44,8 +44,8 @@
       {
         "pagePath": "pages/profile/profile",
         "text": "个人",
-        "iconPath": "images/default-avatar.png",
-        "selectedIconPath": "images/default-avatar.png"
+        "iconPath": "images/account.png",
+        "selectedIconPath": "images/account.png"
       },
       {
         "pagePath": "pages/map/map",

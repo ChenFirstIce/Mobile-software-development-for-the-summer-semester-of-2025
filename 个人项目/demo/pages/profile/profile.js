@@ -70,7 +70,7 @@ Page({
       .catch((error) => {
         wx.hideLoading()
         console.error('登录失败:', error)
-        app.showToast('登录失败，请重试')
+        app.showToast(error.message || '登录失败，请重试')
       })
   },
 

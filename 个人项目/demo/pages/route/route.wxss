@@ -111,7 +111,8 @@ page {
 }
 
 .input-icon {
-  font-size: 32rpx;
+  width: 32rpx;
+  height: 32rpx;
   margin-left: 10rpx;
 }
 

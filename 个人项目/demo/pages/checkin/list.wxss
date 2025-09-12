@@ -104,7 +104,8 @@
 }
 
 .filter-icon {
-  font-size: 20rpx;
+  width: 20rpx;
+  height: 20rpx;
 }
 
 /* 打卡列表 */

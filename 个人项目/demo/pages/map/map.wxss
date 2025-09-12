@@ -240,8 +240,8 @@
 }
 
 .search-icon {
-  font-size: 32rpx;
-  color: #4CAF50;
+  width: 32rpx;
+  height: 32rpx;
   padding: 10rpx;
   cursor: pointer;
   transition: all 0.3s ease;
@@ -249,7 +249,6 @@
 
 .search-icon:active {
   transform: scale(0.9);
-  color: #45a049;
 }
 
 .map-container {

@@ -11,6 +11,8 @@ exports.main = async (event, context) => {
   const { action, albumData, albumId, groupId } = event
   const { OPENID } = cloud.getWXContext()
   
+  console.log('云函数接收到的参数:', { action, albumId, albumData: albumData ? '有数据' : '无数据' })
+  
   try {
     switch (action) {
       case 'create':
@@ -67,9 +69,12 @@ async function createAlbum(albumData, openid) {
 
 // 更新相册
 async function updateAlbum(albumId, albumData, openid) {
+  console.log('开始更新相册:', { albumId, openid, albumData })
+  
   // 检查权限
   const album = await db.collection('albums').doc(albumId).get()
   if (!album.data) {
+    console.log('相册不存在:', albumId)
     return {
       success: false,
       message: '相册不存在'
@@ -79,25 +84,35 @@ async function updateAlbum(albumId, albumData, openid) {
   // 检查编辑权限
   if (album.data.creatorId !== openid && 
       (!album.data.permissions || !album.data.permissions.edit)) {
+    console.log('无编辑权限:', { creatorId: album.data.creatorId, openid })
     return {
       success: false,
       message: '无编辑权限'
     }
   }
   
-  const updateData = {
-    ...albumData,
-    updateTime: new Date()
-  }
+  // 过滤掉不能更新的字段
+  const { _id, id, createTime, creatorId, creatorName, ...updateData } = albumData
+  
+  // 添加更新时间
+  updateData.updateTime = new Date()
   
   await db.collection('albums').doc(albumId).update({
     data: updateData
   })
   
-  return {
+  // 获取更新后的相册数据
+  const updatedAlbum = await db.collection('albums').doc(albumId).get()
+  console.log('更新后的相册数据:', updatedAlbum.data)
+  
+  const result = {
     success: true,
+    data: updatedAlbum.data,
     message: '相册更新成功'
   }
+  
+  console.log('返回结果:', result)
+  return result
 }
 
 // 删除相册
@@ -128,11 +143,14 @@ async function deleteAlbum(albumId, openid) {
   }).get()
   
   if (photos.data.length > 0) {
-    const batch = db.batch()
-    photos.data.forEach(photo => {
-      batch.delete(db.collection('photos').doc(photo._id))
-    })
-    await batch.commit()
+    // 逐个删除照片（避免使用batch）
+    for (const photo of photos.data) {
+      try {
+        await db.collection('photos').doc(photo._id).remove()
+      } catch (error) {
+        console.error('删除照片失败:', photo._id, error)
+      }
+    }
   }
   
   return {

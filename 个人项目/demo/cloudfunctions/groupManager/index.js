@@ -165,11 +165,14 @@ async function deleteGroup(groupId, openid) {
   }).get()
   
   if (albums.data.length > 0) {
-    const batch = db.batch()
-    albums.data.forEach(album => {
-      batch.delete(db.collection('albums').doc(album._id))
-    })
-    await batch.commit()
+    // 逐个删除相册（避免使用batch）
+    for (const album of albums.data) {
+      try {
+        await db.collection('albums').doc(album._id).remove()
+      } catch (error) {
+        console.error('删除相册失败:', album._id, error)
+      }
+    }
   }
   
   // 删除群组相关的照片
@@ -178,11 +181,14 @@ async function deleteGroup(groupId, openid) {
   }).get()
   
   if (photos.data.length > 0) {
-    const batch = db.batch()
-    photos.data.forEach(photo => {
-      batch.delete(db.collection('photos').doc(photo._id))
-    })
-    await batch.commit()
+    // 逐个删除照片（避免使用batch）
+    for (const photo of photos.data) {
+      try {
+        await db.collection('photos').doc(photo._id).remove()
+      } catch (error) {
+        console.error('删除照片失败:', photo._id, error)
+      }
+    }
   }
   
   return {

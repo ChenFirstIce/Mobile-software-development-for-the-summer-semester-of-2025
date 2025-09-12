@@ -398,7 +398,8 @@
 }
 
 .fab-icon {
-  font-size: 36rpx;
+  width: 36rpx;
+  height: 36rpx;
   color: white;
   font-weight: bold;
 }
@@ -517,4 +518,45 @@
     width: 95%;
     margin: 20rpx;
   }
+}
+
+/* 批量选择样式 */
+.photo-selection {
+  position: absolute;
+  top: 10rpx;
+  right: 10rpx;
+  z-index: 10;
+}
+
+.selection-checkbox {
+  width: 40rpx;
+  height: 40rpx;
+  border: 2rpx solid #fff;
+  border-radius: 50%;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #fff;
+  font-size: 24rpx;
+  font-weight: bold;
+}
+
+.selection-checkbox.selected {
+  background: #007aff;
+  border-color: #007aff;
+}
+
+.list-photo-selection {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 60rpx;
+  height: 60rpx;
+}
+
+.list-photo-selection .selection-checkbox {
+  width: 36rpx;
+  height: 36rpx;
+  font-size: 20rpx;
 }

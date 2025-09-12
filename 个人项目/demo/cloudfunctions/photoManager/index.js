@@ -263,12 +263,14 @@ async function batchDeletePhotos(photoIds, openid) {
     }
   }
   
-  // 批量删除
-  const batch = db.batch()
-  photos.data.forEach(photo => {
-    batch.delete(db.collection('photos').doc(photo._id))
-  })
-  await batch.commit()
+  // 批量删除（逐个删除避免使用batch）
+  for (const photo of photos.data) {
+    try {
+      await db.collection('photos').doc(photo._id).remove()
+    } catch (error) {
+      console.error('删除照片失败:', photo._id, error)
+    }
+  }
   
   // 更新相册照片数量
   const albumIds = [...new Set(photos.data.map(photo => photo.albumId))]

@@ -48,7 +48,7 @@
         <view class="input-label">终点</view>
         <view class="input-content" bindtap="selectEndPoint">
           <text class="input-text">{{endPoint.name || '请选择终点'}}</text>
-          <text class="input-icon">🎯</text>
+          <image class="input-icon" src="/images/tool-box.png"></image>
         </view>
       </view>
       

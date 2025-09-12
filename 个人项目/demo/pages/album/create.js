@@ -258,7 +258,6 @@ Page({
     }
 
     const albumData = {
-      id: this.data.isEdit ? this.data.albumId : Date.now().toString(),
       name: this.data.albumName.trim(),
       description: this.data.albumDesc.trim(),
       type: this.data.albumType,
@@ -271,7 +270,7 @@ Page({
         edit: this.data.allowEdit,
         upload: this.data.allowUpload
       },
-      creatorId: app.globalData.userInfo?.id || 'unknown',
+      creatorId: app.globalData.userInfo?._id || app.globalData.userInfo?.id || 'unknown',
       creatorName: app.globalData.userInfo?.nickName || '未知用户',
       createTime: this.data.isEdit ? this.data.createTime : new Date().toLocaleString(),
       updateTime: new Date().toLocaleString(),
@@ -280,11 +279,18 @@ Page({
       status: 'active'
     }
 
+    // 只在创建时添加ID字段
+    if (!this.data.isEdit) {
+      albumData._id = Date.now().toString()
+      albumData.id = Date.now().toString() // 保持兼容性
+    }
+
     this.saveAlbumToStorage(albumData)
   },
 
   // 保存相册到存储（云开发版本）
   saveAlbumToStorage: function (albumData) {
+    console.log('开始保存相册到云存储...')
     app.showLoading('保存中...')
     
     const action = this.data.isEdit ? 'update' : 'create'
@@ -297,48 +303,98 @@ Page({
       cloudData.albumId = this.data.albumId
     }
     
-    // 调用云函数保存相册
+    console.log('发送到云函数的参数:', cloudData)
+    console.log('编辑模式:', this.data.isEdit)
+    console.log('相册ID:', this.data.albumId)
+    
+    // 先尝试保存到云存储
     wx.cloud.callFunction({
       name: 'albumManager',
       data: cloudData,
       success: (res) => {
-        app.hideLoading()
-        if (res.result.success) {
+        console.log('云函数保存相册结果:', res)
+        
+        if (res.result && res.result.success) {
           const savedAlbum = res.result.data
+          console.log('相册保存到云存储成功:', savedAlbum)
+          console.log('云函数返回的完整结果:', res.result)
           
-          // 更新本地存储
-          let albums = wx.getStorageSync('albums') || []
-          
-          if (this.data.isEdit) {
-            // 编辑模式：更新现有相册
-            const index = albums.findIndex(a => a._id === this.data.albumId)
-            if (index > -1) {
-              albums[index] = savedAlbum
-            }
+          if (savedAlbum) {
+            // 更新本地存储zz
+            this.updateLocalStorage(savedAlbum)
           } else {
-            // 创建模式：添加新相册
-            albums.push(savedAlbum)
+            console.error('云函数返回的数据为空')
+            app.showToast('保存失败：数据为空')
+            return
           }
           
-          wx.setStorageSync('albums', albums)
-          
-          // 显示成功提示
+          app.hideLoading()
           app.showToast(this.data.isEdit ? '相册修改成功' : '相册创建成功')
           
-          // 返回上一页
           setTimeout(() => {
             wx.navigateBack()
           }, 1500)
         } else {
-          app.showToast('保存失败: ' + res.result.message)
+          console.log('云存储保存失败:', res.result?.message)
+          app.hideLoading()
+          app.showToast('云存储保存失败，保存到本地')
+          // 降级到本地保存
+          this.saveAlbumToLocal(albumData)
         }
       },
       fail: (error) => {
+        console.error('云函数调用失败:', error)
         app.hideLoading()
-        console.error('保存相册失败:', error)
-        app.showToast('保存失败，请重试')
+        app.showToast('网络错误，保存到本地')
+        // 降级到本地保存
+        this.saveAlbumToLocal(albumData)
       }
     })
+  },
+
+  // 更新本地存储
+  updateLocalStorage: function (savedAlbum) {
+    let albums = wx.getStorageSync('albums') || []
+    
+    if (this.data.isEdit) {
+      // 编辑模式：更新现有相册
+      const index = albums.findIndex(a => a._id === this.data.albumId || a.id === this.data.albumId)
+      if (index > -1) {
+        albums[index] = savedAlbum
+      }
+    } else {
+      // 创建模式：添加新相册
+      albums.push(savedAlbum)
+    }
+    
+    wx.setStorageSync('albums', albums)
+    console.log('本地存储已更新')
+  },
+
+  // 保存相册到本地存储（降级方案）
+  saveAlbumToLocal: function (albumData) {
+    console.log('保存相册到本地存储...')
+    
+    let albums = wx.getStorageSync('albums') || []
+    
+    if (this.data.isEdit) {
+      // 编辑模式：更新现有相册
+      const index = albums.findIndex(a => a._id === this.data.albumId || a.id === this.data.albumId)
+      if (index > -1) {
+        albums[index] = { ...albums[index], ...albumData }
+      }
+    } else {
+      // 创建模式：添加新相册
+      albums.push(albumData)
+    }
+    
+    wx.setStorageSync('albums', albums)
+    
+    app.showToast(this.data.isEdit ? '相册已更新（本地）' : '相册已创建（本地）')
+    
+    setTimeout(() => {
+      wx.navigateBack()
+    }, 1500)
   },
 
   // 取消创建

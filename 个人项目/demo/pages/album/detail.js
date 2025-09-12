@@ -15,6 +15,16 @@ Page({
   },
 
   onLoad: function (options) {
+    // 检查登录状态
+    if (!app.globalData.isLoggedIn || !app.globalData.userInfo) {
+      console.log('用户未登录，跳转到登录页面')
+      app.showToast('请先登录')
+      setTimeout(() => {
+        wx.navigateBack()
+      }, 1500)
+      return
+    }
+    
     if (options.id) {
       this.loadAlbumData(options.id)
       this.loadPhotos(options.id)
@@ -29,18 +39,32 @@ Page({
   },
 
   onShow: function () {
-    // 页面显示时刷新数据
-    if (this.data.album._id || this.data.album.id) {
+    // 页面显示时刷新数据（避免重复加载）
+    if ((this.data.album._id || this.data.album.id) && this.data.photos.length === 0) {
       this.loadPhotos(this.data.album._id || this.data.album.id)
     }
   },
 
   // 加载相册数据
   loadAlbumData: function (albumId) {
+    console.log('加载相册数据，相册ID:', albumId)
     const albums = wx.getStorageSync('albums') || []
-    const album = albums.find(a => a.id === albumId)
+    console.log('本地存储中的相册数量:', albums.length)
+    
+    // 尝试多种ID匹配方式
+    let album = albums.find(a => a.id === albumId) || 
+                albums.find(a => a._id === albumId) ||
+                albums.find(a => a.id === albumId.toString()) ||
+                albums.find(a => a._id === albumId.toString())
+    
+    console.log('找到的相册:', album)
     
     if (album) {
+      // 确保相册有正确的ID格式
+      if (!album._id && album.id) {
+        album._id = album.id
+      }
+      
       // 检查编辑权限
       const canEdit = this.checkEditPermission(album)
       
@@ -49,6 +73,7 @@ Page({
         canEdit: canEdit
       })
     } else {
+      console.error('相册不存在，相册ID:', albumId)
       app.showToast('相册不存在')
       wx.navigateBack()
     }
@@ -56,12 +81,26 @@ Page({
 
   // 检查编辑权限
   checkEditPermission: function (album) {
-    const currentUserId = app.globalData.userInfo?.id
+    const currentUserId = app.globalData.userInfo?._openid
+    console.log('==================')
     
-    if (!currentUserId) return false
+    if (!currentUserId) {
+      console.log('用户未登录，无编辑权限')
+      return false
+    }
     
-    // 创建者可以编辑
-    if (album.creatorId === currentUserId) return true
+    // 个人相册：创建者可以编辑
+    if (album.type === 'personal' || !album.type) {
+      const canEdit = album.creatorId === currentUserId
+      console.log('个人相册编辑权限:', canEdit)
+      return canEdit
+    }
+    
+    // 创建者可以编辑（所有类型相册）
+    if (album.creatorId === currentUserId) {
+      console.log('创建者编辑权限: true')
+      return true
+    }
     
     // 共有相册且用户有编辑权限
     if (album.type === 'shared' && album.permissions && album.permissions.edit) {
@@ -70,19 +109,22 @@ Page({
         const groups = wx.getStorageSync('groups') || []
         const group = groups.find(g => g.id === album.groupId)
         if (group && group.members && group.members.includes(currentUserId)) {
+          console.log('群组成员编辑权限: true')
           return true
         }
       }
     }
     
+    console.log('无编辑权限')
     return false
   },
 
   // 加载照片数据（云开发版本）
   loadPhotos: function (albumId) {
+    console.log('开始从云存储加载照片，相册ID:', albumId)
     app.showLoading('加载照片中...')
     
-    // 调用云函数获取照片列表
+    // 先尝试从云存储获取
     wx.cloud.callFunction({
       name: 'photoManager',
       data: {
@@ -90,33 +132,44 @@ Page({
         albumId: albumId
       },
       success: (res) => {
-        app.hideLoading()
-        if (res.result.success) {
-          const photos = res.result.data
+        console.log('云函数调用成功:', res)
+        
+        if (res.result && res.result.success) {
+          const cloudPhotos = res.result.data || []
+          console.log('从云存储获取到照片数量:', cloudPhotos.length)
           
           // 更新本地存储
           let allPhotos = wx.getStorageSync('photos') || []
           // 移除该相册的旧照片
           allPhotos = allPhotos.filter(photo => photo.albumId !== albumId)
           // 添加新照片
-          allPhotos = allPhotos.concat(photos)
+          allPhotos = allPhotos.concat(cloudPhotos)
           wx.setStorageSync('photos', allPhotos)
           
           this.setData({
-            photos: photos
+            photos: cloudPhotos
           })
           
           // 更新相册照片数量
-          this.updateAlbumPhotoCount(albumId, photos.length)
+          this.updateAlbumPhotoCount(albumId, cloudPhotos.length)
+          app.hideLoading()
+          
+          if (cloudPhotos.length > 0) {
+            app.showToast(`已加载 ${cloudPhotos.length} 张照片`)
+          } else {
+            app.showToast('相册暂无照片')
+          }
         } else {
-          app.showToast('加载照片失败: ' + res.result.message)
+          console.log('云函数返回失败:', res.result?.message)
+          app.hideLoading()
+          app.showToast('云存储加载失败，使用本地数据')
           // 降级到本地存储
           this.loadPhotosFromLocal(albumId)
         }
       },
       fail: (error) => {
-        app.hideLoading()
         console.error('云函数调用失败:', error)
+        app.hideLoading()
         app.showToast('网络错误，使用本地数据')
         // 降级到本地存储
         this.loadPhotosFromLocal(albumId)
@@ -126,8 +179,25 @@ Page({
 
   // 从本地存储加载照片（降级方案）
   loadPhotosFromLocal: function (albumId) {
+    console.log('从本地存储加载照片，相册ID:', albumId)
     const allPhotos = wx.getStorageSync('photos') || []
-    const photos = allPhotos.filter(photo => photo.albumId === albumId)
+    console.log('本地存储中的照片总数:', allPhotos.length)
+    
+    // 尝试多种ID匹配方式
+    const photos = allPhotos.filter(photo => 
+      photo.albumId === albumId || 
+      photo.albumId === albumId.toString() ||
+      photo.albumId === this.data.album?.id ||
+      photo.albumId === this.data.album?._id
+    )
+    console.log('匹配相册ID的照片数量:', photos.length)
+    
+    // 如果没有照片，创建一些测试数据用于调试
+    if (photos.length === 0 && albumId) {
+      console.log('没有找到照片，创建测试数据')
+      this.createTestPhotos(albumId)
+      return
+    }
     
     this.setData({
       photos: photos
@@ -135,6 +205,42 @@ Page({
     
     // 更新相册照片数量
     this.updateAlbumPhotoCount(albumId, photos.length)
+  },
+
+  // 创建测试照片数据
+  createTestPhotos: function (albumId) {
+    const testPhotos = [
+      {
+        id: 'test1_' + Date.now(),
+        albumId: albumId,
+        url: '/images/default-avatar.png',
+        name: '测试照片1',
+        description: '这是一张测试照片',
+        uploadTime: '2024-01-01 12:00:00',
+        createTime: new Date()
+      },
+      {
+        id: 'test2_' + Date.now(),
+        albumId: albumId,
+        url: '/images/search.png',
+        name: '测试照片2',
+        description: '这是另一张测试照片',
+        uploadTime: '2024-01-01 12:01:00',
+        createTime: new Date()
+      }
+    ]
+    
+    // 保存到本地存储
+    let allPhotos = wx.getStorageSync('photos') || []
+    allPhotos = allPhotos.concat(testPhotos)
+    wx.setStorageSync('photos', allPhotos)
+    
+    this.setData({
+      photos: testPhotos
+    })
+    
+    this.updateAlbumPhotoCount(albumId, testPhotos.length)
+    console.log('创建了测试照片数据')
   },
 
   // 更新相册照片数量
@@ -162,12 +268,23 @@ Page({
 
   // 添加照片
   addPhotos: function () {
+    // 检查是否有编辑权限
+    if (!this.data.canEdit) {
+      app.showToast('无编辑权限')
+      return
+    }
+    
     wx.chooseImage({
       count: 9,
       sizeType: ['compressed'],
       sourceType: ['album', 'camera'],
       success: (res) => {
+        console.log('选择了照片:', res.tempFilePaths.length, '张')
         this.uploadPhotos(res.tempFilePaths)
+      },
+      fail: (error) => {
+        console.error('选择照片失败:', error)
+        app.showToast('选择照片失败')
       }
     })
   },
@@ -223,7 +340,10 @@ Page({
     }
     
     const filePath = tempFilePaths[index]
-    const fileName = `photos/${this.data.album._id}/${Date.now()}_${index}.jpg`
+    const albumId = this.data.album._id || this.data.album.id
+    const fileName = `photos/${albumId}/${Date.now()}_${index}.jpg`
+    
+    console.log('上传照片，相册ID:', albumId, '文件名:', fileName)
     
     // 上传到云存储
     wx.cloud.uploadFile({
@@ -234,7 +354,7 @@ Page({
         
         // 调用云函数保存照片信息
         const photoData = {
-          albumId: this.data.album._id,
+          albumId: albumId,
           groupId: this.data.album.groupId,
           fileId: uploadRes.fileID,
           name: `照片${index + 1}`,
@@ -338,20 +458,65 @@ Page({
 
   // 执行删除照片
   performDeletePhoto: function (photoId) {
+    console.log('开始删除照片，照片ID:', photoId)
+    
+    if (!photoId) {
+      app.showToast('照片ID无效，无法删除')
+      return
+    }
+    
+    app.showLoading('删除中...')
+    
+    // 先尝试从云存储删除
+    wx.cloud.callFunction({
+      name: 'photoManager',
+      data: {
+        action: 'delete',
+        photoId: photoId
+      },
+      success: (res) => {
+        console.log('云函数删除照片结果:', res)
+        
+        if (res.result && res.result.success) {
+          // 云删除成功，更新本地存储
+          this.deletePhotoFromLocal(photoId)
+          app.hideLoading()
+          app.showToast('照片已删除')
+        } else {
+          console.log('云删除失败，尝试本地删除:', res.result?.message)
+          // 云删除失败，尝试本地删除
+          this.deletePhotoFromLocal(photoId)
+          app.hideLoading()
+          app.showToast('照片已删除（本地）')
+        }
+      },
+      fail: (error) => {
+        console.error('云函数调用失败:', error)
+        // 云函数调用失败，尝试本地删除
+        this.deletePhotoFromLocal(photoId)
+        app.hideLoading()
+        app.showToast('照片已删除（本地）')
+      }
+    })
+  },
+
+  // 从本地删除照片
+  deletePhotoFromLocal: function (photoId) {
+    console.log('从本地删除照片，照片ID:', photoId)
+    
+    // 从本地存储中删除
     let allPhotos = wx.getStorageSync('photos') || []
-    allPhotos = allPhotos.filter(photo => photo.id !== photoId)
+    allPhotos = allPhotos.filter(photo => photo.id !== photoId && photo._id !== photoId)
     wx.setStorageSync('photos', allPhotos)
     
     // 更新页面数据
-    const photos = this.data.photos.filter(photo => photo.id !== photoId)
+    const photos = this.data.photos.filter(photo => photo.id !== photoId && photo._id !== photoId)
     this.setData({
       photos: photos
     })
     
     // 更新相册照片数量
     this.updateAlbumPhotoCount(this.data.album._id || this.data.album.id, photos.length)
-    
-    app.showToast('照片已删除')
   },
 
   // 下载照片
@@ -415,7 +580,8 @@ Page({
         isAllSelected: false
       })
     } else {
-      const allIds = this.data.photos.map(photo => photo.id)
+      const allIds = this.data.photos.map(photo => photo._id || photo.id)
+      console.log('全选照片IDs:', allIds)
       this.setData({
         selectedPhotos: allIds,
         isAllSelected: true
@@ -446,14 +612,55 @@ Page({
   // 执行批量删除
   performBatchDelete: function () {
     const selectedIds = this.data.selectedPhotos
+    console.log('开始批量删除照片，照片IDs:', selectedIds)
+    app.showLoading('删除中...')
+    
+    // 先尝试从云存储批量删除
+    wx.cloud.callFunction({
+      name: 'photoManager',
+      data: {
+        action: 'batchDelete',
+        photoData: {
+          photoIds: selectedIds
+        }
+      },
+      success: (res) => {
+        console.log('云函数批量删除照片结果:', res)
+        
+        if (res.result && res.result.success) {
+          // 云删除成功，更新本地存储
+          this.batchDeleteFromLocal(selectedIds)
+          app.hideLoading()
+          app.showToast(`已删除 ${selectedIds.length} 张照片`)
+        } else {
+          console.log('云批量删除失败，尝试本地删除:', res.result?.message)
+          // 云删除失败，尝试本地删除
+          this.batchDeleteFromLocal(selectedIds)
+          app.hideLoading()
+          app.showToast(`已删除 ${selectedIds.length} 张照片（本地）`)
+        }
+      },
+      fail: (error) => {
+        console.error('云函数调用失败:', error)
+        // 云函数调用失败，尝试本地删除
+        this.batchDeleteFromLocal(selectedIds)
+        app.hideLoading()
+        app.showToast(`已删除 ${selectedIds.length} 张照片（本地）`)
+      }
+    })
+  },
+
+  // 从本地批量删除照片
+  batchDeleteFromLocal: function (selectedIds) {
+    console.log('从本地批量删除照片，照片IDs:', selectedIds)
     
     // 从本地存储中删除
     let allPhotos = wx.getStorageSync('photos') || []
-    allPhotos = allPhotos.filter(photo => !selectedIds.includes(photo.id))
+    allPhotos = allPhotos.filter(photo => !selectedIds.includes(photo.id) && !selectedIds.includes(photo._id))
     wx.setStorageSync('photos', allPhotos)
     
     // 更新页面数据
-    const photos = this.data.photos.filter(photo => !selectedIds.includes(photo.id))
+    const photos = this.data.photos.filter(photo => !selectedIds.includes(photo.id) && !selectedIds.includes(photo._id))
     this.setData({
       photos: photos,
       selectedPhotos: [],
@@ -463,8 +670,6 @@ Page({
     
     // 更新相册照片数量
     this.updateAlbumPhotoCount(this.data.album._id || this.data.album.id, photos.length)
-    
-    app.showToast(`已删除 ${selectedIds.length} 张照片`)
   },
 
   // 隐藏照片详情弹窗

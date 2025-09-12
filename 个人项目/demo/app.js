@@ -73,48 +73,62 @@ App({
   // 微信登录（云开发版本）
   wxLogin: function() {
     return new Promise((resolve, reject) => {
-      // 调用 wx.login 获取 code
-      wx.login({
-        success: (loginRes) => {
-          console.log('wx.login 成功，code:', loginRes.code)
-          if (loginRes.code) {
-            // 调用云函数进行登录
-            wx.cloud.callFunction({
-              name: 'userLogin',
-              data: {
-                code: loginRes.code
-              },
-              success: (res) => {
-                console.log('云函数调用成功:', res)
-                if (res.result.success) {
-                  const userInfo = res.result.data
-                  
-                  // 保存到本地存储
-                  wx.setStorageSync('userToken', userInfo._id)
-                  wx.setStorageSync('userInfo', userInfo)
-                  
-                  // 更新全局数据
-                  this.globalData.userInfo = userInfo
-                  this.globalData.isLoggedIn = true
-                  
-                  console.log('登录成功:', userInfo)
-                  resolve(userInfo)
-                } else {
-                  reject(new Error(res.result.message || '登录失败'))
-                }
-              },
-              fail: (error) => {
-                console.error('云函数调用失败:', error)
-                reject(error)
+      // 先获取用户信息，再进行登录
+      wx.getUserProfile({
+        desc: '用于完善用户资料',
+        success: (profileRes) => {
+          const userInfo = profileRes.userInfo
+          console.log('获取用户信息成功:', userInfo)
+          
+          // 调用 wx.login 获取 code
+          wx.login({
+            success: (loginRes) => {
+              console.log('wx.login 成功，code:', loginRes.code)
+              if (loginRes.code) {
+                // 调用云函数进行登录，同时传递用户信息
+                wx.cloud.callFunction({
+                  name: 'userLogin',
+                  data: {
+                    code: loginRes.code,
+                    userInfo: userInfo
+                  },
+                  success: (res) => {
+                    console.log('云函数调用成功:', res)
+                    if (res.result.success) {
+                      const userData = res.result.data
+                      
+                      // 保存到本地存储
+                      wx.setStorageSync('userToken', userData._id)
+                      wx.setStorageSync('userInfo', userData)
+                      
+                      // 更新全局数据
+                      this.globalData.userInfo = userData
+                      this.globalData.isLoggedIn = true
+                      
+                      console.log('登录成功:', userData)
+                      resolve(userData)
+                    } else {
+                      reject(new Error(res.result.message || '登录失败'))
+                    }
+                  },
+                  fail: (error) => {
+                    console.error('云函数调用失败:', error)
+                    reject(error)
+                  }
+                })
+              } else {
+                reject(new Error('获取登录凭证失败'))
               }
-            })
-          } else {
-            reject(new Error('获取登录凭证失败'))
-          }
+            },
+            fail: (error) => {
+              console.error('wx.login 失败:', error)
+              reject(error)
+            }
+          })
         },
         fail: (error) => {
-          console.error('wx.login 失败:', error)
-          reject(error)
+          console.error('获取用户信息失败:', error)
+          reject(new Error('需要授权才能登录'))
         }
       })
     })

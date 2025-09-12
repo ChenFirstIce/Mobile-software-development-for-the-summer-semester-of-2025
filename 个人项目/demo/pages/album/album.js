@@ -28,35 +28,43 @@ Page({
 
   // 加载相册数据（云开发版本）
   loadAlbums: function () {
+    console.log('开始从云存储加载相册...')
     app.showLoading('加载中...')
     
-    // 调用云函数获取相册列表
+    // 先尝试从云存储获取
     wx.cloud.callFunction({
       name: 'albumManager',
       data: {
         action: 'getList'
       },
       success: (res) => {
-        app.hideLoading()
-        if (res.result.success) {
-          const albums = res.result.data
+        console.log('云函数调用成功:', res)
+        
+        if (res.result && res.result.success) {
+          const cloudAlbums = res.result.data || []
+          console.log('从云存储获取到相册数量:', cloudAlbums.length)
           
           // 更新本地存储
-          wx.setStorageSync('albums', albums)
+          wx.setStorageSync('albums', cloudAlbums)
           
           this.setData({
-            albums: albums
+            albums: cloudAlbums
           })
           this.filterAlbums()
+          
+          app.hideLoading()
+          app.showToast(`已加载 ${cloudAlbums.length} 个相册`)
         } else {
-          app.showToast('加载相册失败: ' + res.result.message)
+          console.log('云函数返回失败:', res.result?.message)
+          app.hideLoading()
+          app.showToast('云存储加载失败，使用本地数据')
           // 降级到本地存储
           this.loadAlbumsFromLocal()
         }
       },
       fail: (error) => {
-        app.hideLoading()
         console.error('云函数调用失败:', error)
+        app.hideLoading()
         app.showToast('网络错误，使用本地数据')
         // 降级到本地存储
         this.loadAlbumsFromLocal()
@@ -66,11 +74,20 @@ Page({
 
   // 从本地存储加载相册（降级方案）
   loadAlbumsFromLocal: function () {
+    console.log('从本地存储加载相册...')
     let albums = wx.getStorageSync('albums') || []
+    console.log('本地存储中的相册数量:', albums.length)
+    
     this.setData({
       albums: albums
     })
     this.filterAlbums()
+    
+    if (albums.length > 0) {
+      app.showToast(`已加载 ${albums.length} 个本地相册`)
+    } else {
+      app.showToast('暂无相册数据')
+    }
   },
 
   // 过滤相册
@@ -129,8 +146,14 @@ Page({
     }
 
     const albumId = e.currentTarget.dataset.id
+    console.log('打开相册，ID:', albumId)
+    
+    // 确保使用正确的ID格式
+    const album = this.data.albums.find(a => a.id === albumId || a._id === albumId)
+    const actualId = album?._id || album?.id || albumId
+    
     wx.navigateTo({
-      url: `/pages/album/detail?id=${albumId}`
+      url: `/pages/album/detail?id=${actualId}`
     })
   },
 
@@ -144,8 +167,12 @@ Page({
       return
     }
     
+    // 确保使用正确的ID格式
+    const album = this.data.albums.find(a => a.id === albumId || a._id === albumId)
+    const actualId = album?._id || album?.id || albumId
+    
     wx.navigateTo({
-      url: `/pages/album/create?id=${albumId}`
+      url: `/pages/album/create?id=${actualId}`
     })
   },
 
@@ -159,6 +186,10 @@ Page({
       return
     }
     
+    // 确保使用正确的ID格式
+    const album = this.data.albums.find(a => a.id === albumId || a._id === albumId)
+    const actualId = album?._id || album?.id || albumId
+    
     wx.showModal({
       title: '确认删除',
       content: '删除相册后，相册内的照片将无法恢复，确定要删除吗？',
@@ -166,7 +197,7 @@ Page({
       confirmColor: '#f44336',
       success: (res) => {
         if (res.confirm) {
-          this.performDeleteAlbum(albumId)
+          this.performDeleteAlbum(actualId)
         }
       }
     })
@@ -184,32 +215,52 @@ Page({
         albumId: albumId
       },
       success: (res) => {
-        app.hideLoading()
-        if (res.result.success) {
-          // 从本地数据中移除
-          let albums = this.data.albums
-          albums = albums.filter(album => album._id !== albumId)
-          
-          // 更新本地存储
-          wx.setStorageSync('albums', albums)
-          
-          // 更新页面数据
-          this.setData({
-            albums: albums
-          })
-          this.filterAlbums()
-          
+        console.log('云函数删除相册结果:', res)
+        
+        if (res.result && res.result.success) {
+          // 云删除成功，从本地数据中移除
+          this.deleteAlbumFromLocal(albumId)
+          app.hideLoading()
           app.showToast('相册已删除')
         } else {
-          app.showToast('删除失败: ' + res.result.message)
+          console.log('云删除失败，尝试本地删除:', res.result?.message)
+          // 云删除失败，尝试本地删除
+          this.deleteAlbumFromLocal(albumId)
+          app.hideLoading()
+          app.showToast('相册已删除（本地）')
         }
       },
       fail: (error) => {
+        console.error('云函数调用失败:', error)
+        // 云函数调用失败，尝试本地删除
+        this.deleteAlbumFromLocal(albumId)
         app.hideLoading()
-        console.error('删除相册失败:', error)
-        app.showToast('删除失败，请重试')
+        app.showToast('相册已删除（本地）')
       }
     })
+  },
+
+  // 从本地删除相册
+  deleteAlbumFromLocal: function (albumId) {
+    console.log('从本地删除相册，ID:', albumId)
+    
+    // 从本地数据中移除相册
+    let albums = this.data.albums
+    albums = albums.filter(album => album._id !== albumId && album.id !== albumId)
+    
+    // 删除相册下的所有照片
+    let allPhotos = wx.getStorageSync('photos') || []
+    allPhotos = allPhotos.filter(photo => photo.albumId !== albumId)
+    wx.setStorageSync('photos', allPhotos)
+    
+    // 更新本地存储
+    wx.setStorageSync('albums', albums)
+    
+    // 更新页面数据
+    this.setData({
+      albums: albums
+    })
+    this.filterAlbums()
   },
 
   // 切换批量操作模式

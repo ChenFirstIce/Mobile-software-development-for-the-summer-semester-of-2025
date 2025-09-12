@@ -8,7 +8,7 @@ cloud.init({
 const db = cloud.database()
 
 exports.main = async (event, context) => {
-  const { code } = event
+  const { code, userInfo } = event
   const { OPENID, APPID } = cloud.getWXContext()
   
   try {
@@ -18,28 +18,45 @@ exports.main = async (event, context) => {
     }).get()
     
     if (userQuery.data.length > 0) {
-      // 用户已存在，更新最后登录时间
+      // 用户已存在，更新用户信息和最后登录时间
       const existingUser = userQuery.data[0]
+      
+      // 如果传入了用户信息，则更新用户信息
+      const updateData = {
+        lastLoginTime: new Date(),
+        updateTime: new Date()
+      }
+      
+      if (userInfo) {
+        updateData.nickName = userInfo.nickName || existingUser.nickName
+        updateData.avatarUrl = userInfo.avatarUrl || existingUser.avatarUrl
+        updateData.gender = userInfo.gender !== undefined ? userInfo.gender : existingUser.gender
+        updateData.language = userInfo.language || existingUser.language
+      }
+      
       await db.collection('users').doc(existingUser._id).update({
-        data: {
-          lastLoginTime: new Date(),
-          updateTime: new Date()
-        }
+        data: updateData
       })
+      
+      // 返回更新后的用户信息
+      const updatedUser = {
+        ...existingUser,
+        ...updateData
+      }
       
       return {
         success: true,
-        data: existingUser,
+        data: updatedUser,
         message: '用户登录成功'
       }
     } else {
       // 新用户，创建用户记录
       const newUser = {
         _openid: OPENID,
-        nickName: '微信用户',
-        avatarUrl: '',
-        gender: 0,
-        language: 'zh_CN',
+        nickName: userInfo ? userInfo.nickName : '微信用户',
+        avatarUrl: userInfo ? userInfo.avatarUrl : '',
+        gender: userInfo ? userInfo.gender : 0,
+        language: userInfo ? userInfo.language : 'zh_CN',
         createTime: new Date(),
         updateTime: new Date(),
         lastLoginTime: new Date(),

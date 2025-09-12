@@ -41,7 +41,9 @@
         bindfocus="onSearchFocus"
         bindblur="onSearchBlur"
       />
-      <view class="search-icon" bindtap="searchLocation">🔍</view>
+      <view class="search-icon" bindtap="searchLocation">
+        <image src="/images/search.png" mode="aspectFit" class="search-icon-img"></image>
+      </view>
     </view>
     
     <!-- 搜索建议列表 -->

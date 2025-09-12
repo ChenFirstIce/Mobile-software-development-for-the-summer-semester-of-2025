@@ -382,9 +382,17 @@
 }
 
 .modal-title {
+  display: flex;
+  align-items: center;
+  gap: 10rpx;
   font-size: 32rpx;
   font-weight: bold;
   color: #333;
+}
+
+.modal-icon {
+  width: 32rpx;
+  height: 32rpx;
 }
 
 .modal-close {

@@ -8,13 +8,13 @@ Page({
       {
         id: 'wheel',
         name: '随机轮盘',
-        icon: '🎯',
+        icon: '/images/tool-box.png',
         desc: '创建轮盘，随机选择目的地'
       },
       {
         id: 'vote',
         name: '价格投票',
-        icon: '💰',
+        icon: '/images/money-bag.png',
         desc: '匿名投票，了解大家心理价位'
       }
     ],

@@ -57,13 +57,13 @@
     
     <view class="features-grid">
       <view class="feature-card" bindtap="openRandomWheel" wx:if="{{group.features.random}}">
-        <view class="feature-icon">🎲</view>
+        <image class="feature-icon" src="/images/wheel-of-fortune.png"></image>
         <text class="feature-name">随机转盘</text>
         <text class="feature-desc">随机选择目的地</text>
       </view>
       
       <view class="feature-card" bindtap="openPriceVote" wx:if="{{group.features.priceVote}}">
-        <view class="feature-icon">💰</view>
+        <image class="feature-icon" src="/images/money-bag.png"></image>
         <text class="feature-name">价格投票</text>
         <text class="feature-desc">预测最低价</text>
       </view>
