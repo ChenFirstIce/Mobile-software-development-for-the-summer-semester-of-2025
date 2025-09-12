@@ -114,8 +114,56 @@ Page({
 
   // 检查当前位置是否已经打卡过
   checkLocationCheckinStatus: function (longitude, latitude) {
+    // 先尝试从云端检查
+    this.checkLocationCheckinStatusFromCloud(longitude, latitude)
+  },
+
+  // 从云端检查位置打卡状态
+  checkLocationCheckinStatusFromCloud: function (longitude, latitude) {
+    wx.cloud.callFunction({
+      name: 'checkinManager',
+      data: {
+        action: 'getByLocation',
+        longitude: longitude,
+        latitude: latitude,
+        radius: 0.001 // 100米范围内
+      },
+      success: (res) => {
+        if (res.result.success) {
+          const checkins = res.result.data.list || []
+          const currentUserId = app.globalData.userInfo?._openid
+          
+          // 查找用户在该位置的打卡记录
+          const existingCheckin = checkins.find(checkin => checkin.userId === currentUserId)
+          
+          if (existingCheckin) {
+            this.setData({
+              isLocationAlreadyCheckin: true,
+              existingCheckinInfo: existingCheckin
+            })
+          } else {
+            this.setData({
+              isLocationAlreadyCheckin: false,
+              existingCheckinInfo: null
+            })
+          }
+        } else {
+          // 云端检查失败，使用本地数据
+          this.checkLocationCheckinStatusFromLocal(longitude, latitude)
+        }
+      },
+      fail: (err) => {
+        console.error('从云端检查打卡状态失败:', err)
+        // 云端检查失败，使用本地数据
+        this.checkLocationCheckinStatusFromLocal(longitude, latitude)
+      }
+    })
+  },
+
+  // 从本地检查位置打卡状态
+  checkLocationCheckinStatusFromLocal: function (longitude, latitude) {
     const checkins = wx.getStorageSync('checkinPoints') || []
-    const currentUserId = app.globalData.userInfo?.id
+    const currentUserId = app.globalData.userInfo?._openid
     
     if (!currentUserId) return
     
@@ -166,8 +214,49 @@ Page({
 
   // 加载用户相册
   loadUserAlbums: function () {
+    // 先尝试从云端获取
+    this.loadUserAlbumsFromCloud()
+  },
+
+  // 从云端加载用户相册
+  loadUserAlbumsFromCloud: function () {
+    wx.cloud.callFunction({
+      name: 'albumManager',
+      data: {
+        action: 'getList',
+        type: 'all'
+      },
+      success: (res) => {
+        if (res.result.success && res.result.data && res.result.data.list) {
+          this.setData({
+            userAlbums: res.result.data.list
+          })
+        } else {
+          // 云端获取失败，使用本地数据
+          this.loadUserAlbumsFromLocal()
+        }
+      },
+      fail: (err) => {
+        console.error('从云端获取相册失败:', err)
+        // 云端获取失败，使用本地数据
+        this.loadUserAlbumsFromLocal()
+      }
+    })
+  },
+
+  // 从本地加载用户相册
+  loadUserAlbumsFromLocal: function () {
     const albums = wx.getStorageSync('albums') || []
-    const currentUserId = app.globalData.userInfo?.id
+    const currentUserId = app.globalData.userInfo?._openid
+    
+    // 确保 albums 是数组
+    if (!Array.isArray(albums)) {
+      console.error('本地相册数据格式错误:', albums)
+      this.setData({
+        userAlbums: []
+      })
+      return
+    }
     
     const userAlbums = albums.filter(album => 
       // 用户创建的相册
@@ -179,7 +268,7 @@ Page({
     )
     
     this.setData({
-      userAlbums: userAlbums
+      userAlbums: userAlbums || []
     })
   },
 
@@ -209,12 +298,41 @@ Page({
       sizeType: ['compressed'],
       sourceType: ['album', 'camera'],
       success: (res) => {
-        const newPhotos = [...this.data.checkinPhotos, ...res.tempFilePaths]
+        // 上传照片到云存储
+        this.uploadPhotosToCloud(res.tempFilePaths)
+      }
+    })
+  },
+
+  // 上传照片到云存储
+  uploadPhotosToCloud: function (tempFilePaths) {
+    app.showLoading('上传照片中...')
+    
+    const uploadPromises = tempFilePaths.map((filePath, index) => {
+      const fileName = `checkin/${Date.now()}_${index}.jpg`
+      return wx.cloud.uploadFile({
+        cloudPath: fileName,
+        filePath: filePath
+      })
+    })
+
+    Promise.all(uploadPromises)
+      .then((results) => {
+        const cloudFileIds = results.map(result => result.fileID)
+        const newPhotos = [...this.data.checkinPhotos, ...cloudFileIds]
+        
         this.setData({
           checkinPhotos: newPhotos
         })
-      }
-    })
+        
+        app.hideLoading()
+        app.showToast('照片上传成功')
+      })
+      .catch((error) => {
+        console.error('照片上传失败:', error)
+        app.hideLoading()
+        app.showToast('照片上传失败，请重试', 'error')
+      })
   },
 
   // 删除照片
@@ -296,7 +414,8 @@ Page({
 
   // 选择相册
   selectAlbum: function () {
-    if (this.data.userAlbums.length === 0) {
+    // 检查 userAlbums 是否存在且为数组
+    if (!this.data.userAlbums || !Array.isArray(this.data.userAlbums) || this.data.userAlbums.length === 0) {
       app.showToast('暂无可用的相册')
       return
     }
@@ -358,25 +477,71 @@ Page({
       .filter(tag => tag.selected)
       .map(tag => tag.name)
     
-    // 创建打卡记录
-    const checkinData = {
-      id: Date.now().toString(),
-      longitude: this.data.longitude,
-      latitude: this.data.latitude,
-      address: this.data.address,
-      content: this.data.checkinContent.trim() || '无',
-      photos: this.data.checkinPhotos,
-      tags: selectedTags,
-      albumId: this.data.selectedAlbumId,
-      albumName: this.data.selectedAlbum ? this.data.selectedAlbum.name : null,
-      privacy: this.data.privacy,
-      createTime: new Date().toLocaleString(),
-      userId: app.globalData.userInfo?.id || 'unknown',
-      userName: app.globalData.userInfo?.nickName || '未知用户'
-    }
-    
-    // 保存打卡记录
-    this.saveCheckinData(checkinData)
+    // 提交到云端
+    this.submitCheckinToCloud(selectedTags)
+  },
+
+  // 提交打卡到云端
+  submitCheckinToCloud: function (selectedTags) {
+    wx.cloud.callFunction({
+      name: 'checkinManager',
+      data: {
+        action: 'create',
+        longitude: this.data.longitude,
+        latitude: this.data.latitude,
+        address: this.data.address,
+        content: this.data.checkinContent.trim() || '',
+        photos: this.data.checkinPhotos,
+        tags: selectedTags,
+        albumId: this.data.selectedAlbumId,
+        albumName: this.data.selectedAlbum ? this.data.selectedAlbum.name : null,
+        privacy: this.data.privacy
+      },
+      success: (res) => {
+        if (res.result.success) {
+          // 云端保存成功，同时保存到本地作为备份
+          this.saveCheckinDataToLocal(res.result.data)
+          
+          app.hideLoading()
+          app.showToast('打卡成功！')
+          
+          // 如果选择了相册，将照片添加到相册
+          if (this.data.selectedAlbumId && this.data.checkinPhotos.length > 0) {
+            this.addPhotosToAlbum(res.result.data)
+          }
+          
+          // 返回上一页
+          setTimeout(() => {
+            wx.navigateBack()
+          }, 1500)
+        } else {
+          app.hideLoading()
+          app.showToast(res.result.message || '打卡失败，请重试', 'error')
+        }
+      },
+      fail: (err) => {
+        console.error('提交打卡到云端失败:', err)
+        app.hideLoading()
+        app.showToast('网络错误，正在保存到本地...', 'error')
+        
+        // 云端失败，保存到本地
+        this.saveCheckinDataToLocal({
+          id: Date.now().toString(),
+          longitude: this.data.longitude,
+          latitude: this.data.latitude,
+          address: this.data.address,
+          content: this.data.checkinContent.trim() || '',
+          photos: this.data.checkinPhotos,
+          tags: selectedTags,
+          albumId: this.data.selectedAlbumId,
+          albumName: this.data.selectedAlbum ? this.data.selectedAlbum.name : null,
+          privacy: this.data.privacy,
+          createTime: new Date().toLocaleString(),
+          userId: app.globalData.userInfo?._openid || 'unknown',
+          userName: app.globalData.userInfo?.nickName || '未知用户'
+        })
+      }
+    })
   },
 
   // 取消打卡
@@ -396,8 +561,8 @@ Page({
     })
   },
 
-  // 保存打卡数据
-  saveCheckinData: function (checkinData) {
+  // 保存打卡数据到本地
+  saveCheckinDataToLocal: function (checkinData) {
     // 保存到本地存储
     let checkins = wx.getStorageSync('checkinPoints') || []
     checkins.push(checkinData)
@@ -419,6 +584,51 @@ Page({
 
   // 将照片添加到相册
   addPhotosToAlbum: function (checkinData) {
+    // 先尝试添加到云端相册
+    this.addPhotosToAlbumCloud(checkinData)
+  },
+
+  // 添加照片到云端相册
+  addPhotosToAlbumCloud: function (checkinData) {
+    const photoData = checkinData.photos.map((photo, index) => {
+      return {
+        albumId: checkinData.albumId,
+        url: photo,
+        name: `打卡照片${index + 1}`,
+        description: checkinData.content,
+        location: checkinData.address,
+        uploadTime: checkinData.createTime,
+        size: 0,
+        type: 'image',
+        source: 'checkin'
+      }
+    })
+
+    wx.cloud.callFunction({
+      name: 'photoManager',
+      data: {
+        action: 'batchUpload',
+        photos: photoData
+      },
+      success: (res) => {
+        if (res.result.success) {
+          console.log('照片已添加到云端相册')
+        } else {
+          console.error('添加照片到云端相册失败:', res.result.message)
+          // 云端失败，保存到本地
+          this.addPhotosToAlbumLocal(checkinData)
+        }
+      },
+      fail: (err) => {
+        console.error('添加照片到云端相册失败:', err)
+        // 云端失败，保存到本地
+        this.addPhotosToAlbumLocal(checkinData)
+      }
+    })
+  },
+
+  // 添加照片到本地相册
+  addPhotosToAlbumLocal: function (checkinData) {
     let allPhotos = wx.getStorageSync('photos') || []
     const newPhotos = checkinData.photos.map((photo, index) => {
       return {
@@ -440,7 +650,7 @@ Page({
     
     // 更新相册照片数量
     let albums = wx.getStorageSync('albums') || []
-    const albumIndex = albums.findIndex(a => a.id === checkinData.albumId)
+    const albumIndex = albums.findIndex(a => (a._id === checkinData.albumId) || (a.id === checkinData.albumId))
     if (albumIndex > -1) {
       albums[albumIndex].photoCount = (albums[albumIndex].photoCount || 0) + newPhotos.length
       wx.setStorageSync('albums', albums)
