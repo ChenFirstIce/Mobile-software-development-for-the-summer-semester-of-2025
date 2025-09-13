@@ -297,6 +297,8 @@ async function updateCheckin(event, openid) {
 // 删除打卡记录
 async function deleteCheckin(event, openid) {
   const { checkinId } = event
+  
+  console.log('删除打卡记录请求:', { checkinId, openid })
 
   if (!checkinId) {
     return {
@@ -307,18 +309,25 @@ async function deleteCheckin(event, openid) {
 
   try {
     // 检查打卡记录是否存在
+    console.log('开始查询打卡记录，ID:', checkinId)
     const checkinQuery = await db.collection('checkins').doc(checkinId).get()
-    if (checkinQuery.data.length === 0) {
+    console.log('查询打卡记录结果:', checkinQuery)
+    
+    if (!checkinQuery.data || Object.keys(checkinQuery.data).length === 0) {
+      console.log('打卡记录不存在')
       return {
         success: false,
         message: '打卡记录不存在'
       }
     }
 
-    const checkin = checkinQuery.data[0]
+    const checkin = checkinQuery.data
+    console.log('打卡记录详情:', checkin)
+    console.log('权限检查:', { checkinUserId: checkin.userId, openid, match: checkin.userId === openid })
 
     // 检查权限
     if (checkin.userId !== openid) {
+      console.log('权限检查失败')
       return {
         success: false,
         message: '无权限删除此打卡记录'
@@ -326,12 +335,14 @@ async function deleteCheckin(event, openid) {
     }
 
     // 软删除
-    await db.collection('checkins').doc(checkinId).update({
+    console.log('开始执行软删除操作')
+    const updateResult = await db.collection('checkins').doc(checkinId).update({
       data: {
         isDeleted: true,
         updateTime: new Date()
       }
     })
+    console.log('软删除操作结果:', updateResult)
 
     return {
       success: true,
@@ -341,7 +352,7 @@ async function deleteCheckin(event, openid) {
     console.error('删除打卡记录失败:', error)
     return {
       success: false,
-      message: '删除打卡记录失败'
+      message: `删除打卡记录失败: ${error.message || error.toString()}`
     }
   }
 }

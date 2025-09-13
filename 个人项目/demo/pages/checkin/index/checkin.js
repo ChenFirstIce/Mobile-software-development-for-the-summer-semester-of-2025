@@ -43,6 +43,7 @@ Page({
     this.checkSubmitStatus()
   },
 
+  /**********初始化**********/
   // 初始化位置信息
   initLocation: function () {
     app.showLoading('获取位置中...')
@@ -112,6 +113,7 @@ Page({
     this.initLocation()
   },
 
+  /**********检查打卡状态**********/
   // 检查当前位置是否已经打卡过
   checkLocationCheckinStatus: function (longitude, latitude) {
     // 先尝试从云端检查
@@ -212,6 +214,7 @@ Page({
     })
   },
 
+  /**********加载用户相册**********/
   // 加载用户相册
   loadUserAlbums: function () {
     // 先尝试从云端获取
@@ -272,24 +275,7 @@ Page({
     })
   },
 
-  // 检查提交状态
-  checkSubmitStatus: function () {
-    // 打卡内容不是必须的，总是可以提交
-    this.setData({
-      canSubmit: true
-    })
-  },
-
-  // 打卡内容输入
-  onContentInput: function (e) {
-    this.setData({
-      checkinContent: e.detail.value
-    })
-    this.checkSubmitStatus()
-  },
-
-
-  // 添加照片
+      // 添加照片
   addPhoto: function () {
     const remainingCount = 9 - this.data.checkinPhotos.length
     
@@ -303,6 +289,7 @@ Page({
       }
     })
   },
+
 
   // 上传照片到云存储
   uploadPhotosToCloud: function (tempFilePaths) {
@@ -335,7 +322,7 @@ Page({
       })
   },
 
-  // 删除照片
+    // 删除照片
   deletePhoto: function (e) {
     const index = e.currentTarget.dataset.index
     let photos = [...this.data.checkinPhotos]
@@ -344,6 +331,17 @@ Page({
     this.setData({
       checkinPhotos: photos
     })
+  },
+
+
+  /**********打卡内容**********/
+
+  // 打卡内容输入
+  onContentInput: function (e) {
+    this.setData({
+      checkinContent: e.detail.value
+    })
+    this.checkSubmitStatus()
   },
 
   // 切换标签选择
@@ -412,9 +410,11 @@ Page({
     app.showToast('标签添加成功')
   },
 
+  /**********相册**********/
   // 选择相册
   selectAlbum: function () {
     // 检查 userAlbums 是否存在且为数组
+    //用户相册已经加载过了
     if (!this.data.userAlbums || !Array.isArray(this.data.userAlbums) || this.data.userAlbums.length === 0) {
       app.showToast('暂无可用的相册')
       return
@@ -430,7 +430,7 @@ Page({
     const album = e.currentTarget.dataset.album
     this.setData({
       selectedAlbum: album,
-      selectedAlbumId: album._id || album.id
+      selectedAlbumId: album._id 
     })
   },
 
@@ -448,11 +448,21 @@ Page({
     })
   },
 
+  /**********隐私设置**********/
   // 设置隐私
   setPrivacy: function (e) {
     const privacy = e.currentTarget.dataset.privacy
     this.setData({
       privacy: privacy
+    })
+  },
+
+  /**********提交打卡**********/  
+  // 检查提交状态
+  checkSubmitStatus: function () {
+    // 打卡内容不是必须的，总是可以提交
+    this.setData({
+      canSubmit: true
     })
   },
 
@@ -581,6 +591,8 @@ Page({
       wx.navigateBack()
     }, 1500)
   },
+
+  /**********照片后面的操作**********/
 
   // 将照片添加到相册
   addPhotosToAlbum: function (checkinData) {

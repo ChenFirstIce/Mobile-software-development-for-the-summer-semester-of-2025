@@ -1,14 +1,17 @@
 // 云函数：用户登录
+//初始化云函数
 const cloud = require('wx-server-sdk')
 
 cloud.init({
   env: cloud.DYNAMIC_CURRENT_ENV
 })
 
+//初始化数据库
 const db = cloud.database()
 
-exports.main = async (event, context) => {
-  const { code, userInfo } = event
+//主函数相当于int main()
+exports.main = async (event, context) => {//context是云开发系统自动提供的上下文
+  const { code, userInfo } = event//传递的参数
   const { OPENID, APPID } = cloud.getWXContext()
   
   try {
@@ -17,8 +20,9 @@ exports.main = async (event, context) => {
       _openid: OPENID
     }).get()
     
+
+    // 如果用户已存在，则更新用户信息和最后登录时间
     if (userQuery.data.length > 0) {
-      // 用户已存在，更新用户信息和最后登录时间
       const existingUser = userQuery.data[0]
       
       // 如果传入了用户信息，则更新用户信息
@@ -27,6 +31,7 @@ exports.main = async (event, context) => {
         updateTime: new Date()
       }
       
+      //更新信息
       if (userInfo) {
         updateData.nickName = userInfo.nickName || existingUser.nickName
         updateData.avatarUrl = userInfo.avatarUrl || existingUser.avatarUrl
@@ -34,11 +39,11 @@ exports.main = async (event, context) => {
         updateData.language = userInfo.language || existingUser.language
       }
       
-      await db.collection('users').doc(existingUser._id).update({
+      await db.collection('users').doc(existingUser._id).update({//处理单条记录
         data: updateData
       })
       
-      // 返回更新后的用户信息
+      // 返回更新后的用户信息，...是解构赋值，将existingUser和updateData的属性合并
       const updatedUser = {
         ...existingUser,
         ...updateData
