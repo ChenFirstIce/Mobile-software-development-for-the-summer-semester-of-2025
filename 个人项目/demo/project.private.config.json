@@ -5,7 +5,7 @@
     "miniprogram": {
       "list": [
         {
-          "name": "pages/checkin/checkin",
+          "name": "pages/checkin/index/checkin",
           "pathName": "pages/route/route",
           "query": "",
           "scene": null,

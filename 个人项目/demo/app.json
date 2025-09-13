@@ -1,17 +1,18 @@
 {
   "pages": [
     "pages/index/index",
-    "pages/album/album",
-    "pages/album/create",
-    "pages/album/detail",
+    "pages/album/index/album",
+    "pages/album/create/create",
+    "pages/album/detail/detail",
     "pages/map/map",
-    "pages/checkin/checkin",
+    "pages/checkin/index/checkin",
+    "pages/checkin/list/list",
     "pages/statistics/statistics",
-    "pages/group/group",
-    "pages/group/create",
-    "pages/group/detail",
+    "pages/group/index/group",
+    "pages/group/create/create",
+    "pages/group/detail/detail",
     "pages/profile/profile",
-    "pages/tools/tools",
+    "pages/tools/index/tools",
     "pages/tools/wheel/wheel",
     "pages/tools/price/price",
     "pages/route/route"
@@ -36,7 +37,7 @@
         "selectedIconPath": "images/home-active.png"
       },
       {
-        "pagePath": "pages/album/album",
+        "pagePath": "pages/album/index/album",
         "text": "相册",
         "iconPath": "images/album.png",
         "selectedIconPath": "images/album-active.png"
@@ -54,7 +55,7 @@
         "selectedIconPath": "images/map-active.png"
       },
       {
-        "pagePath": "pages/group/group",
+        "pagePath": "pages/group/index/group",
         "text": "旅游群",
         "iconPath": "images/group.png",
         "selectedIconPath": "images/group-active.png"

@@ -113,10 +113,10 @@
 }
 
 .card-icon {
-  font-size: 48rpx;
-  margin-right: 20rpx;
   width: 60rpx;
-  text-align: center;
+  height: 60rpx;
+  margin-right: 20rpx;
+  border-radius: 8rpx;
 }
 
 .card-content {

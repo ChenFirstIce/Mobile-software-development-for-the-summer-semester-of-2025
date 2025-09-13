@@ -12,10 +12,13 @@
 
   <!-- 统计概览 -->
   <view class="overview-section">
-    <view class="overview-title">📊 数据概览</view>
+    <view class="overview-title">
+      <image class="title-icon" src="/images/graph.png" mode="aspectFit"></image>
+      数据概览
+    </view>
     <view class="overview-cards">
       <view class="overview-card primary">
-        <view class="card-icon">📍</view>
+        <image class="card-icon" src="/images/pin.png" mode="aspectFit"></image>
         <view class="card-content">
           <text class="card-value">{{totalCheckins}}</text>
           <text class="card-label">打卡次数</text>
@@ -23,7 +26,7 @@
       </view>
       
       <view class="overview-card success">
-        <view class="card-icon">📷</view>
+        <image class="card-icon" src="/images/cinema.png" mode="aspectFit"></image>
         <view class="card-content">
           <text class="card-value">{{totalPhotos}}</text>
           <text class="card-label">照片数量</text>
@@ -31,7 +34,7 @@
       </view>
       
       <view class="overview-card warning">
-        <view class="card-icon">🗺️</view>
+        <image class="card-icon" src="/images/route.png" mode="aspectFit"></image>
         <view class="card-content">
           <text class="card-value">{{totalDistance}}</text>
           <text class="card-label">行程公里</text>
@@ -39,7 +42,7 @@
       </view>
       
       <view class="overview-card info">
-        <view class="card-icon">📅</view>
+        <image class="card-icon" src="/images/light-bulb.png" mode="aspectFit"></image>
         <view class="card-content">
           <text class="card-value">{{totalDays}}</text>
           <text class="card-label">活跃天数</text>
@@ -69,7 +72,10 @@
 
   <!-- 打卡统计 -->
   <view class="stats-section">
-    <view class="section-title">📍 打卡统计</view>
+    <view class="section-title">
+      <image class="section-icon" src="/images/pin.png" mode="aspectFit"></image>
+      打卡统计
+    </view>
     
     <view class="stats-content">
       <!-- 连续打卡 -->
@@ -123,7 +129,10 @@
 
   <!-- 照片统计 -->
   <view class="stats-section">
-    <view class="section-title">📷 照片统计</view>
+    <view class="section-title">
+      <image class="section-icon" src="/images/cinema.png" mode="aspectFit"></image>
+      照片统计
+    </view>
     
     <view class="stats-content">
       <view class="photo-stats">
@@ -150,7 +159,10 @@
 
   <!-- 地点统计 -->
   <view class="stats-section">
-    <view class="section-title">🗺️ 地点统计</view>
+    <view class="section-title">
+      <image class="section-icon" src="/images/map-3.png" mode="aspectFit"></image>
+      地点统计
+    </view>
     
     <view class="stats-content">
       <view class="location-stats">
@@ -170,12 +182,15 @@
 
   <!-- 群组统计 -->
   <view class="stats-section">
-    <view class="section-title">👥 群组统计</view>
+    <view class="section-title">
+      <image class="section-icon" src="/images/group-1.png" mode="aspectFit"></image>
+      群组统计
+    </view>
     
     <view class="stats-content">
       <view class="group-stats">
         <view class="group-stat-item">
-          <view class="stat-icon">📊</view>
+          <image class="stat-icon" src="/images/graph.png" mode="aspectFit"></image>
           <view class="stat-info">
             <text class="stat-label">总群组数</text>
             <text class="stat-value">{{groupStats.total}}</text>
@@ -189,7 +204,7 @@
           </view>
         </view>
         <view class="group-stat-item">
-          <view class="stat-icon">👤</view>
+          <image class="stat-icon" src="/images/networking.png" mode="aspectFit"></image>
           <view class="stat-info">
             <text class="stat-label">加入群组</text>
             <text class="stat-value">{{groupStats.joined}}</text>
@@ -208,7 +223,10 @@
 
   <!-- 活跃度统计 -->
   <view class="stats-section">
-    <view class="section-title">📈 活跃度分析</view>
+    <view class="section-title">
+      <image class="section-icon" src="/images/newspaper.png" mode="aspectFit"></image>
+      活跃度分析
+    </view>
     
     <view class="stats-content">
       <!-- 周活跃度 -->
@@ -247,7 +265,9 @@
     <view class="stats-content">
       <view class="achievements-grid">
         <view class="achievement-item" wx:for="{{achievements}}" wx:key="name">
-          <view class="achievement-icon">{{item.icon}}</view>
+          <view class="achievement-icon">
+            <text>{{item.icon}}</text>
+          </view>
           <view class="achievement-info">
             <text class="achievement-name">{{item.name}}</text>
             <text class="achievement-desc">{{item.desc}}</text>

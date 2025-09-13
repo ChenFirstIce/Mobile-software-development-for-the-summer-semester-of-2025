@@ -221,7 +221,7 @@ Page({
 /**********导航栏功能**********/
   showCheckinModal: function () {
     wx.navigateTo({
-      url: '/pages/checkin/checkin'
+      url: '/pages/checkin/index/checkin'
     })
   },
 
@@ -279,7 +279,7 @@ Page({
   showCheckinDetails: function (checkinPoint) {
     wx.showModal({
       title: '打卡信息',
-      content: `${checkinPoint.content}\n\n时间：${checkinPoint.createTime}\n位置：${checkinPoint.address}`,
+      content: `${checkinPoint.content}\n时间：${checkinPoint.createTime}\n位置：${checkinPoint.address}`,
       showCancel: false,
       confirmText: '知道了'
     })
@@ -320,7 +320,7 @@ Page({
         if (res.confirm) {
           // 跳转到打卡页面，传递位置信息
           wx.navigateTo({
-            url: `/pages/checkin/checkin?longitude=${longitude}&latitude=${latitude}`
+            url: `/pages/checkin/index/checkin?longitude=${longitude}&latitude=${latitude}`
           })
         }
       }

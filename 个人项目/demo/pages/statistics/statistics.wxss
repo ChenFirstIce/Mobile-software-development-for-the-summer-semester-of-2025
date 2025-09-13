@@ -67,6 +67,14 @@
   font-weight: bold;
   color: #333;
   margin-bottom: 20rpx;
+  display: flex;
+  align-items: center;
+  gap: 10rpx;
+}
+
+.title-icon {
+  width: 32rpx;
+  height: 32rpx;
 }
 
 .overview-cards {
@@ -114,6 +122,8 @@
 
 .card-icon {
   font-size: 48rpx;
+  width: 48rpx;
+  height: 48rpx;
 }
 
 .card-content {
@@ -452,6 +462,14 @@
 
 .stat-icon {
   font-size: 36rpx;
+  width: 36rpx;
+  height: 36rpx;
+}
+
+.section-icon {
+  width: 36rpx;
+  height: 36rpx;
+  margin-right: 10rpx;
 }
 
 .stat-info {
@@ -577,6 +595,16 @@
 
 .achievement-icon {
   font-size: 40rpx;
+  width: 40rpx;
+  height: 40rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.achievement-image {
+  width: 40rpx;
+  height: 40rpx;
 }
 
 .achievement-info {

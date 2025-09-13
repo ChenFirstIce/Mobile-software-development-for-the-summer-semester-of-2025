@@ -694,7 +694,7 @@ Page({
     const achievements = []
     
     // 打卡成就
-    if (checkins.length >= 1) achievements.push({ name: '初次打卡', desc: '完成第一次打卡', icon: '/images/tool-box.png', unlocked: true })
+    if (checkins.length >= 1) achievements.push({ name: '初次打卡', desc: '完成第一次打卡', icon: '📍', unlocked: true })
     if (checkins.length >= 10) achievements.push({ name: '打卡新手', desc: '完成10次打卡', icon: '📍', unlocked: true })
     if (checkins.length >= 50) achievements.push({ name: '打卡达人', desc: '完成50次打卡', icon: '🏆', unlocked: true })
     if (checkins.length >= 100) achievements.push({ name: '打卡大师', desc: '完成100次打卡', icon: '👑', unlocked: true })

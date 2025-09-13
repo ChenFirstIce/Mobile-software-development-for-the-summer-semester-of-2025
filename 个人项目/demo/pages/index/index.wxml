@@ -2,6 +2,7 @@
 <view class="container" style="position: relative; left: 0rpx; top: -68rpx">
   <!-- 顶部欢迎区域 -->
   <view class="welcome-section">
+    <image class="card-icon" src="/images/image(1).png" mode="aspectFit"></image>
     <view class="welcome-text">
       <text class="welcome-title">欢迎使用旅冰GO</text>
       <text class="welcome-subtitle">记录美好时光，探索精彩世界</text>
@@ -18,6 +19,7 @@
     <view class="feature-section">      
       <view class="feature-cards">
         <view class="feature-card" bindtap="navigateToAlbum">
+          <image class="card-icon" src="/images/image(2).png" mode="aspectFit"></image>
           <view class="card-content">
             <text class="card-title">相册管理</text>
             <text class="card-desc">创建相册，记录美好瞬间</text>
@@ -26,6 +28,7 @@
         </view>
 
         <view class="feature-card" bindtap="navigateToMap">
+          <image class="card-icon" src="/images/image(3).png" mode="aspectFit"></image>
           <view class="card-content">
             <text class="card-title">地图导航</text>
             <text class="card-desc">地图打卡，路线规划</text>
@@ -35,6 +38,7 @@
 
 
         <view class="feature-card" bindtap="navigateToGroup">
+          <image class="card-icon" src="/images/image(4).png" mode="aspectFit"></image>
           <view class="card-content">
             <text class="card-title">旅游小群</text>
             <text class="card-desc">团队出行，共同记录</text>
@@ -43,6 +47,7 @@
         </view>
 
         <view class="feature-card" bindtap="navigateToStatistics">
+          <image class="card-icon" src="/images/image(5).png" mode="aspectFit"></image>
           <view class="card-content">
             <text class="card-title">数据分析</text>
             <text class="card-desc">查看旅游数据，分享成就</text>

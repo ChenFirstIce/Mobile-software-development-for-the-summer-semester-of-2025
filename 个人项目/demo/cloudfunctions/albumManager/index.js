@@ -46,6 +46,7 @@ exports.main = async (event, context) => {
 async function createAlbum(albumData, openid) {
   const album = {
     ...albumData,
+    coverImage: coverImage,
     creatorId: openid,
     createTime: new Date(),
     updateTime: new Date(),

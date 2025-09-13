@@ -103,7 +103,7 @@
   <view class="feature-section">
     <view class="feature-cards">
       <view class="feature-card" bindtap="navigateToRoute">
-        <text class="card-icon">🗺️</text>
+        <image class="card-icon" src="/images/map-3.png" mode="aspectFit"></image>
         <view class="card-content">
           <text class="card-title">路径规划</text>
           <text class="card-desc">智能路线规划，多种交通方式</text>
@@ -121,7 +121,7 @@
       </view>
 
       <view class="feature-card" bindtap="navigateToStats">
-        <text class="card-icon">📊</text>
+        <image class="card-icon" src="/images/graph.png" mode="aspectFit"></image>
         <view class="card-content">
           <text class="card-title">数据统计</text>
           <text class="card-desc">查看活动数据，分析趋势</text>

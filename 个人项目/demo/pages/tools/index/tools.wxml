@@ -1,0 +1,44 @@
+<!--pages/tools/index/tools.wxml-->
+<view class="container">
+  <!-- 页面标题 -->
+  <view class="page-header">
+    <text class="page-title">小工具</text>
+  </view>
+
+  <!-- 工具列表 -->
+  <view class="tools-section">
+    <view class="tools-grid">
+      <view class="tool-card" wx:for="{{tools}}" wx:key="id" bindtap="selectTool" data-id="{{item.id}}">
+        <image class="tool-icon" src="{{item.icon}}"></image>
+        <view class="tool-content">
+          <text class="tool-name">{{item.name}}</text>
+        </view>
+        <view class="tool-arrow"></view>
+      </view>
+    </view>
+  </view>
+  
+
+  <!-- 使用说明 -->
+  <view class="help-section">
+    <view class="section-title">使用说明</view>
+    
+    <view class="help-content">
+      <view class="help-item">
+        <view class="help-title">
+          <image class="help-icon" src="/images/tool-box.png"></image>
+          <text>随机轮盘</text>
+        </view>
+        <text class="help-text">创建轮盘，添加多个选项，随机选择结果。适合决定去哪里玩、吃什么等选择困难的情况。</text>
+      </view>
+      
+      <view class="help-item">
+        <view class="help-title">
+          <image class="help-icon" src="/images/money-bag.png"></image>
+          <text>价格投票</text>
+        </view>
+        <text class="help-text">匿名投票，了解大家对某个项目的心理价位。支持最低价和最高价投票，自动计算统计结果。</text>
+      </view>
+    </view>
+  </view>
+</view>

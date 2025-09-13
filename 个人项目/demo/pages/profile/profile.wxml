@@ -16,7 +16,7 @@
     <!-- 用户信息区域 -->
     <view class="user-info">
       <!-- 昵称编辑区域 -->
-      <view class="nickname-section" wx:if="{{isLoggedIn}}" >
+      <view class="nickname-section" wx:if="{{isLoggedIn}}" catchtap="stopPropagation">
         <input wx:if="{{isEditingNickname}}" 
                class="nickname-input" 
                value="{{editNickName}}"
@@ -46,7 +46,7 @@
       <view class="menu-item" bindtap="goToSettings">
         <view class="menu-content">
           <text class="menu-text">设置</text>
-          <text class="menu-desc">应用设置和偏好</text>
+          <text class="menu-desc">设置一些设置</text>
         </view>
         <view class="menu-arrow">></view>
       </view>
@@ -54,7 +54,7 @@
       <view class="menu-item" bindtap="goToHelp">
         <view class="menu-content">
           <text class="menu-text">帮助中心</text>
-          <text class="menu-desc">使用指南和常见问题</text>
+          <text class="menu-desc">不使用指南和不常见问题</text>
         </view>
         <view class="menu-arrow">></view>
       </view>
@@ -62,7 +62,7 @@
       <view class="menu-item" bindtap="goToFeedback">
         <view class="menu-content">
           <text class="menu-text">意见反馈</text>
-          <text class="menu-desc">告诉我们您的建议</text>
+          <text class="menu-desc">讨厌您来</text>
         </view>
         <view class="menu-arrow">></view>
       </view>
@@ -70,7 +70,7 @@
       <view class="menu-item" bindtap="goToAbout">
         <view class="menu-content">
           <text class="menu-text">关于我们</text>
-          <text class="menu-desc">了解应用信息</text>
+          <text class="menu-desc">下次下次</text>
         </view>
         <view class="menu-arrow">></view>
       </view>

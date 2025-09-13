@@ -1,0 +1,266 @@
+/* pages/tools/index/tools.wxss */
+.container {
+  padding: 20rpx;
+  background-color: #f8f8f8;
+  min-height: 100vh;
+}
+
+/* 页面标题 */
+.page-header {
+  text-align: center;
+  margin-bottom: 40rpx;
+  padding: 40rpx 0;
+}
+
+.page-title {
+  display: block;
+  font-size: 48rpx;
+  font-weight: bold;
+  color: #333;
+  margin-bottom: 15rpx;
+}
+
+.page-subtitle {
+  display: block;
+  font-size: 28rpx;
+  color: #666;
+}
+
+/* 工具列表 */
+.tools-section {
+  margin-bottom: 40rpx;
+}
+
+.tools-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 20rpx;
+}
+
+.tool-card {
+  display: flex;
+  align-items: center;
+  background: white;
+  padding: 30rpx;
+  border-radius: 20rpx;
+  box-shadow: 0 2rpx 20rpx rgba(0, 0, 0, 0.1);
+  transition: all 0.3s ease;
+}
+
+.tool-card:active {
+  transform: scale(0.98);
+  box-shadow: 0 1rpx 10rpx rgba(0, 0, 0, 0.15);
+}
+
+.tool-icon {
+  width: 60rpx;
+  height: 60rpx;
+  margin-right: 25rpx;
+}
+
+.tool-content {
+  flex: 1;
+}
+
+.tool-name {
+  display: block;
+  font-size: 32rpx;
+  font-weight: bold;
+  color: #333;
+  margin-bottom: 10rpx;
+}
+
+.tool-desc {
+  display: block;
+  font-size: 26rpx;
+  color: #666;
+}
+
+.tool-arrow {
+  font-size: 32rpx;
+  color: #ccc;
+  font-weight: bold;
+}
+
+/* 最近使用 */
+.recent-section {
+  margin-bottom: 40rpx;
+  background: white;
+  border-radius: 20rpx;
+  overflow: hidden;
+  box-shadow: 0 2rpx 20rpx rgba(0, 0, 0, 0.1);
+}
+
+.section-title {
+  padding: 30rpx;
+  font-size: 32rpx;
+  font-weight: bold;
+  color: #333;
+  border-bottom: 1rpx solid #f0f0f0;
+}
+
+.subsection-title {
+  padding: 20rpx 30rpx 15rpx;
+  font-size: 28rpx;
+  font-weight: bold;
+  color: #4CAF50;
+  background: #f8f8f8;
+}
+
+.recent-list {
+  padding: 0 30rpx;
+}
+
+.recent-item {
+  display: flex;
+  align-items: center;
+  padding: 20rpx 0;
+  border-bottom: 1rpx solid #f0f0f0;
+  transition: background-color 0.3s;
+}
+
+.recent-item:last-child {
+  border-bottom: none;
+}
+
+.recent-item:active {
+  background-color: #f8f8f8;
+}
+
+.item-icon {
+  font-size: 32rpx;
+  margin-right: 20rpx;
+  width: 40rpx;
+  text-align: center;
+}
+
+.item-content {
+  flex: 1;
+}
+
+.item-title {
+  display: block;
+  font-size: 28rpx;
+  color: #333;
+  margin-bottom: 6rpx;
+}
+
+.item-info {
+  display: block;
+  font-size: 24rpx;
+  color: #999;
+}
+
+.item-arrow {
+  font-size: 24rpx;
+  color: #ccc;
+}
+
+/* 使用说明 */
+.help-section {
+  margin-bottom: 40rpx;
+  background: white;
+  border-radius: 20rpx;
+  overflow: hidden;
+  box-shadow: 0 2rpx 20rpx rgba(0, 0, 0, 0.1);
+}
+
+.help-content {
+  padding: 0 30rpx 30rpx;
+}
+
+.help-item {
+  margin-bottom: 25rpx;
+}
+
+.help-item:last-child {
+  margin-bottom: 0;
+}
+
+.help-title {
+  display: flex;
+  align-items: center;
+  gap: 10rpx;
+  font-size: 28rpx;
+  font-weight: bold;
+}
+
+.help-icon {
+  width: 28rpx;
+  height: 28rpx;
+  color: #333;
+  margin-bottom: 10rpx;
+}
+
+.help-text {
+  display: block;
+  font-size: 26rpx;
+  color: #666;
+  line-height: 1.6;
+}
+
+/* 快速操作 */
+.quick-actions {
+  background: white;
+  border-radius: 20rpx;
+  padding: 30rpx;
+  box-shadow: 0 2rpx 20rpx rgba(0, 0, 0, 0.1);
+}
+
+.action-title {
+  font-size: 30rpx;
+  font-weight: bold;
+  color: #333;
+  margin-bottom: 20rpx;
+}
+
+.action-buttons {
+  display: flex;
+  gap: 20rpx;
+}
+
+.action-btn {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, #4CAF50, #45a049);
+  border: none;
+  border-radius: 16rpx;
+  padding: 30rpx 20rpx;
+  transition: all 0.3s ease;
+  color: white;
+}
+
+.action-btn:active {
+  transform: scale(0.95);
+  box-shadow: 0 2rpx 10rpx rgba(76, 175, 80, 0.3);
+}
+
+.btn-icon {
+  font-size: 40rpx;
+  margin-bottom: 10rpx;
+}
+
+.btn-text {
+  font-size: 26rpx;
+  font-weight: bold;
+}
+
+/* 响应式设计 */
+@media (max-width: 750rpx) {
+  .action-buttons {
+    flex-direction: column;
+  }
+  
+  .tool-card {
+    padding: 25rpx;
+  }
+  
+  .tool-icon {
+    width: 50rpx;
+    height: 50rpx;
+    margin-right: 20rpx;
+  }
+}

@@ -50,7 +50,7 @@ Page({
   // 导航到相册页面
   navigateToAlbum: function () {
     wx.switchTab({
-      url: '/pages/album/album'
+      url: '/pages/album/index/album'
     })
   },
 
@@ -65,7 +65,7 @@ Page({
   // 导航到旅游群页面
   navigateToGroup: function () {
     wx.switchTab({
-      url: '/pages/group/group'
+      url: '/pages/group/index/group'
     })
   },
 
@@ -86,7 +86,7 @@ Page({
   // 快速打卡
   quickCheckin: function () {
     wx.navigateTo({
-      url: '/pages/checkin/checkin'
+      url: '/pages/checkin/index/checkin'
     })
   },
 
@@ -105,35 +105,80 @@ Page({
 
   // 导航到默认相册
   navigateToDefaultAlbum: function () {
+    // 检查登录状态
+    const userInfo = wx.getStorageSync('userInfo')
+    if (!userInfo) {
+      app.showToast('请先登录')
+      return
+    }
+
     // 检查是否存在默认相册
     let albums = wx.getStorageSync('albums') || []
     let defaultAlbum = albums.find(album => album.isDefault === true)
     
     if (!defaultAlbum) {
-      // 如果没有默认相册，创建一个
-      defaultAlbum = {
-        id: 'default_' + Date.now(),
-        name: '默认相册',
-        description: '快速拍照的默认相册',
-        isDefault: true,
-        type: 'default',
-        coverImage: '',
-        photoCount: 0,
-        photos: [],
-        createTime: new Date().toISOString(),
-        updateTime: new Date().toISOString()
-      }
-      
-      // 保存到本地存储
-      albums.unshift(defaultAlbum)
-      wx.setStorageSync('albums', albums)
-      
-      app.showToast('已创建默认相册')
+      // 如果没有默认相册，使用云函数创建一个
+      this.createDefaultAlbum()
+      return
     }
     
     // 跳转到相册详情页面
     wx.navigateTo({
-      url: `/pages/album/detail?id=${defaultAlbum.id}&fromQuickPhoto=true`
+      url: `/pages/album/detail/detail?id=${defaultAlbum._id}&fromQuickPhoto=true`
+    })
+  },
+
+  // 创建默认相册
+  createDefaultAlbum: function () {
+    const userInfo = wx.getStorageSync('userInfo')
+    
+    wx.showLoading({
+      title: '创建默认相册...'
+    })
+
+    // 准备相册数据
+    const albumData = {
+      name: '默认相册',
+      description: '快速拍照的默认相册',
+      isDefault: true,
+      type: 'default',
+      coverImage: '',
+      photos: []
+    }
+
+    // 调用云函数创建相册
+    wx.cloud.callFunction({
+      name: 'albumManager',
+      data: {
+        action: 'create',
+        albumData: albumData
+      },
+      success: (res) => {
+        wx.hideLoading()
+        
+        if (res.result.success) {
+          const newAlbum = res.result.data
+          
+          // 保存到本地存储
+          let albums = wx.getStorageSync('albums') || []
+          albums.unshift(newAlbum)
+          wx.setStorageSync('albums', albums)
+          
+          app.showToast('已创建默认相册')
+          
+          // 跳转到相册详情页面
+          wx.navigateTo({
+            url: `/pages/album/detail/detail?id=${newAlbum._id}&fromQuickPhoto=true`
+          })
+        } else {
+          app.showToast('创建默认相册失败: ' + res.result.message)
+        }
+      },
+      fail: (error) => {
+        wx.hideLoading()
+        console.error('创建默认相册失败:', error)
+        app.showToast('创建默认相册失败')
+      }
     })
   },
 
@@ -145,7 +190,7 @@ Page({
     // 添加到最近活动
     this.addRecentActivity({
       id: Date.now(),
-      icon: '📸',
+      icon: '/images/camera.png',
       title: '拍照记录',
       time: this.formatTime(new Date())
     })

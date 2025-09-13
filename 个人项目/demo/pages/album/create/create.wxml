@@ -1,0 +1,170 @@
+<!--pages/album/create.wxml-->
+<view class="container">
+  <!-- 页面标题 -->
+  <view class="page-header">
+    <text class="page-title">{{isEdit ? '编辑相册' : '创建相册'}}</text>
+    <text class="page-subtitle">{{isEdit ? '修改相册信息' : '记录美好时光'}}</text>
+  </view>
+
+  <!-- 相册信息表单 -->
+  <view class="form-section">
+    <view class="input-group">
+      <text class="input-label">相册名称 *</text>
+      <input style="height: 72rpx; display: block; box-sizing: border-box" class="input-field" placeholder="请输入相册名称" bindinput="onNameInput" value="{{albumName}}" maxlength="50" />
+    </view>
+
+    <view class="input-group">
+      <text class="input-label">相册描述</text>
+      <textarea class="input-field" placeholder="描述一下这个相册..." bindinput="onDescInput" value="{{albumDesc}}" maxlength="200" />
+    </view>
+
+    <view class="input-group">
+      <text class="input-label">相册类型</text>
+      <view class="type-selector">
+        <view class="type-option {{albumType === 'personal' ? 'active' : ''}}" bindtap="selectType" data-type="personal">
+          <text class="type-icon">👤</text>
+          <text class="type-text">个人相册</text>
+          <text class="type-desc">仅您可见和编辑</text>
+        </view>
+        <view class="type-option {{albumType === 'shared' ? 'active' : ''}}" bindtap="selectType" data-type="shared">
+          <image class="type-icon" src="/images/group-1.png" mode="aspectFit"></image>
+          <text class="type-text">共有相册</text>
+          <text class="type-desc">群组成员可查看和编辑</text>
+        </view>
+      </view>
+    </view>
+
+    <!-- 共有相册额外设置 -->
+    <view class="shared-settings" wx:if="{{albumType === 'shared'}}">
+      <view class="input-group">
+        <text class="input-label">关联群组</text>
+        <view class="group-selector" bindtap="selectGroup">
+          <text class="group-text">{{selectedGroup ? selectedGroup.name : '请选择群组'}}</text>
+          <text class="group-arrow">></text>
+        </view>
+      </view>
+      
+      <view class="input-group">
+        <text class="input-label">权限设置</text>
+        <view class="permission-options">
+          <view class="permission-item">
+            <checkbox checked="{{allowView}}" bindtap="togglePermission" data-type="view" />
+            <text class="permission-text">允许查看</text>
+          </view>
+          <view class="permission-item">
+            <checkbox checked="{{allowEdit}}" bindtap="togglePermission" data-type="edit" />
+            <text class="permission-text">允许编辑</text>
+          </view>
+          <view class="permission-item">
+            <checkbox checked="{{allowUpload}}" bindtap="togglePermission" data-type="upload" />
+            <text class="permission-text">允许上传</text>
+          </view>
+        </view>
+      </view>
+    </view>
+
+    <!-- 封面图片设置 -->
+    <view class="input-group">
+      <text class="input-label">封面图片</text>
+      <view class="cover-upload">
+        <view class="cover-preview" wx:if="{{coverImage}}">
+          <image src="{{coverImage}}" mode="aspectFill" class="cover-image"></image>
+          <view class="cover-actions">
+            <view class="cover-btn" bindtap="changeCover">更换</view>
+            <view class="cover-btn delete" bindtap="removeCover">删除</view>
+          </view>
+        </view>
+        <view class="cover-upload-btn" wx:else bindtap="selectCover">
+          <text class="upload-icon">📷</text>
+          <text class="upload-text">选择封面图片</text>
+        </view>
+      </view>
+    </view>
+
+    <!-- 标签设置 -->
+    <view class="input-group">
+      <text class="input-label">相册标签</text>
+      <view class="tags-container">
+        <view class="tag-list">
+          <view class="tag-item" wx:for="{{selectedTags}}" wx:key="index">
+            <text class="tag-text">{{item}}</text>
+            <text class="tag-delete" bindtap="removeTag" data-index="{{index}}">✕</text>
+          </view>
+        </view>
+        <view class="add-tag" bindtap="showTagSelector">
+          <text class="add-icon">+</text>
+          <text class="add-text">添加标签</text>
+        </view>
+      </view>
+    </view>
+  </view>
+
+  <!-- 操作按钮 -->
+  <view class="action-buttons">
+    <button class="btn-secondary" bindtap="cancelCreate">取消</button>
+    <button class="btn-primary" bindtap="saveAlbum" disabled="{{!albumName}}">
+      {{isEdit ? '保存修改' : '创建相册'}}
+    </button>
+  </view>
+
+  <!-- 标签选择弹窗 -->
+  <view class="modal-overlay" wx:if="{{showTagModal}}" bindtap="hideTagSelector">
+    <view class="modal-content" >
+      <view class="modal-header">
+        <text class="modal-title">选择标签</text>
+        <view class="close-btn" bindtap="hideTagSelector">✕</view>
+      </view>
+      
+      <view class="modal-body">
+        <view class="tag-categories">
+          <view class="category-item" wx:for="{{tagCategories}}" wx:key="name">
+            <text class="category-name">{{item.name}}</text>
+            <view class="category-tags">
+              <view class="tag-option {{item.selected ? 'selected' : ''}}" 
+                    wx:for="{{item.tags}}" wx:key="index" wx:for-item="tag"
+                    bindtap="toggleTag" data-category="{{item.name}}" data-tag="{{tag}}">
+                {{tag}}
+              </view>
+            </view>
+          </view>
+        </view>
+      </view>
+      
+      <view class="modal-footer">
+        <button class="btn-secondary" bindtap="hideTagSelector">取消</button>
+        <button class="btn-primary" bindtap="confirmTags">确定</button>
+      </view>
+    </view>
+  </view>
+
+  <!-- 群组选择弹窗 -->
+  <view class="modal-overlay" wx:if="{{showGroupModal}}" bindtap="hideGroupSelector">
+    <view class="modal-content" >
+      <view class="modal-header">
+        <text class="modal-title">选择群组</text>
+        <view class="close-btn" bindtap="hideGroupSelector">✕</view>
+      </view>
+      
+      <view class="modal-body">
+        <view class="group-list">
+          <view class="group-item {{item.id === selectedGroupId ? 'selected' : ''}}" 
+                wx:for="{{availableGroups}}" wx:key="id"
+                bindtap="selectGroupItem" data-group="{{item}}">
+            <view class="group-info">
+              <text class="group-name">{{item.name}}</text>
+              <text class="group-desc">{{item.description || '暂无描述'}}</text>
+            </view>
+            <view class="group-status">
+              <text class="member-count">{{item.memberCount}}/{{item.maxMembers}}人</text>
+            </view>
+          </view>
+        </view>
+      </view>
+      
+      <view class="modal-footer">
+        <button class="btn-secondary" bindtap="hideGroupSelector">取消</button>
+        <button class="btn-primary" bindtap="confirmGroup">确定</button>
+      </view>
+    </view>
+  </view>
+</view>

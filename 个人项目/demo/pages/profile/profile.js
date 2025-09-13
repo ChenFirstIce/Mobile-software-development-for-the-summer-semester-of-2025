@@ -284,5 +284,29 @@ Page({
       }
     })
   },
+  
+  stopPropagation: function(){
+
+  },
+
+  // 跳转到设置页面
+  goToSettings: function () {
+    app.showToast('没啥可设置的，受着吧')
+  },
+
+  // 跳转到帮助中心
+  goToHelp: function () {
+    app.showToast('自给自足，无需帮助')
+  },
+
+  // 跳转到意见反馈
+  goToFeedback: function () {
+    app.showToast('满昏，统统满昏')
+  },
+
+  // 跳转到关于我们
+  goToAbout: function () {
+    app.showToast('呼呼，困死我了。好想睡觉……')
+  }
 
 })
