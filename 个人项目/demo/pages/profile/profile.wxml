@@ -4,12 +4,12 @@
   <view class="user-header" bindtap="finishNicknameEdit">
     <!-- 头像区域 -->
     <view class="avatar-section" wx:if="{{isLoggedIn}}" bindtap="editAvatar">
-      <image src="{{editAvatar || userInfo.avatarUrl || '/images/default-avatar.png'}}" class="user-avatar"></image>
+      <image src="{{editAvatar || userInfo.avatarUrl || '/images/avatar.png'}}" class="user-avatar"></image>
       <view class="avatar-edit-hint">点击更换</view>
     </view>
     
     <view class="avatar-section" wx:else bindtap="showLoginModal">
-      <image src="/images/default-avatar.png" class="user-avatar"></image>
+      <image src="/images/avatar.png" class="user-avatar"></image>
       <view class="avatar-edit-hint">点击登录</view>
     </view>
     
@@ -93,7 +93,7 @@
       
       <view class="modal-body">
         <view class="login-content">
-          <image class="login-avatar" src="/images/default-avatar.png"></image>
+          <image class="login-avatar" src="/images/avatar.png"></image>
           <text class="login-title">欢迎使用旅冰GO</text>
           <text class="login-desc">授权登录后将直接使用您的微信头像和昵称，并可以使用完整功能：</text>
           <view class="login-features">

@@ -1,6 +1,5 @@
 // pages/map/map.js
 const app = getApp()
-const util = require('../../utils/util')
 
 Page({
   data: {
@@ -26,13 +25,19 @@ Page({
     mapContext: null, // 地图上下文对象
   },
 
-/**********检查登录**********/
+/**********检查登录&准备工作**********/
   onLoad: function (options) {
-    util.checkLoginAndRedirect(this, this.onLoggedIn)
+    app.checkLoginAndRedirect()
+    if (app.globalData.isLoggedIn) {
+      this.onLoggedIn()
+    }
   },
 
   onShow: function () {
-    util.checkLoginAndRedirect(this, this.onLoggedIn)
+    app.checkLoginAndRedirect()
+    if (app.globalData.isLoggedIn) {
+      this.onLoggedIn()
+    }
   },
 
   // 登录成功后的回调

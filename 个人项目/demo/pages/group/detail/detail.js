@@ -211,7 +211,7 @@ Page({
     const newMember = {
       userId: userInfo._openid,
       nickName: userInfo.nickName,
-      avatarUrl: userInfo.avatarUrl || '/images/default-avatar.png',
+      avatarUrl: userInfo.avatarUrl || '/images/avatar.png',
       role: 'member',
       joinTime: new Date()
     }

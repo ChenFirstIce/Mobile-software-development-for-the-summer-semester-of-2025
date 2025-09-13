@@ -1,5 +1,4 @@
 // pages/tools/wheel/wheel.js
-var util = require('../../../utils/util.js')
 var app = getApp();
 
 function randomsort(a, b) {

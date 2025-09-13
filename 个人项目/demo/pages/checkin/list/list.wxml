@@ -53,7 +53,7 @@
       <!-- 打卡头部 -->
       <view class="checkin-header">
         <view class="user-info">
-          <image class="user-avatar" src="{{item.userAvatar || '/images/default-avatar.png'}}" mode="aspectFill"></image>
+          <image class="user-avatar" src="{{item.userAvatar || '/images/avatar.png'}}" mode="aspectFill"></image>
           <view class="user-details">
             <text class="user-name">{{item.userName}}</text>
             <text class="checkin-time">{{item.createTime}}</text>

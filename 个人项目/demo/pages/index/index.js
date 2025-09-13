@@ -1,6 +1,5 @@
 // pages/index/index.js
 const app = getApp()
-const util = require('../../utils/util')
 
 Page({
   data: {
@@ -9,12 +8,18 @@ Page({
   },
 
   onLoad: function (options) {
-    util.checkLoginAndRedirect(this, this.onLoggedIn)
+    app.checkLoginAndRedirect()
+    if (app.globalData.isLoggedIn) {
+      this.onLoggedIn()
+    }
   },
 
   onShow: function () {
     // 页面显示时检查登录状态
-    util.checkLoginAndRedirect(this, this.onLoggedIn)
+    app.checkLoginAndRedirect()
+    if (app.globalData.isLoggedIn) {
+      this.onLoggedIn()
+    }
   },
 
   // 登录成功后的回调

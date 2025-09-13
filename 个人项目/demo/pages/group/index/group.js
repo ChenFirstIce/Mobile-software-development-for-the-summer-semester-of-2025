@@ -1,6 +1,5 @@
 // pages/group/group.js
 const app = getApp()
-const util = require('../../../utils/util')
 
 Page({
   data: {
@@ -19,11 +18,17 @@ Page({
   },
 
   onLoad: function (options) {
-    util.checkLoginAndRedirect(this, this.onLoggedIn)
+    app.checkLoginAndRedirect()
+    if (app.globalData.isLoggedIn) {
+      this.onLoggedIn()
+    }
   },
 
   onShow: function () {
-    util.checkLoginAndRedirect(this, this.onLoggedIn)
+    app.checkLoginAndRedirect()
+    if (app.globalData.isLoggedIn) {
+      this.onLoggedIn()
+    }
   },
 
   // 登录成功后的回调
@@ -362,7 +367,7 @@ Page({
       const memberInfo = {
         id: currentUser.id,
         name: currentUser.nickName,
-        avatar: currentUser.avatarUrl || '/images/default-avatar.png',
+        avatar: currentUser.avatarUrl || '/images/avatar.png',
         role: 'member',
         joinTime: new Date().toISOString()
       }

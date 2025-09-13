@@ -192,10 +192,12 @@ Page({
     )
     console.log('匹配相册ID的照片数量:', photos.length)
     
-    // 如果没有照片，创建一些测试数据用于调试
+    // 如果没有照片，显示空状态
     if (photos.length === 0 && albumId) {
-      console.log('没有找到照片，创建测试数据')
-      this.createTestPhotos(albumId)
+      console.log('相册暂无照片')
+      this.setData({
+        photos: []
+      })
       return
     }
     
@@ -207,41 +209,6 @@ Page({
     this.updateAlbumPhotoCount(albumId, photos.length)
   },
 
-  // 创建测试照片数据
-  createTestPhotos: function (albumId) {
-    const testPhotos = [
-      {
-        id: 'test1_' + Date.now(),
-        albumId: albumId,
-        url: '/images/default-avatar.png',
-        name: '测试照片1',
-        description: '这是一张测试照片',
-        uploadTime: '2024-01-01 12:00:00',
-        createTime: new Date()
-      },
-      {
-        id: 'test2_' + Date.now(),
-        albumId: albumId,
-        url: '/images/search.png',
-        name: '测试照片2',
-        description: '这是另一张测试照片',
-        uploadTime: '2024-01-01 12:01:00',
-        createTime: new Date()
-      }
-    ]
-    
-    // 保存到本地存储
-    let allPhotos = wx.getStorageSync('photos') || []
-    allPhotos = allPhotos.concat(testPhotos)
-    wx.setStorageSync('photos', allPhotos)
-    
-    this.setData({
-      photos: testPhotos
-    })
-    
-    this.updateAlbumPhotoCount(albumId, testPhotos.length)
-    console.log('创建了测试照片数据')
-  },
 
   // 更新相册照片数量
   updateAlbumPhotoCount: function (albumId, count) {

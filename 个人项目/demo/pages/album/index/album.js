@@ -1,6 +1,5 @@
 // pages/album/album.js
 const app = getApp()
-const util = require('../../../utils/util')
 
 Page({
   data: {
@@ -14,11 +13,17 @@ Page({
   },
 
   onLoad: function (options) {
-    util.checkLoginAndRedirect(this, this.onLoggedIn)
+    app.checkLoginAndRedirect()
+    if (app.globalData.isLoggedIn) {
+      this.onLoggedIn()
+    }
   },
 
   onShow: function () {
-    util.checkLoginAndRedirect(this, this.onLoggedIn)
+    app.checkLoginAndRedirect()
+    if (app.globalData.isLoggedIn) {
+      this.onLoggedIn()
+    }
   },
 
   // 登录成功后的回调

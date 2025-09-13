@@ -44,7 +44,7 @@ Page({
     })
   },
 
-  // 微信授权登录（云开发版本）
+  // 微信授权登录
   wxLogin: function () {
     wx.showLoading({
       title: '登录中...'
@@ -65,7 +65,7 @@ Page({
           wx.switchTab({
             url: '/pages/index/index'
           })
-        }, 1500)
+        }, 100)
       })
       .catch((error) => {
         wx.hideLoading()

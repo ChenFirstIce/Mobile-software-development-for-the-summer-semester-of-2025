@@ -32,7 +32,7 @@
     
     <view class="members-row">
       <view class="member-avatar" wx:for="{{members}}" wx:key="id" wx:if="{{!isMemberCompleted[item.id]}}">
-        <image class="avatar-img" src="{{item.avatarUrl || '/images/default-avatar.png'}}" mode="aspectFill"></image>
+        <image class="avatar-img" src="{{item.avatarUrl || '/images/avatar.png'}}" mode="aspectFill"></image>
         <view class="avatar-status incomplete"></view>
       </view>
       
@@ -197,7 +197,7 @@
       <view class="modal-body">
         <view class="members-list">
           <view class="member-item" wx:for="{{incompleteMembers}}" wx:key="id">
-            <image class="member-avatar-large" src="{{item.avatarUrl || '/images/default-avatar.png'}}" mode="aspectFill"></image>
+            <image class="member-avatar-large" src="{{item.avatarUrl || '/images/avatar.png'}}" mode="aspectFill"></image>
             <text class="member-name">{{item.nickName}}</text>
           </view>
         </view>

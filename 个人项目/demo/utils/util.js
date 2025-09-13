@@ -1,35 +1,3 @@
-/**
- * 检查登录状态并重定向
- * @param {Object} pageContext - 页面上下文，用于调用页面方法
- * @param {Function} onLoggedIn - 登录成功后的回调函数
- * @param {string} redirectUrl - 未登录时重定向的URL，默认为 '/pages/profile/profile'
- */
-function checkLoginAndRedirect(pageContext, onLoggedIn, redirectUrl = '/pages/profile/profile') {
-    const isLoggedIn = wx.getStorageSync('userToken') ? true : false
-    
-    if (!isLoggedIn) {
-        // 未登录，跳转到登录页面
-        wx.switchTab({
-            url: redirectUrl
-        })
-        return false
-    }
-    
-    // 已登录，执行回调函数
-    if (onLoggedIn && typeof onLoggedIn === 'function') {
-        onLoggedIn.call(pageContext)
-    }
-    
-    return true
-}
- 
-/**
- * 检查是否已登录
- * @returns {boolean} 是否已登录
- */
-function isLoggedIn() {
-    return wx.getStorageSync('userToken') ? true : false
-}
 
 function formatTime(date) {
   var year = date.getFullYear()
@@ -100,7 +68,5 @@ module.exports = {
   isNull: isNull,
   getDays: getDays,
   dateToString: dateToString,
-  formatDate: formatDate,
-  checkLoginAndRedirect: checkLoginAndRedirect,
-  isLoggedIn: isLoggedIn
+  formatDate: formatDate
 }
