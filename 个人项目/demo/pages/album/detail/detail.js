@@ -511,7 +511,7 @@ Page({
           
           // 保存到相册
           wx.saveImageToPhotosAlbum({
-            filePath: res.tempFilePath,
+            filePath: res.fileId,
             success: () => {
               app.showToast('照片已保存到相册')
             },

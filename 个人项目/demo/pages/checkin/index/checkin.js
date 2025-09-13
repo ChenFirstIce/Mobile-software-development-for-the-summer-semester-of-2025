@@ -578,18 +578,6 @@ Page({
     checkins.push(checkinData)
     wx.setStorageSync('checkinPoints', checkins)
     
-    // 如果选择了相册，将照片添加到相册
-    if (checkinData.albumId && checkinData.photos.length > 0) {
-      this.addPhotosToAlbum(checkinData)
-    }
-    
-    app.hideLoading()
-    app.showToast('打卡成功！')
-    
-    // 返回上一页
-    setTimeout(() => {
-      wx.navigateBack()
-    }, 1500)
   },
 
   /**********照片后面的操作**********/
@@ -605,7 +593,7 @@ Page({
     const photoData = checkinData.photos.map((photo, index) => {
       return {
         albumId: checkinData.albumId,
-        url: photo,
+        fileId: photo, // 使用 fileId 字段，与相册显示保持一致
         name: `打卡照片${index + 1}`,
         description: checkinData.content,
         location: checkinData.address,
@@ -649,7 +637,7 @@ Page({
       return {
         id: Date.now() + index,
         albumId: checkinData.albumId,
-        url: photo,
+        fileId: photo, // 使用 fileId 字段，与相册显示保持一致
         name: `打卡照片${index + 1}`,
         description: checkinData.content,
         location: checkinData.address,
