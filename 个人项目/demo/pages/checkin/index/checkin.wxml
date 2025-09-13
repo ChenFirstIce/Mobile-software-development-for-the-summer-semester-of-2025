@@ -119,7 +119,7 @@
 
   <!-- 相册选择弹窗 -->
   <view class="modal-overlay" wx:if="{{showAlbumModal}}" bindtap="hideAlbumSelector">
-    <view class="modal-content" >
+    <view class="modal-content" catchtap="stopPropagation">
       <view class="modal-header">
         <text class="modal-title">选择相册</text>
         <view class="close-btn" bindtap="hideAlbumSelector">✕</view>
@@ -150,7 +150,7 @@
 
   <!-- 自定义标签输入弹窗 -->
   <view class="modal-overlay" wx:if="{{showTagInputModal}}" bindtap="hideCustomTagInput">
-    <view class="modal-content" >
+    <view class="modal-content" catchtap="stopPropagation">
       <view class="modal-header">
         <text class="modal-title">添加自定义标签</text>
         <view class="close-btn" bindtap="hideCustomTagInput">✕</view>

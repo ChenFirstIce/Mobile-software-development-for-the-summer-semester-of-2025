@@ -370,6 +370,11 @@ Page({
     })
   },
 
+  // 阻止事件冒泡
+  stopPropagation: function () {
+    // 空函数，用于阻止事件冒泡
+  },
+
   // 自定义标签输入
   onCustomTagInput: function (e) {
     this.setData({
