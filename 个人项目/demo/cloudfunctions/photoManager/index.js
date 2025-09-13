@@ -15,6 +15,8 @@ exports.main = async (event, context) => {
     switch (action) {
       case 'upload':
         return await uploadPhoto(photoData, OPENID)
+      case 'batchUpload':
+        return await batchUploadPhotos(photoData, OPENID)
       case 'update':
         return await updatePhoto(photoId, photoData, OPENID)
       case 'delete':
@@ -287,5 +289,94 @@ async function batchDeletePhotos(photoIds, openid) {
   return {
     success: true,
     message: `成功删除 ${photos.data.length} 张照片`
+  }
+}
+
+// 批量上传照片
+async function batchUploadPhotos(photoData, openid) {
+  const { photos, albumId } = photoData
+  
+  if (!photos || !Array.isArray(photos) || photos.length === 0) {
+    return {
+      success: false,
+      message: '照片数据不能为空'
+    }
+  }
+  
+  if (!albumId) {
+    return {
+      success: false,
+      message: '相册ID不能为空'
+    }
+  }
+  
+  // 检查相册权限
+  const album = await db.collection('albums').doc(albumId).get()
+  if (!album.data) {
+    return {
+      success: false,
+      message: '相册不存在'
+    }
+  }
+  
+  // 检查上传权限
+  if (album.data.creatorId !== openid && 
+      (!album.data.permissions || !album.data.permissions.upload)) {
+    return {
+      success: false,
+      message: '无上传权限'
+    }
+  }
+  
+  const uploadedPhotos = []
+  const errors = []
+  
+  // 批量上传照片
+  for (let i = 0; i < photos.length; i++) {
+    try {
+      const photo = {
+        ...photos[i],
+        albumId: albumId,
+        uploaderId: openid,
+        createTime: new Date(),
+        updateTime: new Date(),
+        status: 'active'
+      }
+      
+      const result = await db.collection('photos').add({
+        data: photo
+      })
+      
+      uploadedPhotos.push({
+        ...photo,
+        _id: result._id
+      })
+    } catch (error) {
+      console.error(`上传第${i+1}张照片失败:`, error)
+      errors.push(`第${i+1}张照片上传失败: ${error.message}`)
+    }
+  }
+  
+  // 更新相册照片数量
+  if (uploadedPhotos.length > 0) {
+    await db.collection('albums').doc(albumId).update({
+      data: {
+        photoCount: db.command.inc(uploadedPhotos.length),
+        updateTime: new Date()
+      }
+    })
+  }
+  
+  return {
+    success: uploadedPhotos.length > 0,
+    data: {
+      uploadedPhotos: uploadedPhotos,
+      totalCount: photos.length,
+      successCount: uploadedPhotos.length,
+      errorCount: errors.length
+    },
+    message: uploadedPhotos.length === photos.length ? 
+      `成功上传 ${uploadedPhotos.length} 张照片` : 
+      `成功上传 ${uploadedPhotos.length} 张照片，失败 ${errors.length} 张`
   }
 }

@@ -334,9 +334,39 @@ Page({
 
   // 显示打卡详情
   showCheckinDetails: function (checkinPoint) {
+    // 检查是否有照片
+    const hasPhotos = checkinPoint.photos && Array.isArray(checkinPoint.photos) && checkinPoint.photos.length > 0
+    const firstPhoto = hasPhotos ? checkinPoint.photos[0] : null
+    
+    if (hasPhotos && firstPhoto) {
+      // 如果有照片，显示照片预览
+      wx.previewImage({
+        current: firstPhoto, // 当前显示图片的http链接
+        urls: checkinPoint.photos, // 需要预览的图片http链接列表
+        success: () => {
+          // 预览成功后，显示打卡信息
+          this.showCheckinInfoModal(checkinPoint)
+        },
+        fail: () => {
+          // 预览失败，直接显示打卡信息
+          this.showCheckinInfoModal(checkinPoint)
+        }
+      })
+    } else {
+      // 没有照片，直接显示打卡信息
+      this.showCheckinInfoModal(checkinPoint)
+    }
+  },
+
+  // 显示打卡信息弹窗
+  showCheckinInfoModal: function (checkinPoint) {
+    const createTime = checkinPoint.createTime ? 
+      (typeof checkinPoint.createTime === 'string' ? checkinPoint.createTime : checkinPoint.createTime.toLocaleString()) : 
+      '未知时间'
+    
     wx.showModal({
       title: '打卡信息',
-      content: `${checkinPoint.content}\n时间：${checkinPoint.createTime}\n位置：${checkinPoint.address}`,
+      content: `${checkinPoint.content || '无描述'}\n时间：${createTime}\n位置：${checkinPoint.address || '未知位置'}`,
       showCancel: false,
       confirmText: '知道了'
     })
@@ -429,7 +459,7 @@ Page({
     this.updateMarkers()
   },
 
-
+/**********地图点击创建打卡点**********/
   // 从地图点击创建打卡点
   createCheckinPointFromMap: function (longitude, latitude) {
     wx.showModal({

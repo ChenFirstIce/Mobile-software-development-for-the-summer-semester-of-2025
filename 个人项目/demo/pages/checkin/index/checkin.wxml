@@ -127,8 +127,8 @@
       
       <view class="modal-body">
         <view class="album-list">
-          <view class="album-item {{item.id === selectedAlbumId ? 'selected' : ''}}" 
-                wx:for="{{userAlbums}}" wx:key="id"
+          <view class="album-item {{item._id === selectedAlbumId ? 'selected' : ''}}" 
+                wx:for="{{userAlbums}}" wx:key="_id"
                 bindtap="selectAlbumItem" data-album="{{item}}">
             <view class="album-info">
               <text class="album-name">{{item.name}}</text>

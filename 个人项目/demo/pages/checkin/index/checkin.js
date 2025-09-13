@@ -620,7 +620,10 @@ Page({
       name: 'photoManager',
       data: {
         action: 'batchUpload',
-        photos: photoData
+        photoData: {
+          photos: photoData,
+          albumId: checkinData.albumId
+        }
       },
       success: (res) => {
         if (res.result.success) {
