@@ -183,7 +183,7 @@
         <view class="member-management">
           <view class="management-section">
             <text class="section-title">成员列表</text>
-            <view class="member-search">
+            <view class="member-search" catchtap="stopPropagation">
               <input class="search-input" placeholder="搜索成员" bindinput="onMemberSearch" value="{{memberSearchKeyword}}" />
             </view>
           </view>

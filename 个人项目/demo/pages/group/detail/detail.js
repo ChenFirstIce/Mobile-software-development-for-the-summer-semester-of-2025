@@ -363,6 +363,15 @@ Page({
     })
   },
 
+  // 阻止事件冒泡
+  stopPropagation: function (e) {
+    // 微信小程序中阻止事件冒泡的方式
+    if (e.stopPropagation) {
+      e.stopPropagation()
+    }
+    return false
+  },
+
   // 成员搜索
   onMemberSearch: function (e) {
     const keyword = e.detail.value
