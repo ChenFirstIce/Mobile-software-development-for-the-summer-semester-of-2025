@@ -148,7 +148,13 @@ Page({
       isDefault: true,
       type: 'default',
       coverImage: '',
-      photos: []
+      photos: [],
+      tags: ['默认'],
+      permissions: {
+        view: true,
+        edit: true,
+        upload: true
+      }
     }
 
     // 调用云函数创建相册
@@ -164,6 +170,11 @@ Page({
         if (res.result.success) {
           const newAlbum = res.result.data
           
+          // 确保相册有id字段
+          if (!newAlbum.id && newAlbum._id) {
+            newAlbum.id = newAlbum._id
+          }
+          
           // 保存到本地存储
           let albums = wx.getStorageSync('albums') || []
           albums.unshift(newAlbum)
@@ -173,7 +184,7 @@ Page({
           
           // 跳转到相册详情页面
           wx.navigateTo({
-            url: `/pages/album/detail/detail?id=${newAlbum._id}&fromQuickPhoto=true`
+            url: `/pages/album/detail/detail?id=${newAlbum._id || newAlbum.id}&fromQuickPhoto=true`
           })
         } else {
           app.showToast('创建默认相册失败: ' + res.result.message)

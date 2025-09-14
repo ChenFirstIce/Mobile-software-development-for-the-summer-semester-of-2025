@@ -281,7 +281,7 @@ Page({
   editGroup: function () {
     const groupId = this.data.group._id || this.data.group.id
     wx.navigateTo({
-      url: `/pages/group/create/create?id=${groupId}`
+      url: `/pages/group/create/create?id=${groupId}&from=detail`
     })
   },
 
@@ -289,7 +289,7 @@ Page({
   editGroupInfo: function () {
     const groupId = this.data.group._id || this.data.group.id
     wx.navigateTo({
-      url: `/pages/group/create/create?id=${groupId}`
+      url: `/pages/group/create/create?id=${groupId}&from=detail`
     })
   },
 

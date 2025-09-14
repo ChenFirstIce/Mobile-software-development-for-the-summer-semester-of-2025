@@ -42,7 +42,7 @@
             <view class="action-btn" catchtap="editAlbum" data-id="{{item._id}}">
               <image class="action-icon" src="/images/pen.png" mode="aspectFit"></image>
             </view>
-            <view class="action-btn" catchtap="deleteAlbum" data-id="{{item.id}}">
+            <view class="action-btn" catchtap="deleteAlbum" data-id="{{item._id || item.id}}">
               <image class="action-icon" src="/images/bin.png" mode="aspectFit"></image>
             </view>
           </view>

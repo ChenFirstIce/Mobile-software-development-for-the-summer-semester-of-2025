@@ -46,7 +46,8 @@ Page({
     if (options.id) {
       this.setData({
         isEdit: true,
-        groupId: options.id
+        groupId: options.id,
+        fromPage: options.from || 'detail' // 记录来源页面
       })
       this.loadGroupData(options.id)
     }
@@ -389,9 +390,9 @@ Page({
           // 显示成功提示
           app.showToast(this.data.isEdit ? '群组修改成功' : '群组创建成功')
           
-          // 返回上一页
+          // 根据操作类型和来源页面决定跳转
           setTimeout(() => {
-            wx.navigateBack()
+            this.handleNavigationAfterSave(savedGroup)
           }, 1500)
         } else {
           app.showToast('保存失败: ' + res.result.message)
@@ -423,6 +424,39 @@ Page({
     }
     
     return result
+  },
+
+  // 处理保存后的导航
+  handleNavigationAfterSave: function (savedGroup) {
+    const groupId = savedGroup._id || savedGroup.id
+    
+    if (this.data.isEdit) {
+      // 编辑模式：根据来源页面决定跳转
+      switch (this.data.fromPage) {
+        case 'detail':
+          // 从群组详情页来的，跳转回群组详情页
+          wx.redirectTo({
+            url: `/pages/group/detail/detail?id=${groupId}`
+          })
+          break
+        case 'index':
+          // 从群组列表页来的，跳转回群组列表页
+          wx.redirectTo({
+            url: '/pages/group/index/group'
+          })
+          break
+        default:
+          // 默认跳转到群组详情页
+          wx.redirectTo({
+            url: `/pages/group/detail/detail?id=${groupId}`
+          })
+      }
+    } else {
+      // 创建模式：跳转到群组详情页
+      wx.redirectTo({
+        url: `/pages/group/detail/detail?id=${groupId}`
+      })
+    }
   },
 
   // 取消创建

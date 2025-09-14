@@ -27,6 +27,8 @@ exports.main = async (event, context) => {
         return await getAlbumDetail(albumId, OPENID)
       case 'checkPermission':
         return await checkAlbumPermission(albumId, OPENID)
+      case 'batchDelete':
+        return await batchDeleteAlbums(event, OPENID)
       default:
         return {
           success: false,
@@ -46,7 +48,7 @@ exports.main = async (event, context) => {
 async function createAlbum(albumData, openid) {
   const album = {
     ...albumData,
-    coverImage: coverImage,
+    coverImage: albumData.coverImage || '', // 修复coverImage未定义的问题
     creatorId: openid,
     createTime: new Date(),
     updateTime: new Date(),
@@ -62,7 +64,8 @@ async function createAlbum(albumData, openid) {
     success: true,
     data: {
       ...album,
-      _id: result._id
+      _id: result._id,
+      id: result._id // 添加id字段以保持兼容性
     },
     message: '相册创建成功'
   }
@@ -242,5 +245,78 @@ async function checkAlbumPermission(albumId, openid) {
       canDelete: isCreator || permissions.delete
     },
     message: '权限检查完成'
+  }
+}
+
+// 批量删除相册
+async function batchDeleteAlbums(event, openid) {
+  const { albumIds } = event
+  
+  if (!albumIds || !Array.isArray(albumIds) || albumIds.length === 0) {
+    return {
+      success: false,
+      message: '请提供要删除的相册ID列表'
+    }
+  }
+  
+  console.log('开始批量删除相册:', albumIds)
+  
+  try {
+    // 先检查所有相册的权限
+    const albums = await db.collection('albums').where({
+      _id: db.command.in(albumIds)
+    }).get()
+    
+    if (albums.data.length === 0) {
+      return {
+        success: false,
+        message: '没有找到要删除的相册'
+      }
+    }
+    
+    // 检查权限，只有创建者可以删除
+    const unauthorizedAlbums = albums.data.filter(album => album.creatorId !== openid)
+    if (unauthorizedAlbums.length > 0) {
+      return {
+        success: false,
+        message: `您没有权限删除 ${unauthorizedAlbums.length} 个相册`
+      }
+    }
+    
+    // 批量删除相册
+    const deletePromises = albumIds.map(albumId => 
+      db.collection('albums').doc(albumId).remove()
+    )
+    
+    await Promise.all(deletePromises)
+    
+    // 删除相册下的所有照片
+    const photos = await db.collection('photos').where({
+      albumId: db.command.in(albumIds)
+    }).get()
+    
+    if (photos.data.length > 0) {
+      const photoDeletePromises = photos.data.map(photo => 
+        db.collection('photos').doc(photo._id).remove()
+      )
+      await Promise.all(photoDeletePromises)
+    }
+    
+    console.log(`成功删除 ${albumIds.length} 个相册和 ${photos.data.length} 张照片`)
+    
+    return {
+      success: true,
+      data: {
+        deletedAlbums: albumIds.length,
+        deletedPhotos: photos.data.length
+      },
+      message: `成功删除 ${albumIds.length} 个相册`
+    }
+  } catch (error) {
+    console.error('批量删除相册失败:', error)
+    return {
+      success: false,
+      message: '批量删除失败: ' + error.message
+    }
   }
 }

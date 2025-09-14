@@ -341,11 +341,60 @@ Page({
 
   // 执行批量删除
   performBatchDelete: function () {
-    let albums = this.data.albums
     const selectedIds = this.data.selectedAlbums
     
-    // 过滤掉选中的相册
+    if (selectedIds.length === 0) {
+      app.showToast('请选择要删除的相册')
+      return
+    }
+    
+    app.showLoading('删除中...')
+    
+    // 调用云函数批量删除
+    wx.cloud.callFunction({
+      name: 'albumManager',
+      data: {
+        action: 'batchDelete',
+        albumIds: selectedIds
+      },
+      success: (res) => {
+        console.log('云函数批量删除相册结果:', res)
+        
+        if (res.result && res.result.success) {
+          // 云删除成功，从本地数据中移除
+          this.batchDeleteFromLocal(selectedIds)
+          app.hideLoading()
+          app.showToast(`已删除 ${selectedIds.length} 个相册`)
+        } else {
+          console.log('云批量删除失败，尝试本地删除:', res.result?.message)
+          // 云删除失败，尝试本地删除
+          this.batchDeleteFromLocal(selectedIds)
+          app.hideLoading()
+          app.showToast(`已删除 ${selectedIds.length} 个相册（本地）`)
+        }
+      },
+      fail: (error) => {
+        console.error('云函数调用失败:', error)
+        // 云函数调用失败，尝试本地删除
+        this.batchDeleteFromLocal(selectedIds)
+        app.hideLoading()
+        app.showToast(`已删除 ${selectedIds.length} 个相册（本地）`)
+      }
+    })
+  },
+
+  // 从本地批量删除相册
+  batchDeleteFromLocal: function (selectedIds) {
+    console.log('从本地批量删除相册，IDs:', selectedIds)
+    
+    // 从本地数据中移除相册
+    let albums = this.data.albums
     albums = albums.filter(album => !selectedIds.includes(album._id || album.id))
+    
+    // 删除相册下的所有照片
+    let allPhotos = wx.getStorageSync('photos') || []
+    allPhotos = allPhotos.filter(photo => !selectedIds.includes(photo.albumId))
+    wx.setStorageSync('photos', allPhotos)
     
     // 更新本地存储
     wx.setStorageSync('albums', albums)
@@ -358,8 +407,6 @@ Page({
       isBatchMode: false
     })
     this.filterAlbums()
-    
-    app.showToast(`已删除 ${selectedIds.length} 个相册`)
   },
 
 })
